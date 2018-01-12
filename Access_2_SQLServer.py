@@ -33,7 +33,7 @@ cursor.execute(sql)
 
 cursor.description #we want to keep this as we load things back to sql server
 
-# Here we convert to pandas to do necessary transformation if necessary before we oad up to SQL Server.  This might not be necessary.
+# Here we convert to pandas to do necessary transformation if necessary before we load up to SQL Server.  This might not be necessary.
 # Might make more sense to upload to sql server using 'pyodbc' and skipping the pandas step...
 
 dataf = pd.read_sql(sql, dbConnection)
