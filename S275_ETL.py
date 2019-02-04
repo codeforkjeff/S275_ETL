@@ -415,7 +415,7 @@ def create_year_range(years_str):
     """ returns list of  years """
     if "-" in years_str:
         pieces = years_str.split("-")
-        return list(range(int(pieces[0]), int(pieces[1] + 1)))
+        return list(range(int(pieces[0]), int(pieces[1]) + 1))
     return [int(years_str)]
 
 
