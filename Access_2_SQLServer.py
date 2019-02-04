@@ -1,6 +1,8 @@
 # Access to SQL Server  
 # Jose M Hernandez
 # 1/10/2018
+# edited 2/1/2019 bc
+# pip install -r requirements.txt
 
 import pandas as pd
 import csv
@@ -9,15 +11,24 @@ import pyodbc
 import os
 import sqlalchemy
 
-os.getcwd() 
 
-dataFile = "2016_2017_Preliminary_S_275_Personnel_Database.accdb"
-databaseFile  = os.getcwd() + "\\" + dataFile
-connectionString = "Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=%s" % databaseFile
+
+# Parameters 
+AcademicYear = '2018'
+FileNameYear = '2017-2018'
+dataFile = "S:\\Data\\Data System\\RawSourceFiles\\From OSPI\\S-275 Personnel Database\\Final\\%sFinalS-275PersonnelDatabase.accdb" % (FileNameYear)
+dbHost = 'SQLDB-DEV-01'
+dbName = 'SandBox'
+
+
+# End Parameters
+
+connectionString = "Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=%s" % dataFile
+print(connectionString)
 dbConnection   = pyodbc.connect(connectionString)
 cursor = dbConnection.cursor()
 
-for row in cursor.columns(table='2016_2017S275PreliminaryForPublic'):
+for row in cursor.columns(table='%sS-275FinalForPublic' % (FileNameYear)):
     print("Field name:" + str(row.column_name))
     print("Type:" + str(row.type_name))
     print("Width:" + str(row.column_size))
@@ -26,7 +37,7 @@ for table_name in cursor.tables(tableType='TABLE'):
     print(table_name)
 
 sql = "Select *"
-sql = sql + " From 2016_2017S275PreliminaryForPublic"
+sql = sql + " From [%sS-275FinalForPublic]" % (FileNameYear)
 print(sql)
 
 cursor.execute(sql)
@@ -43,7 +54,7 @@ len(dataf.columns)
 headers = dataf.dtypes.index
 print(headers)
 
-engine = sqlalchemy.create_engine('mssql+pyodbc://SQLDB-DEV-01/SandBox?driver=SQL+Server+Native+Client+11.0')
+engine = sqlalchemy.create_engine('mssql+pyodbc://%s/%s?driver=SQL+Server+Native+Client+11.0' % (dbHost,dbName))
 
 datatypes = {'SchoolYear': sqlalchemy.types.NVARCHAR(),
  'area': sqlalchemy.types.NVARCHAR(), 
@@ -101,6 +112,6 @@ datatypes = {'SchoolYear': sqlalchemy.types.NVARCHAR(),
  'crasdate': sqlalchemy.DateTime(),
  'yr': sqlalchemy.types.NVARCHAR() }
 
-dataf.to_sql("raw.S275_17", engine, dtype= datatypes)
+dataf.to_sql("S275_%s" % (AcademicYear), engine, dtype= datatypes)
 
 dbConnection.close()

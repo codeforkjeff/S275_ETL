@@ -5,7 +5,9 @@
 
 import urllib
 import urllib.request
+import os
 import requests
+import time
 from bs4 import BeautifulSoup
 
 '''
@@ -32,34 +34,38 @@ def get_data_links():
     links = soup.findAll('a')
  
     # only look at links that end with desired file type...in our case ".mdb" and ".accdb"...both access files
-    l_links = [data_url + link['href'] for link in links if link['href'].endswith(('.mdb', '.accdb'))]
-    
-    data_links=[]
-    # remove the duplication...there must be a better way!
-    i = set(l_links) 
-    for x in i:
-        link = str(x)       
-        data_links+=(x,)
- 
+    l_links = [data_url + link['href'] for link in links if link['href'].endswith(('.mdb', '.accdb')) and ("S275" in link['href'] or "S-275" in link['href'])]
+
+    data_links = sorted([str(link) for link in set(l_links)])
+
     return data_links
  
 
 
 # ## Let's try to create a loop to do the job...
 
-#test = 'http://www.k12.wa.us/safs/PUB/PER/0405/2004-2005S275FinalForPublic.mdb'
-#test.split('/')[-1]   
-#'C:/Users/jhernandez/Documents/S275/'+test.split('/')[-1]
-
-hd = 'C:/Users/jhernandez/Documents/S275/'
+hd = os.path.join(os.path.dirname(__file__), "input")
 data_links = get_data_links()
 
 for link in data_links:
-         
-        # Specify the location path and append the file name from the link
-        file_name = hd+link.split('/')[-1]   
 
+    # Specify the location path and append the file name from the link
+    file_name = os.path.join(hd, link.split('/')[-1])
+
+    if not os.path.exists(file_name):
         # retrienve file and dump in the specified folder
-        urllib.request.urlretrieve(link, file_name)
-
-
+        # I get intermittent 400 errors from site, so retry
+        tries = 0
+        success = False
+        while not success and tries < 3:
+            try:
+                print("Downloading %s" % (file_name,))
+                urllib.request.urlretrieve(link, file_name)
+                success = True
+            except Exception as e:
+                print("Error downloading %s: %s" % (file_name, e))
+                print("Retrying in 10 seconds...")
+                os.remove(file_name)
+            tries = tries + 1
+    else:
+        print("File already exists, skipping download: %s" % (file_name,))
