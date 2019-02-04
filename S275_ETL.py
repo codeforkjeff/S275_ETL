@@ -102,7 +102,7 @@ def transform_raw_row(raw_columns, row):
             elif column_name in ['certbase','clasbase','othersal','tfinsal','cins','cman','asssal']:
                 new_value = '%d' % (value)
         else:
-            new_value = ''
+            new_value = None
         new_row.append(new_value)
     return new_row
 
