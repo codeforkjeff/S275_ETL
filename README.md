@@ -4,9 +4,9 @@ S275_ETL
 
 # Features
 
-- Simple cleaning/prep of the [S275 files from OSPI](http://www.k12.wa.us/safs/db.asp)
-- Prepares teacher assignments file
-- Other products generated from S275 coming soon...
+- Cleaning and ETL of the [S275 files from OSPI](http://www.k12.wa.us/safs/db.asp) into a SQL database
+- Generation of a teacher assignments file
+- Other products coming soon...
 
 # Requirements
 
@@ -38,10 +38,10 @@ python OSPI_data_downloader.py
 
 ```sh
 # create cleaned S275 table with improved column names
-python -c "import S275; create_base_S275();"
+python -c "import S275; S275.create_base_S275();"
 
 # create teacher assignments
-python -c "import S275; create_teacher_assignments();"
+python -c "import S275; S275.create_teacher_assignments();"
 
 ```
 
