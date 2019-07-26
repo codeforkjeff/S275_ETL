@@ -1,2 +1,4 @@
 input/
 output/
+S275_settings.py
+__pycache__/

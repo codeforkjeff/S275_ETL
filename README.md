@@ -2,7 +2,11 @@
 S275_ETL
 ========
 
-Cleans and prepares teacher data from [S275 files from OSPI](http://www.k12.wa.us/safs/db.asp).
+# Features
+
+- Simple cleaning/prep of the [S275 files from OSPI](http://www.k12.wa.us/safs/db.asp)
+- Prepares teacher assignments file
+- Other products generated from S275 coming soon...
 
 # Requirements
 
@@ -28,23 +32,29 @@ On Windows:
 python OSPI_data_downloader.py
 ```
 
-- Run the main script, optionally specifying the years you want as a
-  parameter. Examples:
+- Copy the `S275_settings_sample.py` file to `S275_settings.py` and edit to suit your environment.
+
+- Generate the data/files you want, as follows:
 
 ```sh
-# this will process ALL the files in the input dir
-python S275_ETL.py
+# create cleaned S275 table with improved column names
+python -c "import S275; create_base_S275();"
 
-# this will process only the file for Academic Year 2017 (i.e. 2016-2017)
-python S275_ETL.py 2017
+# create teacher assignments
+python -c "import S275; create_teacher_assignments();"
 
-# this will process only the files for Academic Years 2011 to 2017
-python S275_ETL.py 2011-2017
 ```
 
-- The resulting file `S275_teacher_assignments.txt` in the output
-  directory is a tab-separated file containing a row per teacher per
-  school with roll-ups for a few fields.
+- The above commands will create files in the output directory.
+
+# Developnment Process
+
+- Create one or more .sql files with the commands that you want to run.
+
+- Add a new, appropriately-named function to `S275.py` to run your .sql files.
+Make sure the code runs successfully in both SQL Server and sqlite.
+
+- Document your new command in this README (above).
 
 # Credits
 
