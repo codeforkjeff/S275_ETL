@@ -128,7 +128,7 @@ SELECT
     ,CertifiedFlag
     ,ActivityCode
     ,Building
-    ,AssignmentPercent = COALESCE(AssignmentPercent, 0)
+    ,COALESCE(AssignmentPercent, 0) AS AssignmentPercent
     ,AssignmentFTEDesignation
     ,AssignmentSalaryTotal
 FROM TeacherAssignmentsAll
