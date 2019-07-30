@@ -180,12 +180,14 @@ def transform_final_row(final_columns, row):
 
 def fix_bad_data(row):
     hyear = getattr(row, 'hyear', None)
-    if hyear == '07':
-        row['hyear'] = '2007'
-    elif hyear == '13':
-        row['hyear'] = '2013'
-    elif hyear == 'B0':
-        row['hyear'] = None
+    if hyear:
+        hyear = hyear.strip()
+        if hyear == '07':
+            row.hyear = '2007'
+        elif hyear == '13':
+            row.hyear = '2013'
+        elif hyear == 'B0':
+            row.hyear = None
     return row
 
 
