@@ -43,6 +43,8 @@ python -c "import S275; S275.create_base_S275();"
 # create teacher assignments
 python -c "import S275; S275.create_teacher_assignments();"
 
+# create dimensional models
+python -c "import S275; S275.create_dimensional_models();"
 ```
 
 - The above commands will create files in the output directory.

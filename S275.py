@@ -246,6 +246,11 @@ def create_teacher_assignments():
     output_teacher_assignments()
 
 
+def create_dimensional_models():
+    print("creating dimensional models")
+    execute_sql_file("create_dimensional_models.sql")
+
+
 def execute_sql_file(path):
     """ files should default to using SQL Server dialect; we do some translation here """
     conn = get_db_conn()
@@ -255,6 +260,7 @@ def execute_sql_file(path):
     for statement in statements:
         if db_type == "sqlite":
             statement = statement.replace("LEN(", "LENGTH(")
+            statement = statement.replace("INT IDENTITY(1,1) NOT NULL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
         print("RUNNING: " + statement)
         cursor.execute(statement)
         conn.commit()
