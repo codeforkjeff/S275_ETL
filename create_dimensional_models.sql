@@ -270,7 +270,7 @@ select
     ,a.AcademicYear
     ,ActivityCode
     ,Building
-    ,SUM(AssignmentPercent) AS AssignmentPercent
+    ,COALESCE(SUM(AssignmentPercent), 0) AS AssignmentPercent
     ,SUM(AssignmentFTEDesignation) AS AssignmentFTEDesignation
     ,SUM(AssignmentSalaryTotal) AS AssignmentSalaryTotal
 from Fact_Assignment a
