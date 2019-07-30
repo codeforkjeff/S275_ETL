@@ -142,7 +142,7 @@ def transform_raw_row(raw_columns, row):
     for column_name in raw_columns:
         value = getattr(row, column_name, None)
         if value is not None:
-            new_value = str(value).strip()
+            new_value = str(value).rstrip()
             if column_name == 'SchoolYear':
                 new_value = value[-4:]
             elif column_name in ['acred','icred','bcred','vcred','exp', 'ftehrs']:
@@ -295,7 +295,7 @@ def create_base_S275():
                 count = 0
                 keep_going = True
                 while keep_going:
-                    line = f.readline()
+                    line = f.readline().strip("\n")
                     values = line.split("\t")
                     if line != '':
                         batch.append(values)
