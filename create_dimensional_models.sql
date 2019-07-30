@@ -17,6 +17,7 @@ CREATE TABLE Dim_Staff (
     Sex varchar(500) NULL,
     Hispanic varchar(500) NULL,
     Race varchar(500) NULL,
+    RaceEthOSPI varchar(500) NULL,
     HighestDegree varchar(500) NULL,
     HighestDegreeYear varchar(500) NULL,
     AcademicCredits varchar(500) NULL,
@@ -58,6 +59,7 @@ INSERT INTO Dim_Staff (
     Sex,
     Hispanic,
     Race,
+    RaceEthOSPI,
     HighestDegree,
     HighestDegreeYear,
     AcademicCredits,
@@ -96,6 +98,20 @@ SELECT DISTINCT
     Sex,
     Hispanic,
     Race,
+    CASE
+            WHEN Hispanic = 'Y' THEN 'Hispanic/Latino of any race(s)'
+            WHEN LEN(LTRIM(RTRIM(Race))) > 1 THEN 'Two or More Races'
+            ELSE
+                    CASE LTRIM(RTRIM(COALESCE(Race, '')))
+                            WHEN 'A' THEN 'Asian'
+                            WHEN 'W' THEN 'White'
+                            WHEN 'B' THEN 'Black/African American'
+                            WHEN 'P' THEN 'Native Hawaiian/Other Pacific Islander'
+                            WHEN 'I' THEN 'American Indian/Alaskan Native'
+                            WHEN '' THEN 'Not Provided'
+                            ELSE NULL -- should never happen
+                    END
+    END AS RaceEthOSPI,
     HighestDegree,
     HighestDegreeYear,
     AcademicCredits,
