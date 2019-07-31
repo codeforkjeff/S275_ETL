@@ -254,7 +254,7 @@ WHERE EXISTS (
 
 -- next
 
--- we need this table for rollups
+-- we need this table for per-building rolled up fields, can't simply extend Fact_Assignment
 
 DROP TABLE IF EXISTS Fact_Teacher;
 

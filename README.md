@@ -4,9 +4,10 @@ S275_ETL
 
 # Features
 
+- Supports sqlite3 (included with Python) and SQL Server databases
 - Cleaning and ETL of the [S275 files from OSPI](http://www.k12.wa.us/safs/db.asp) into a SQL database
+- Creates dimensional models for extensible reporting
 - Generation of a teacher assignments file
-- Other products coming soon...
 
 # Requirements
 
@@ -54,7 +55,9 @@ python -c "import S275; S275.create_dimensional_models();"
 - Create one or more .sql files with the commands that you want to run.
 
 - Add a new, appropriately-named function to `S275.py` to run your .sql files.
-Make sure the code runs successfully in both SQL Server and sqlite.
+Make sure the code runs successfully in both SQL Server and sqlite. .sql files
+should be written in SQL Server dialect where standard SQL isn't possible;
+see the `execute_sql_file()` in `S275.py` for the code that translates to sqlite.
 
 - Document your new command in this README (above).
 
