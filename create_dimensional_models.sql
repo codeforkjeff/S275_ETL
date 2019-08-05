@@ -264,6 +264,7 @@ CREATE TABLE Fact_Assignment (
     DutyArea varchar(500) NULL,
     DutyRoot varchar(500) NULL,
     DutySuffix varchar(500) NULL,
+    DutyDescription varchar(100) NULL,
     Grade varchar(500) NULL,
     Building varchar(500) NULL,
     AssignmentPercent NUMERIC(14,4) NULL,
@@ -287,6 +288,7 @@ INSERT INTO Fact_Assignment (
     DutyArea,
     DutyRoot,
     DutySuffix,
+    DutyDescription,
     Grade,
     Building,
     AssignmentPercent,
@@ -305,8 +307,9 @@ SELECT
     ProgramCode,
     ActivityCode,
     DutyArea,
-    DutyRoot,
-    DutySuffix,
+    S275.DutyRoot,
+    S275.DutySuffix,
+    DutyCodes.Description AS DutyDescription,
     Grade,
     Building,
     AssignmentPercent,
@@ -317,7 +320,7 @@ SELECT
     TwoDigitYear,
     FileType,
     CASE WHEN
-        DutyRoot IN ('31','32','33','34')
+        S275.DutyRoot IN ('31','32','33','34')
         AND ActivityCode ='27'
         AND S275.Area = 'L'
     THEN 1 ELSE 0 END AS IsTeachingAssignment
@@ -330,6 +333,9 @@ JOIN Dim_Staff_Coalesced d ON
     AND d.FirstNameC = S275.FirstNameC
     AND d.MiddleNameC = S275.MiddleNameC
     AND d.CertificateNumberC = S275.CertificateNumberC
+LEFT JOIN DutyCodes ON
+    S275.DutyRoot = DutyCodes.DutyRoot
+    AND (DutyCodes.DutySuffix IN ('x', 'y') OR DutyCodes.DutySuffix = S275.DutySuffix)
 ;
 
 -- next

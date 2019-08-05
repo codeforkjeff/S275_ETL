@@ -38,6 +38,9 @@ python OSPI_data_downloader.py
 - Generate the data/files you want, as follows:
 
 ```sh
+# create auxiliary tables (usually for lookups)
+python -c "import S275; S275.create_auxiliary_tables();"
+
 # create cleaned S275 table with improved column names
 python -c "import S275; S275.create_base_S275();"
 
@@ -49,6 +52,15 @@ python -c "import S275; S275.create_dimensional_models();"
 ```
 
 - The above commands will create files in the output directory.
+
+# Generated Artifacts
+
+`Dim_Staff` - dimension table for staff person for a given year, county, and district.
+
+`Fact_Assignment` - an assignment line item. This table is at the same grain as the S275 file.
+
+`Fact_SchoolTeacher` - table of teachers at schools, and rolled up Percentage, FTEDesignation,
+and Salary fields per teacher/school.
 
 # Developnment Process
 

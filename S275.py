@@ -268,31 +268,17 @@ def execute_sql_file(path):
         conn.commit()
 
 
-def create_base_S275():
-    execute_sql_file("create_s275.sql")
-
-    output_files = []
-    for entry in source_files:
-        path = entry[0]
-        file_type = entry[1]
-        basename = os.path.basename(path)
-        output_file = os.path.join(output_dir, basename[0:basename.rindex(".")] + ".txt")
-
-        if not os.path.exists(output_file):
-            create_flat_file(path, file_type, output_file)
-        else:
-            print("%s already exists, skipping" % (output_file,))
-
-        output_files.append(output_file)
+def load_into_database(entries):
+    """ entries should be a tuple of (path, tablename) """
 
     if db_type == 'SQL Server':
-        for output_file in output_files:
-            os.system("bcp S275 in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (output_file, db_sqlserver_host, db_sqlserver_database))
+        for (output_file, table_name) in entries:
+            os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (table_name, output_file, db_sqlserver_host, db_sqlserver_database))
     else:
         # read in the flat files and load into sqlite
         conn = get_db_conn()
         cursor = conn.cursor()
-        for output_file in output_files:
+        for (output_file, table_name) in entries:
             f = open(output_file)
             column_names = f.readline().split("\t")
 
@@ -316,10 +302,35 @@ def create_base_S275():
 
                 if len(batch) > 0:
                     print("Writing batch to staging db...")
-                    cursor.executemany('INSERT INTO S275 VALUES (%s)' % (",".join(["?" for x in range(len(column_names))])), batch)
+                    cursor.executemany('INSERT INTO %s VALUES (%s)' % (table_name, ",".join(["?" for x in range(len(column_names))])), batch)
                     conn.commit()
 
         conn.close()
+
+
+def create_auxiliary_tables():
+    execute_sql_file("create_dutycodes.sql")
+    load_into_database([('dutycodes.txt', 'DutyCodes')])
+
+
+def create_base_S275():
+    execute_sql_file("create_s275.sql")
+
+    output_files = []
+    for entry in source_files:
+        path = entry[0]
+        file_type = entry[1]
+        basename = os.path.basename(path)
+        output_file = os.path.join(output_dir, basename[0:basename.rindex(".")] + ".txt")
+
+        if not os.path.exists(output_file):
+            create_flat_file(path, file_type, output_file)
+        else:
+            print("%s already exists, skipping" % (output_file,))
+
+        output_files.append(output_file)
+
+    load_into_database([(output_file, 'S275') for output_file in output_files])
 
 
 def output_teacher_assignments():

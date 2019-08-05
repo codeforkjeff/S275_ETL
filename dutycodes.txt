@@ -1,0 +1,40 @@
+DutyRoot	DutySuffix	Description
+11	x	Superintendent
+12	x	Deputy/Assistant Superintendent
+13	x	Other District Administrator
+21	x	Elementary Principal
+22	x	Elementary Vice Principal
+23	x	Secondary Principal
+24	x	Secondary Vice Principal
+25	x	Other School Administrator
+31	x	Elementary Homeroom Teacher
+32	x	Secondary Teacher
+33	x	Other Teacher
+34	x	Elementary Specialist Teacher
+40	x	Other Support Personnel
+41	x	Library Media Specialist
+42	x	Counselor
+43	x	Occupational Therapist
+44	x	Social Worker
+45	x	Speech-Language Pathologist or Audiologist
+46	x	Psychologist
+47	x	Nurse
+48	x	Physical Therapist
+49	x	Reading Resource Specialist
+51	x	Extracurricular (Base Contract)
+52	x	Substitute Teacher
+61	0	Certificated on Leave
+61	1	Certificated Leave Buy Back
+63	0	Contractor Teacher
+64	0	Contractor Educational Staff Associate
+90	0	Classified on Leave
+90	3	Classified Leave Buy Back
+91	y	Aide
+92	y	Crafts or Trades
+93	y	Laborer
+94	y	Office or Clerical
+95	y	Operator
+96	y	Professional
+97	y	Service Worker
+98	y	Technical
+99	y	Director or Supervisor
