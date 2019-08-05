@@ -533,7 +533,6 @@ WHERE IsTeachingAssignment = 1
 GROUP BY
     a.StaffID
     ,a.AcademicYear
-    ,ActivityCode
     ,Building
 ;
 
