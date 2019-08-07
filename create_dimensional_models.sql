@@ -126,8 +126,7 @@ CREATE TABLE Dim_Staff_Coalesced (
     CBRTNCode varchar(500) NULL,
     ClassificationFlag varchar(500) NULL,
     CertifiedFlag varchar(500) NULL,
-    NationalBoardCertExpirationDate varchar(500) NULL,
-    IsTeacherFlag INT NOT NULL
+    NationalBoardCertExpirationDate varchar(500) NULL
 );
 
 -- next
@@ -173,8 +172,7 @@ INSERT INTO Dim_Staff_Coalesced (
     CBRTNCode,
     ClassificationFlag,
     CertifiedFlag,
-    NationalBoardCertExpirationDate,
-    IsTeacherFlag
+    NationalBoardCertExpirationDate
 )
 SELECT DISTINCT
     AcademicYear,
@@ -217,8 +215,7 @@ SELECT DISTINCT
     CBRTNCode,
     ClassificationFlag,
     CertifiedFlag,
-    NationalBoardCertExpirationDate,
-    0 As IsTeacherFlag
+    NationalBoardCertExpirationDate
 FROM S275_Coalesced t;
 
 -- next
@@ -355,7 +352,7 @@ CREATE TABLE Dim_Staff (
     InServiceCredits varchar(500) NULL,
     ExcessCredits varchar(500) NULL,
     NonDegreeCredits varchar(500) NULL,
-    CertYearsOfExperience varchar(500) NULL,
+    CertYearsOfExperience real null,
     StaffMixFactor varchar(500) NULL,
     FTEHours varchar(500) NULL,
     FTEDays varchar(500) NULL,
@@ -371,7 +368,8 @@ CREATE TABLE Dim_Staff (
     ClassificationFlag varchar(500) NULL,
     CertifiedFlag varchar(500) NULL,
     NationalBoardCertExpirationDate varchar(500) NULL,
-    IsTeacherFlag INT NOT NULL
+    IsTeacherFlag INT NOT NULL,
+    IsNoviceTeacherFlag INT NOT NULL
 );
 
 -- next
@@ -414,7 +412,8 @@ INSERT INTO Dim_Staff (
     ClassificationFlag,
     CertifiedFlag,
     NationalBoardCertExpirationDate,
-    IsTeacherFlag
+    IsTeacherFlag,
+    IsNoviceTeacherFlag
 )
 SELECT
     StaffID,
@@ -467,7 +466,8 @@ SELECT
     ClassificationFlag,
     CertifiedFlag,
     NationalBoardCertExpirationDate,
-    IsTeacherFlag
+    0 AS IsTeacherFlag,
+    0 AS IsNoviceTeacherFlag
 FROM Dim_Staff_Coalesced;
 
 -- next
@@ -491,6 +491,14 @@ WHERE EXISTS (
     from grouped
     where StaffID = Dim_Staff.StaffID
     and IsTeacherFlag = 1);
+
+-- next
+
+UPDATE Dim_Staff
+SET IsNoviceTeacherFlag = 1
+WHERE
+    IsTeacherFlag = 1
+    AND CertYearsOfExperience < 2.0
 
 -- next
 

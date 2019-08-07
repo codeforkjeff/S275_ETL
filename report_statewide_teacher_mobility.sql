@@ -42,7 +42,7 @@ With Counts as (
 		count(*) as TotalTeachers
 	FROM Fact_TeacherMobilitySingle m
 	where DiffYears = 4
-		AND CertYearsOfExperience <= 2.0
+		AND IsNoviceTeacherFlag = 1
 	GROUP BY
 		StartYear,
 		EndYear
