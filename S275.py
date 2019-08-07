@@ -253,6 +253,11 @@ def create_dimensional_models():
     execute_sql_file("create_dimensional_models.sql")
 
 
+def create_teacher_mobility_single():
+    print("creating teacher mobility tables (single teacher per year)")
+    execute_sql_file("create_teacher_mobility_single.sql")
+
+
 def execute_sql_file(path):
     """ files should default to using SQL Server dialect; we do some translation here """
     conn = get_db_conn()

@@ -13,7 +13,7 @@ S275_ETL
 
 Make sure you install all 32-bit or 64-bit programs; don't mix and match or you'll get errors about missing data sources.
 
-- Python 3.7.2
+- Python 3.7.4
 - ODBC drivers for Microsoft Access (included with [Microsoft Access Database Engine 2016](https://www.microsoft.com/en-us/download/details.aspx?id=54920))
 
 # Instructions
@@ -44,11 +44,15 @@ python -c "import S275; S275.create_auxiliary_tables();"
 # create cleaned S275 table with improved column names
 python -c "import S275; S275.create_base_S275();"
 
-# create teacher assignments
+# create teacher assignments: DEPRECATED, use Fact_SchoolTeachers table instead
 python -c "import S275; S275.create_teacher_assignments();"
 
 # create dimensional models
 python -c "import S275; S275.create_dimensional_models();"
+
+# create teacher mobility (single teacher per year)
+python -c "import S275; S275.create_teacher_mobility_single();"
+
 ```
 
 - The above commands will create files in the output directory.
