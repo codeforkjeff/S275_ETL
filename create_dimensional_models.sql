@@ -243,7 +243,7 @@ CREATE TABLE Fact_Assignment (
     ProgramCode varchar(500) NULL,
     ActivityCode varchar(500) NULL,
     DutyArea varchar(500) NULL,
-    DutyRoot varchar(500) NULL,
+    DutyRoot int NULL,
     DutySuffix varchar(500) NULL,
     DutyDescription varchar(100) NULL,
     Grade varchar(500) NULL,
@@ -255,7 +255,8 @@ CREATE TABLE Fact_Assignment (
     Major varchar(500) NULL,
     TwoDigitYear varchar(500) NULL,
     FileType varchar(500) NULL,
-    IsTeachingAssignment INT NOT NULL
+    IsTeachingAssignment INT NOT NULL,
+    IsAdministrativeAssignment INT NOT NULL
 );
 
 -- next
@@ -279,7 +280,8 @@ INSERT INTO Fact_Assignment (
     Major ,
     TwoDigitYear,
     FileType,
-    IsTeachingAssignment
+    IsTeachingAssignment,
+    IsAdministrativeAssignment
 )
 SELECT
     StaffID,
@@ -301,10 +303,13 @@ SELECT
     TwoDigitYear,
     FileType,
     CASE WHEN
-        S275.DutyRoot IN ('31','32','33','34')
+        CAST(S275.DutyRoot as integer) IN (31, 32, 33, 34)
         AND ActivityCode ='27'
         AND S275.Area = 'L'
-    THEN 1 ELSE 0 END AS IsTeachingAssignment
+    THEN 1 ELSE 0 END AS IsTeachingAssignment,
+    CASE WHEN
+        CAST(S275.DutyRoot as integer) >= 11 AND CAST(S275.DutyRoot as integer) <= 25
+    THEN 1 ELSE 0 END AS IsAdministrativeAssignment
 from S275_Coalesced S275
 JOIN Dim_Staff_Coalesced d ON
     d.AcademicYear = S275.AcademicYear
