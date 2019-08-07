@@ -192,6 +192,10 @@ def fix_bad_data(row):
     return row
 
 
+def empty_str_to_none(s):
+    return None if s == '' else s
+
+
 def create_flat_file(access_db_path, file_type, output_path):
 
     print("Processing %s" % (access_db_path))
@@ -200,7 +204,7 @@ def create_flat_file(access_db_path, file_type, output_path):
     dbConnection = pyodbc.connect(connectionString)
     cursor = dbConnection.cursor()
 
-    f = open(output_path, "w")
+    f = codecs.open(output_path, "w", 'utf-8')
     f.write("\t".join(cleaned_column_names + ['FileType']))
     f.write("\n")
     f.flush()
@@ -215,7 +219,7 @@ def create_flat_file(access_db_path, file_type, output_path):
         # for row in cursor.columns(table=table_name):
         #     print("Field name: %s, Type: %s, Width: %s" % (row.column_name,row.type_name,row.column_size))
 
-        print("Loading table %s, hang on..." % (table_name))
+        print("Creating flat file for table %s, hang on..." % (table_name))
         cursor.execute("Select * From [%s]" % (table_name))
 
         rows = cursor.fetchall()
@@ -268,7 +272,17 @@ def execute_sql_file(path):
     for statement in statements:
         if db_type == "sqlite":
             statement = statement.replace("LEN(", "LENGTH(")
+            statement = statement.replace("SUBSTRING(", "SUBSTR(")
             statement = statement.replace("INT IDENTITY(1,1) NOT NULL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
+            # handle ||
+            lines = statement.split("\n")
+            transformed = []
+            for line in lines:
+                if "sqlite_concat" in line:
+                    line = line.replace("+", "||")
+                transformed.append(line)
+            statement = "\n".join(transformed)
+
         print("RUNNING: " + statement)
         cursor.execute(statement)
         conn.commit()
@@ -285,6 +299,7 @@ def load_into_database(entries):
         conn = get_db_conn()
         cursor = conn.cursor()
         for (output_file, table_name) in entries:
+            print("Loading %s" % (output_file,))
             f = codecs.open(output_file, 'r', 'utf-8')
             column_names = f.readline().split("\t")
 
@@ -296,7 +311,7 @@ def load_into_database(entries):
                 keep_going = True
                 while keep_going:
                     line = f.readline().strip("\n")
-                    values = line.split("\t")
+                    values = [empty_str_to_none(value) for value in line.split("\t")]
                     if line != '':
                         batch.append(values)
                     else:

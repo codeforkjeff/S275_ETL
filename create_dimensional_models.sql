@@ -369,7 +369,8 @@ CREATE TABLE Dim_Staff (
     CertifiedFlag varchar(500) NULL,
     NationalBoardCertExpirationDate varchar(500) NULL,
     IsTeacherFlag INT NOT NULL,
-    IsNoviceTeacherFlag INT NOT NULL
+    IsNoviceTeacherFlag INT NOT NULL,
+    IsNationalBoardCertified INT NOT NULL
 );
 
 -- next
@@ -413,7 +414,8 @@ INSERT INTO Dim_Staff (
     CertifiedFlag,
     NationalBoardCertExpirationDate,
     IsTeacherFlag,
-    IsNoviceTeacherFlag
+    IsNoviceTeacherFlag,
+    IsNationalBoardCertified
 )
 SELECT
     StaffID,
@@ -467,7 +469,8 @@ SELECT
     CertifiedFlag,
     NationalBoardCertExpirationDate,
     0 AS IsTeacherFlag,
-    0 AS IsNoviceTeacherFlag
+    0 AS IsNoviceTeacherFlag,
+    0 AS IsNationalBoardCertified
 FROM Dim_Staff_Coalesced;
 
 -- next
@@ -499,6 +502,14 @@ SET IsNoviceTeacherFlag = 1
 WHERE
     IsTeacherFlag = 1
     AND CertYearsOfExperience < 2.0
+
+-- next
+
+UPDATE Dim_Staff
+SET IsNationalBoardCertified = 1
+WHERE
+    SUBSTRING(NationalBoardCertExpirationDate, 1, 7) >=
+    (CAST((AcademicYear - 1) as varchar) + '-09'); -- sqlite_concat
 
 -- next
 
