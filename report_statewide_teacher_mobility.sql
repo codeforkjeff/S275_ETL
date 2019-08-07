@@ -58,10 +58,12 @@ order by AcademicYear
 
 With Counts as (
 	SELECT
-		EndYear AS AcademicYear,
+		StartYear AS AcademicYear,
 		count(*) as TotalTeachers,
 		SUM(IsNoviceTeacherFlag) AS TotalNoviceTeachers
 	FROM Fact_TeacherMobilitySingle m
+	JOIN Dim_Staff s
+		ON m.StaffID = s.StaffID
 	where DiffYears = 1
 	GROUP BY
 		StartYear,
@@ -132,7 +134,10 @@ WITH Counts as (
 		SUM(Exited) AS Exited,
 		count(*) as TotalTeachers
 	FROM Fact_TeacherMobilitySingle m
-	where DiffYears = 4
+	JOIN Dim_Staff s
+		ON m.StaffID = s.StaffID
+	where
+		DiffYears = 4
 		AND IsNoviceTeacherFlag = 1
 	GROUP BY
 		StartYear,

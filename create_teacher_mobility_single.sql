@@ -9,7 +9,6 @@ CREATE TABLE BaseSchoolTeachersSingle (
     StaffID int not null,
     AcademicYear int NOT NULL,
     CertificateNumber varchar(500) NULL,
-    IsNoviceTeacherFlag int null,
     CountyAndDistrictCode varchar(500) NULL,
     Building varchar(500) NULL
 );
@@ -20,7 +19,6 @@ INSERT INTO BaseSchoolTeachersSingle (
     StaffID,
     AcademicYear,
     CertificateNumber,
-    IsNoviceTeacherFlag,
     CountyAndDistrictCode,
     Building
 )
@@ -28,7 +26,6 @@ SELECT
     s.StaffID
     ,t.AcademicYear
     ,CertificateNumber
-    ,IsNoviceTeacherFlag
     ,s.CountyAndDistrictCode
     ,Building
 FROM Fact_SchoolTeacher t
@@ -119,7 +116,6 @@ CREATE TABLE Fact_TeacherMobilitySingle (
     EndYear int NULL,
     DiffYears int NULL,
     CertificateNumber varchar(500) NULL,
-    IsNoviceTeacherFlag int null,
     StartCountyAndDistrictCode varchar(500) NULL,
     StartBuilding varchar(500) NULL,
     EndCountyAndDistrictCode varchar(500) NULL,
@@ -158,7 +154,6 @@ YearBrackets AS (
         y.EndYear AS EndYear,
         y.EndYear - t1.AcademicYear AS DiffYears,
         t1.CertificateNumber,
-        t1.IsNoviceTeacherFlag,
         -- start fields
         t1.CountyAndDistrictCode AS StartCountyAndDistrictCode,
         t1.Building AS StartBuilding,
@@ -179,7 +174,6 @@ INSERT INTO Fact_TeacherMobilitySingle (
     EndYear,
     DiffYears,
     CertificateNumber,
-    IsNoviceTeacherFlag,
     StartCountyAndDistrictCode,
     StartBuilding,
     EndCountyAndDistrictCode,
@@ -196,7 +190,6 @@ SELECT
     ,EndYear
     ,DiffYears
     ,CertificateNumber
-    ,IsNoviceTeacherFlag
     ,StartCountyAndDistrictCode
     ,StartBuilding
     ,EndCountyAndDistrictCode
