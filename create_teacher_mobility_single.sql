@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS BaseSchoolTeachersSingle;
 CREATE TABLE BaseSchoolTeachersSingle (
     AcademicYear int NOT NULL,
     CertificateNumber varchar(500) NULL,
+    CertYearsOfExperience real null,
     CountyAndDistrictCode varchar(500) NULL,
     Building varchar(500) NULL,
     RN INT NULL
@@ -18,6 +19,7 @@ CREATE TABLE BaseSchoolTeachersSingle (
 INSERT INTO BaseSchoolTeachersSingle (
     AcademicYear,
     CertificateNumber,
+    CertYearsOfExperience,
     CountyAndDistrictCode,
     Building,
     RN
@@ -25,6 +27,7 @@ INSERT INTO BaseSchoolTeachersSingle (
 SELECT
     t.AcademicYear
     ,CertificateNumber
+    ,CertYearsOfExperience
     ,s.CountyAndDistrictCode
     ,Building
     ,row_number() OVER (
@@ -128,6 +131,7 @@ CREATE TABLE Fact_TeacherMobilitySingle (
     EndYear int NULL,
     DiffYears int NULL,
     CertificateNumber varchar(500) NULL,
+    CertYearsOfExperience real null,
     StartCountyAndDistrictCode varchar(500) NULL,
     StartBuilding varchar(500) NULL,
     EndCountyAndDistrictCode varchar(500) NULL,
@@ -165,6 +169,7 @@ YearBrackets AS (
         y.EndYear AS EndYear,
         y.EndYear - t1.AcademicYear AS DiffYears,
         t1.CertificateNumber,
+        t1.CertYearsOfExperience,
         -- start fields
         t1.CountyAndDistrictCode AS StartCountyAndDistrictCode,
         t1.Building AS StartBuilding,
@@ -184,6 +189,7 @@ INSERT INTO Fact_TeacherMobilitySingle (
     EndYear,
     DiffYears,
     CertificateNumber,
+    CertYearsOfExperience,
     StartCountyAndDistrictCode,
     StartBuilding,
     EndCountyAndDistrictCode,
@@ -195,7 +201,16 @@ INSERT INTO Fact_TeacherMobilitySingle (
     Exited
 )
 SELECT
-    *
+    StartYear
+    ,EndYear
+    ,DiffYears
+    ,CertificateNumber
+    ,CertYearsOfExperience
+    ,StartCountyAndDistrictCode
+    ,StartBuilding
+    ,EndCountyAndDistrictCode
+    ,EndBuilding
+    ,EndTeacherFlag
     ,CASE WHEN
         EndCountyAndDistrictCode IS NOT NULL
         AND StartCountyAndDistrictCode = EndCountyAndDistrictCode
