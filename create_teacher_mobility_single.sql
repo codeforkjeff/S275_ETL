@@ -6,48 +6,35 @@ DROP TABLE IF EXISTS BaseSchoolTeachersSingle;
 -- next
 
 CREATE TABLE BaseSchoolTeachersSingle (
+    StaffID int not null,
     AcademicYear int NOT NULL,
     CertificateNumber varchar(500) NULL,
     IsNoviceTeacherFlag int null,
     CountyAndDistrictCode varchar(500) NULL,
-    Building varchar(500) NULL,
-    RN INT NULL
+    Building varchar(500) NULL
 );
 
 -- next
 
 INSERT INTO BaseSchoolTeachersSingle (
+    StaffID,
     AcademicYear,
     CertificateNumber,
     IsNoviceTeacherFlag,
     CountyAndDistrictCode,
-    Building,
-    RN
+    Building
 )
 SELECT
-    t.AcademicYear
+    s.StaffID
+    ,t.AcademicYear
     ,CertificateNumber
     ,IsNoviceTeacherFlag
     ,s.CountyAndDistrictCode
     ,Building
-    ,row_number() OVER (
-        PARTITION BY
-            t.AcademicYear,
-            CertificateNumber
-        ORDER BY
-            AssignmentFTEDesignation DESC,
-            -- tiebreaking below this line
-            AssignmentPercent DESC,
-            AssignmentSalaryTotal DESC
-    ) AS RN
 FROM Fact_SchoolTeacher t
 JOIN Dim_Staff s
-    ON t.StaffID = s.StaffID;
-
--- next
-
-DELETE FROM BaseSchoolTeachersSingle
-WHERE RN <> 1;
+    ON t.StaffID = s.StaffID
+WHERE PrimaryFlag = 1;
 
 -- next
 
@@ -127,6 +114,7 @@ DROP TABLE IF EXISTS Fact_TeacherMobilitySingle;
 -- next
 
 CREATE TABLE Fact_TeacherMobilitySingle (
+    StaffID int not null,
     StartYear int NOT NULL,
     EndYear int NULL,
     DiffYears int NULL,
@@ -165,6 +153,7 @@ YearBrackets AS (
 )
 ,Transitions AS (
     SELECT
+        t1.StaffID,
         t1.AcademicYear AS StartYear,
         y.EndYear AS EndYear,
         y.EndYear - t1.AcademicYear AS DiffYears,
@@ -185,6 +174,7 @@ YearBrackets AS (
         AND y.EndYear = t2.AcademicYear
 )
 INSERT INTO Fact_TeacherMobilitySingle (
+    StaffID,
     StartYear,
     EndYear,
     DiffYears,
@@ -201,7 +191,8 @@ INSERT INTO Fact_TeacherMobilitySingle (
     Exited
 )
 SELECT
-    StartYear
+    StaffID
+    ,StartYear
     ,EndYear
     ,DiffYears
     ,CertificateNumber

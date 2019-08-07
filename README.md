@@ -66,6 +66,9 @@ python -c "import S275; S275.create_teacher_mobility_single();"
 `Fact_SchoolTeacher` - table of teachers at schools, and rolled up Percentage, FTEDesignation,
 and Salary fields per teacher/school.
 
+`Fact_TeacherMobilitySingle` - mobility of teachers from their "primary" school,
+calculated both year over year and at a 5 year snapshot
+
 # Developnment Process
 
 - Create one or more .sql files with the commands that you want to run.

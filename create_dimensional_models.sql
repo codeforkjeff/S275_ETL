@@ -509,12 +509,14 @@ DROP TABLE IF EXISTS Fact_SchoolTeacher;
 -- next
 
 CREATE TABLE Fact_SchoolTeacher (
+    SchoolTeacherID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     StaffID INT NOT NULL,
     AcademicYear INT NOT NULL,
     Building varchar(500) NULL,
     AssignmentPercent NUMERIC(14,4) NULL,
     AssignmentFTEDesignation NUMERIC(14,4) NULL,
-    AssignmentSalaryTotal INT NULL
+    AssignmentSalaryTotal INT NULL,
+    PrimaryFlag INT NULL
 );
 
 -- next
@@ -525,7 +527,8 @@ INSERT INTO Fact_SchoolTeacher (
     Building,
     AssignmentPercent,
     AssignmentFTEDesignation,
-    AssignmentSalaryTotal
+    AssignmentSalaryTotal,
+    PrimaryFlag
 )
 select
     a.StaffID
@@ -534,6 +537,7 @@ select
     ,COALESCE(SUM(AssignmentPercent), 0) AS AssignmentPercent
     ,SUM(AssignmentFTEDesignation) AS AssignmentFTEDesignation
     ,SUM(AssignmentSalaryTotal) AS AssignmentSalaryTotal
+    ,0 AS PrimaryFlag
 from Fact_Assignment a
 JOIN Dim_Staff s ON a.StaffID = s.StaffID
 WHERE IsTeachingAssignment = 1
@@ -554,6 +558,33 @@ WHERE
     )
     OR AssignmentFTEDesignation IS NULL
     OR AssignmentFTEDesignation <= 0;
+
+-- next
+
+WITH Ranked AS (
+    SELECT
+        SchoolTeacherID
+        ,row_number() OVER (
+            PARTITION BY
+                st.AcademicYear,
+                CertificateNumber
+            ORDER BY
+                AssignmentFTEDesignation DESC,
+                -- tiebreaking below this line
+                AssignmentPercent DESC,
+                AssignmentSalaryTotal DESC
+        ) AS RN
+    FROM Fact_SchoolTeacher st
+    JOIN Dim_Staff s ON st.StaffID = s.StaffID
+)
+UPDATE Fact_SchoolTeacher
+SET PrimaryFlag = 1
+WHERE EXISTS (
+    SELECT 1
+    FROM Ranked
+    WHERE Ranked.SchoolTeacherID = Fact_SchoolTeacher.SchoolTeacherID
+    AND RN = 1
+);
 
 -- next
 

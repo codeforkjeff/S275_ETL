@@ -1,5 +1,6 @@
 
 import pandas as pd
+import codecs
 import csv
 import glob
 import numpy as np
@@ -284,7 +285,7 @@ def load_into_database(entries):
         conn = get_db_conn()
         cursor = conn.cursor()
         for (output_file, table_name) in entries:
-            f = open(output_file)
+            f = codecs.open(output_file, 'r', 'utf-8')
             column_names = f.readline().split("\t")
 
             eof = False
@@ -310,12 +311,13 @@ def load_into_database(entries):
                     cursor.executemany('INSERT INTO %s VALUES (%s)' % (table_name, ",".join(["?" for x in range(len(column_names))])), batch)
                     conn.commit()
 
-        conn.close()
-
 
 def create_auxiliary_tables():
     execute_sql_file("create_dutycodes.sql")
     load_into_database([('dutycodes.txt', 'DutyCodes')])
+
+    execute_sql_file("create_schoolcodes.sql")
+    load_into_database([('schoolcodes.txt', 'SchoolCodes')])
 
 
 def create_base_S275():
