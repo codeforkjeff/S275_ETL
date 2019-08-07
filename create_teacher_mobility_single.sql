@@ -31,7 +31,11 @@ SELECT
         PARTITION BY
             t.AcademicYear,
             CertificateNumber
-        ORDER BY AssignmentFTEDesignation DESC
+        ORDER BY
+            AssignmentFTEDesignation DESC,
+            -- tiebreaking below this line
+            AssignmentPercent DESC,
+            AssignmentSalaryTotal DESC
     ) AS RN
 FROM Fact_SchoolTeacher t
 JOIN Dim_Staff s
@@ -87,7 +91,10 @@ SELECT
         t.AcademicYear,
         CertificateNumber
     ORDER BY
-        SUM(AssignmentFTEDesignation) DESC
+        SUM(AssignmentFTEDesignation) DESC,
+        -- tiebreaking below this line
+        SUM(AssignmentPercent) DESC,
+        SUM(AssignmentSalaryTotal) DESC
     ) as RN
 FROM Fact_assignment t
 JOIN Dim_Staff s
@@ -189,17 +196,25 @@ INSERT INTO Fact_TeacherMobilitySingle (
 )
 SELECT
     *
-    ,CASE WHEN StartBuilding = EndBuilding THEN 1 ELSE 0 END AS Stayer
     ,CASE WHEN
-        StartCountyAndDistrictCode = EndCountyAndDistrictCode
+        EndCountyAndDistrictCode IS NOT NULL
+        AND StartCountyAndDistrictCode = EndCountyAndDistrictCode
+        AND StartBuilding = EndBuilding
+        AND EndTeacherFlag = 1
+    THEN 1 ELSE 0 END AS Stayer
+    ,CASE WHEN
+        EndCountyAndDistrictCode IS NOT NULL
+        AND EndBuilding IS NOT NULL
+        AND StartCountyAndDistrictCode = EndCountyAndDistrictCode
         AND (
-            StartBuilding <> EndBuilding
+            COALESCE(StartBuilding, -1) <> COALESCE(EndBuilding, -1)
             OR EndTeacherFlag = 0
         )
     THEN 1 ELSE 0 END AS MovedIn
     ,CASE WHEN
-        StartCountyAndDistrictCode <> EndCountyAndDistrictCode
-        AND StartBuilding <> EndBuilding
+        EndCountyAndDistrictCode IS NOT NULL
+        AND EndBuilding IS NOT NULL
+        AND COALESCE(StartCountyAndDistrictCode, -1) <> COALESCE(EndCountyAndDistrictCode, -1)
     THEN 1 ELSE 0 END AS MovedOut
     ,CASE WHEN
         EndBuilding IS NULL
