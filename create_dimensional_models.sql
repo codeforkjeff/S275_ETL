@@ -370,7 +370,8 @@ CREATE TABLE Dim_Staff (
     NationalBoardCertExpirationDate varchar(500) NULL,
     IsTeacherFlag INT NOT NULL,
     IsNoviceTeacherFlag INT NOT NULL,
-    IsNationalBoardCertified INT NOT NULL
+    IsNationalBoardCertified INT NOT NULL,
+    TempOrPermCert varchar(1) NULL
 );
 
 -- next
@@ -510,6 +511,13 @@ SET IsNationalBoardCertified = 1
 WHERE
     SUBSTRING(NationalBoardCertExpirationDate, 1, 7) >=
     (CAST((AcademicYear - 1) as varchar) + '-09'); -- sqlite_concat
+
+-- next
+
+UPDATE Dim_Staff
+SET TempOrPermCert = CASE WHEN CertificateNumber LIKE 'Z%' THEN 'T' ELSE 'P' END
+WHERE
+    CertificateNumber IS NOT NULL;
 
 -- next
 
