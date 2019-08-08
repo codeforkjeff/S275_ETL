@@ -51,7 +51,7 @@ python -c "import S275; S275.create_teacher_assignments();"
 python -c "import S275; S275.create_dimensional_models();"
 
 # create teacher mobility (single teacher per year)
-python -c "import S275; S275.create_teacher_mobility_single();"
+python -c "import S275; S275.create_teacher_mobility();"
 
 ```
 

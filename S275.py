@@ -258,9 +258,9 @@ def create_dimensional_models():
     execute_sql_file("create_dimensional_models.sql")
 
 
-def create_teacher_mobility_single():
+def create_teacher_mobility():
     print("creating teacher mobility tables (single teacher per year)")
-    execute_sql_file("create_teacher_mobility_single.sql")
+    execute_sql_file("create_teacher_mobility.sql")
 
 
 def execute_sql_file(path):

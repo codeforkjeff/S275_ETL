@@ -1,11 +1,11 @@
 
--- This analysis selects a single teacher/building per year
+-- This logic selects a single teacher/building per year
 
-DROP TABLE IF EXISTS BaseSchoolTeachersSingle;
+DROP TABLE IF EXISTS BaseSchoolTeachers;
 
 -- next
 
-CREATE TABLE BaseSchoolTeachersSingle (
+CREATE TABLE BaseSchoolTeachers (
     StaffID int not null,
     AcademicYear int NOT NULL,
     CertificateNumber varchar(500) NULL,
@@ -15,7 +15,7 @@ CREATE TABLE BaseSchoolTeachersSingle (
 
 -- next
 
-INSERT INTO BaseSchoolTeachersSingle (
+INSERT INTO BaseSchoolTeachers (
     StaffID,
     AcademicYear,
     CertificateNumber,
@@ -35,7 +35,7 @@ WHERE PrimaryFlag = 1;
 
 -- next
 
-CREATE INDEX idx_BaseSchoolTeachersSingle ON BaseSchoolTeachersSingle (
+CREATE INDEX idx_BaseSchoolTeachers ON BaseSchoolTeachers (
     AcademicYear
     ,CertificateNumber
     ,CountyAndDistrictCode
@@ -44,11 +44,11 @@ CREATE INDEX idx_BaseSchoolTeachersSingle ON BaseSchoolTeachersSingle (
 
 -- next
 
-DROP TABLE IF EXISTS ByBuildingSingle;
+DROP TABLE IF EXISTS ByBuilding;
 
 -- next
 
-CREATE TABLE ByBuildingSingle (
+CREATE TABLE ByBuilding (
     StaffID int not null,
     AcademicYear int NOT NULL,
     CertificateNumber varchar(500) NULL,
@@ -61,7 +61,7 @@ CREATE TABLE ByBuildingSingle (
 -- next
 
 -- query assignments here, b/c we want to know if teachers became non-teachers
-INSERT INTO ByBuildingSingle (
+INSERT INTO ByBuilding (
     StaffID,
     AcademicYear,
     CertificateNumber,
@@ -98,23 +98,23 @@ GROUP BY
 
 -- next
 
-DELETE FROM ByBuildingSingle
+DELETE FROM ByBuilding
 WHERE RN <> 1;
 
 -- next
 
-CREATE INDEX idx_ByBuildingSingle ON ByBuildingSingle (
+CREATE INDEX idx_ByBuilding ON ByBuilding (
     CertificateNumber
     ,AcademicYear
 );
 
 -- next
 
-DROP TABLE IF EXISTS Fact_TeacherMobilitySingle;
+DROP TABLE IF EXISTS Fact_TeacherMobility;
 
 -- next
 
-CREATE TABLE Fact_TeacherMobilitySingle (
+CREATE TABLE Fact_TeacherMobility (
     StartStaffID int not null,
     EndStaffID int null,
     StartYear int NOT NULL,
@@ -139,17 +139,17 @@ YearBrackets AS (
     SELECT DISTINCT
         AcademicYear AS StartYear,
         AcademicYear + 1 AS EndYear
-    FROM BaseSchoolTeachersSingle y1
+    FROM BaseSchoolTeachers y1
     WHERE EXISTS (
-        SELECT 1 FROM BaseSchoolTeachersSingle WHERE AcademicYear = y1.AcademicYear + 1
+        SELECT 1 FROM BaseSchoolTeachers WHERE AcademicYear = y1.AcademicYear + 1
     )
     UNION ALL
     SELECT DISTINCT
         AcademicYear AS StartYear,
         AcademicYear + 4 AS EndYear
-    FROM BaseSchoolTeachersSingle y2
+    FROM BaseSchoolTeachers y2
     WHERE EXISTS (
-        SELECT 1 FROM BaseSchoolTeachersSingle WHERE AcademicYear = y2.AcademicYear + 4
+        SELECT 1 FROM BaseSchoolTeachers WHERE AcademicYear = y2.AcademicYear + 4
     )
 )
 ,Transitions AS (
@@ -167,14 +167,14 @@ YearBrackets AS (
         t2.CountyAndDistrictCode AS EndCountyAndDistrictCode,
         t2.Building AS EndBuilding,
         t2.TeacherFlag AS EndTeacherFlag
-    FROM BaseSchoolTeachersSingle t1
+    FROM BaseSchoolTeachers t1
     JOIN YearBrackets y
         ON t1.AcademicYear = y.StartYear
-    LEFT JOIN ByBuildingSingle t2
+    LEFT JOIN ByBuilding t2
         ON t1.CertificateNumber = t2.CertificateNumber
         AND y.EndYear = t2.AcademicYear
 )
-INSERT INTO Fact_TeacherMobilitySingle (
+INSERT INTO Fact_TeacherMobility (
     StartStaffID,
     EndStaffID,
     StartYear,
@@ -231,8 +231,8 @@ FROM Transitions;
 -- next
 
 -- cleanup
-DROP TABLE BaseSchoolTeachersSingle;
+DROP TABLE BaseSchoolTeachers;
 
 -- next
 
-DROP TABLE ByBuildingSingle;
+DROP TABLE ByBuilding;

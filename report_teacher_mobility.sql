@@ -61,7 +61,7 @@ With Counts as (
 		StartYear AS AcademicYear,
 		count(*) as TotalTeachers,
 		SUM(IsNoviceTeacherFlag) AS TotalNoviceTeachers
-	FROM Fact_TeacherMobilitySingle m
+	FROM Fact_TeacherMobility m
 	JOIN Dim_Staff s
 		ON m.StartStaffID = s.StaffID
 	where DiffYears = 1
@@ -89,7 +89,7 @@ With Counts as (
 		SUM(MovedOut) AS MovedOut,
 		SUM(Exited) AS Exited,
 		count(*) as TotalTeachers
-	FROM Fact_TeacherMobilitySingle
+	FROM Fact_TeacherMobility
 	where DiffYears = 4
 	GROUP BY
 		StartYear,
@@ -118,7 +118,7 @@ WITH Counts as (
 		SUM(MovedOut) AS MovedOut,
 		SUM(Exited) AS Exited,
 		count(*) as TotalTeachers
-	FROM Fact_TeacherMobilitySingle m
+	FROM Fact_TeacherMobility m
 	where DiffYears = 4
 	GROUP BY
 		StartYear,
@@ -133,7 +133,7 @@ WITH Counts as (
 		SUM(MovedOut) AS MovedOut,
 		SUM(Exited) AS Exited,
 		count(*) as TotalTeachers
-	FROM Fact_TeacherMobilitySingle m
+	FROM Fact_TeacherMobility m
 	JOIN Dim_Staff s
 		ON m.StartStaffID = s.StaffID
 	where
@@ -181,7 +181,7 @@ Codes AS (
 		SUM(MovedOut) AS MovedOut,
 		SUM(Exited) AS Exited,
 		count(*) as TotalTeachers
-	FROM Fact_TeacherMobilitySingle m
+	FROM Fact_TeacherMobility m
 	where DiffYears = 4
 	GROUP BY
 		StartYear,
@@ -233,7 +233,7 @@ With Counts as (
 		SUM(MovedOut) AS MovedOut,
 		SUM(Exited) AS Exited,
 		count(*) as TotalTeachers
-	FROM Fact_TeacherMobilitySingle m
+	FROM Fact_TeacherMobility m
 	where DiffYears = 4
 	GROUP BY
 		StartYear,
@@ -277,7 +277,7 @@ With Counts as (
 		SUM(MovedOut) AS MovedOut,
 		SUM(Exited) AS Exited,
 		count(*) as TotalTeachers
-	FROM Fact_TeacherMobilitySingle m
+	FROM Fact_TeacherMobility m
 	where DiffYears = 1
 	GROUP BY
 		StartYear,
