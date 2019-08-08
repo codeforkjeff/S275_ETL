@@ -63,7 +63,7 @@ With Counts as (
 		SUM(IsNoviceTeacherFlag) AS TotalNoviceTeachers
 	FROM Fact_TeacherMobilitySingle m
 	JOIN Dim_Staff s
-		ON m.StaffID = s.StaffID
+		ON m.StartStaffID = s.StaffID
 	where DiffYears = 1
 	GROUP BY
 		StartYear,
@@ -135,7 +135,7 @@ WITH Counts as (
 		count(*) as TotalTeachers
 	FROM Fact_TeacherMobilitySingle m
 	JOIN Dim_Staff s
-		ON m.StaffID = s.StaffID
+		ON m.StartStaffID = s.StaffID
 	where
 		DiffYears = 4
 		AND IsNoviceTeacherFlag = 1

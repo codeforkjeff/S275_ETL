@@ -49,6 +49,7 @@ DROP TABLE IF EXISTS ByBuildingSingle;
 -- next
 
 CREATE TABLE ByBuildingSingle (
+    StaffID int not null,
     AcademicYear int NOT NULL,
     CertificateNumber varchar(500) NULL,
     CountyAndDistrictCode varchar(500) NULL,
@@ -61,6 +62,7 @@ CREATE TABLE ByBuildingSingle (
 
 -- query assignments here, b/c we want to know if teachers became non-teachers
 INSERT INTO ByBuildingSingle (
+    StaffID,
     AcademicYear,
     CertificateNumber,
     CountyAndDistrictCode,
@@ -69,7 +71,8 @@ INSERT INTO ByBuildingSingle (
     RN
 )
 SELECT
-    t.AcademicYear
+    t.StaffID
+    ,t.AcademicYear
     ,CertificateNumber
     ,s.CountyAndDistrictCode
     ,Building
@@ -87,7 +90,8 @@ FROM Fact_assignment t
 JOIN Dim_Staff s
     ON t.StaffID = s.StaffID
 GROUP BY
-    t.AcademicYear
+    t.StaffID
+    ,t.AcademicYear
     ,CertificateNumber
     ,s.CountyAndDistrictCode
     ,Building;
@@ -111,7 +115,8 @@ DROP TABLE IF EXISTS Fact_TeacherMobilitySingle;
 -- next
 
 CREATE TABLE Fact_TeacherMobilitySingle (
-    StaffID int not null,
+    StartStaffID int not null,
+    EndStaffID int null,
     StartYear int NOT NULL,
     EndYear int NULL,
     DiffYears int NULL,
@@ -149,7 +154,8 @@ YearBrackets AS (
 )
 ,Transitions AS (
     SELECT
-        t1.StaffID,
+        t1.StaffID AS StartStaffID,
+        t2.StaffID AS EndStaffID,
         t1.AcademicYear AS StartYear,
         y.EndYear AS EndYear,
         y.EndYear - t1.AcademicYear AS DiffYears,
@@ -169,7 +175,8 @@ YearBrackets AS (
         AND y.EndYear = t2.AcademicYear
 )
 INSERT INTO Fact_TeacherMobilitySingle (
-    StaffID,
+    StartStaffID,
+    EndStaffID,
     StartYear,
     EndYear,
     DiffYears,
@@ -185,7 +192,8 @@ INSERT INTO Fact_TeacherMobilitySingle (
     Exited
 )
 SELECT
-    StaffID
+    StartStaffID
+    ,EndStaffID
     ,StartYear
     ,EndYear
     ,DiffYears
