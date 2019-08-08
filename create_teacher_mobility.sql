@@ -127,6 +127,8 @@ CREATE TABLE Fact_TeacherMobility (
     EndBuilding varchar(500) NULL,
     EndTeacherFlag int NULL,
     Stayer int NOT NULL,
+    MovedInBuildingChange int NOT NULL,
+    MovedInRoleChange int NOT NULL,
     MovedIn int NOT NULL,
     MovedOut int NOT NULL,
     Exited int NOT NULL
@@ -152,7 +154,7 @@ YearBrackets AS (
         SELECT 1 FROM BaseSchoolTeachers WHERE AcademicYear = y2.AcademicYear + 4
     )
 )
-,Transitions AS (
+,TransitionsBase AS (
     SELECT
         t1.StaffID AS StartStaffID,
         t2.StaffID AS EndStaffID,
@@ -174,6 +176,30 @@ YearBrackets AS (
         ON t1.CertificateNumber = t2.CertificateNumber
         AND y.EndYear = t2.AcademicYear
 )
+,TransitionsWithMovedInBase AS (
+    SELECT
+        *
+        ,CASE WHEN
+            EndCountyAndDistrictCode IS NOT NULL
+            AND EndBuilding IS NOT NULL
+            AND StartCountyAndDistrictCode = EndCountyAndDistrictCode
+        THEN 1 ELSE 0 END AS StayedInDistrict
+    FROM TransitionsBase
+)
+,Transitions AS (
+    SELECT
+        *
+        -- MovedInBuildingChange and MovedInRoleChange are components of MovedIn
+        ,CASE WHEN
+            StayedInDistrict = 1
+            AND COALESCE(StartBuilding, -1) <> COALESCE(EndBuilding, -1)
+        THEN 1 ELSE 0 END AS MovedInBuildingChange
+        ,CASE WHEN
+            StayedInDistrict = 1
+            AND EndTeacherFlag = 0
+        THEN 1 ELSE 0 END AS MovedInRoleChange
+    FROM TransitionsWithMovedInBase
+)
 INSERT INTO Fact_TeacherMobility (
     StartStaffID,
     EndStaffID,
@@ -187,6 +213,8 @@ INSERT INTO Fact_TeacherMobility (
     EndBuilding,
     EndTeacherFlag,
     Stayer,
+    MovedInBuildingChange,
+    MovedInRoleChange,
     MovedIn,
     MovedOut,
     Exited
@@ -209,14 +237,10 @@ SELECT
         AND StartBuilding = EndBuilding
         AND EndTeacherFlag = 1
     THEN 1 ELSE 0 END AS Stayer
+    ,MovedInBuildingChange
+    ,MovedInRoleChange
     ,CASE WHEN
-        EndCountyAndDistrictCode IS NOT NULL
-        AND EndBuilding IS NOT NULL
-        AND StartCountyAndDistrictCode = EndCountyAndDistrictCode
-        AND (
-            COALESCE(StartBuilding, -1) <> COALESCE(EndBuilding, -1)
-            OR EndTeacherFlag = 0
-        )
+        MovedInBuildingChange = 1 OR MovedInRoleChange = 1
     THEN 1 ELSE 0 END AS MovedIn
     ,CASE WHEN
         EndCountyAndDistrictCode IS NOT NULL
