@@ -243,7 +243,7 @@ CREATE TABLE Fact_Assignment (
     ProgramCode varchar(500) NULL,
     ActivityCode varchar(500) NULL,
     DutyArea varchar(500) NULL,
-    DutyRoot int NULL,
+    DutyRoot varchar(500) NULL,
     DutySuffix varchar(500) NULL,
     DutyDescription varchar(100) NULL,
     Grade varchar(500) NULL,
