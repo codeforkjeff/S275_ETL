@@ -126,6 +126,7 @@ CREATE TABLE Fact_TeacherMobility (
     EndCountyAndDistrictCode varchar(500) NULL,
     EndBuilding varchar(500) NULL,
     EndTeacherFlag int NULL,
+    RoleChanged int NULL,
     Stayer int NOT NULL,
     MovedInBuildingChange int NOT NULL,
     MovedInRoleChange int NOT NULL,
@@ -189,6 +190,7 @@ YearBrackets AS (
 ,Transitions AS (
     SELECT
         *
+        ,CASE WHEN EndTeacherFlag = 0 THEN 1 ELSE 0 END AS RoleChanged
         -- MovedInBuildingChange and MovedInRoleChange are components of MovedIn
         ,CASE WHEN
             StayedInDistrict = 1
@@ -212,6 +214,7 @@ INSERT INTO Fact_TeacherMobility (
     EndCountyAndDistrictCode,
     EndBuilding,
     EndTeacherFlag,
+    RoleChanged,
     Stayer,
     MovedInBuildingChange,
     MovedInRoleChange,
@@ -231,6 +234,7 @@ SELECT
     ,EndCountyAndDistrictCode
     ,EndBuilding
     ,EndTeacherFlag
+    ,RoleChanged
     ,CASE WHEN
         EndCountyAndDistrictCode IS NOT NULL
         AND StartCountyAndDistrictCode = EndCountyAndDistrictCode
