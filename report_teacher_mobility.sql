@@ -1,6 +1,6 @@
 
 ----------------------------------
--- Teacher demographics for 2018
+-- Teacher demographics for 1996 vs 2018
 ----------------------------------
 
 With Counts as (
@@ -48,7 +48,7 @@ select
 	CAST(Exp15to24 AS REAL) / CAST(TotalTeachers AS REAL) AS PctExp15to24,
 	CAST(ExpOver25 AS REAL) / CAST(TotalTeachers AS REAL) AS PctExpOver25
 FROM Counts
-WHERE AcademicYear = 2018
+WHERE AcademicYear = 1996 OR AcademicYear = 2018
 order by AcademicYear
 
 
@@ -102,6 +102,7 @@ select
 	cast(MovedOut AS real) / cast(TotalTeachers as real) as MovedOutPct,
 	cast(Exited AS real) / cast(TotalTeachers as real) as ExitedPct
 from Counts
+WHERE StartYear IN (1999, 2011, 2012, 2013, 2014, 2015)
 order by StartYear;
 
 
@@ -290,4 +291,5 @@ select
 	cast(MovedOut AS real) / cast(TotalTeachers as real) as MovedOutPct,
 	cast(Exited AS real) / cast(TotalTeachers as real) as ExitedPct
 from Counts
+where StartYear IN (2006, 2014, 2015, 2016, 2017, 2018)
 order by StartYear;

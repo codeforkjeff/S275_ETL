@@ -21,6 +21,7 @@ CREATE TABLE S275_Coalesced (
     CertificateNumber varchar(500) NULL,
     Birthdate varchar(500) NULL,
     Sex varchar(500) NULL,
+    Ethnicity varchar(500) NULL,
     Hispanic varchar(500) NULL,
     Race varchar(500) NULL,
     HighestDegree varchar(500) NULL,
@@ -31,6 +32,11 @@ CREATE TABLE S275_Coalesced (
     NonDegreeCredits varchar(500) NULL,
     CertYearsOfExperience varchar(500) NULL,
     StaffMixFactor varchar(500) NULL,
+    StaffMixFactor1 varchar(500) NULL,
+    StaffMixFactor1A varchar(500) NULL,
+    StaffMixFactor1S varchar(500) NULL,
+    StaffMixFactor1Sa varchar(500) NULL,
+    StaffMixFactor1SB varchar(500) NULL,
     FTEHours varchar(500) NULL,
     FTEDays varchar(500) NULL,
     CertificatedFTE varchar(500) NULL,
@@ -64,18 +70,21 @@ CREATE TABLE S275_Coalesced (
     LastNameC varchar(500) NULL,
     FirstNameC varchar(500) NULL,
     MiddleNameC varchar(500) NULL,
-    CertificateNumberC varchar(500) NULL
+    CertificateNumberC varchar(500) NULL,
+    BirthdateC varchar(500) NULL
 );
 
 -- next
 
+-- some rows in 1996 have empty name fields but birthdate differs, so include birthdate in the key
 INSERT INTO S275_Coalesced
 SELECT
     *,
     COALESCE(LastName, '') AS LastNameC,
     COALESCE(FirstName, '') AS FirstNameC,
     COALESCE(MiddleName, '') AS MiddleNameC,
-    COALESCE(CertificateNumber, '') AS CertificateNumberC
+    COALESCE(CertificateNumber, '') AS CertificateNumberC,
+    COALESCE(Birthdate, '') AS BirthdateC
 FROM S275;
 
 -- next
@@ -84,6 +93,8 @@ DROP TABLE IF EXISTS Dim_Staff_Coalesced;
 
 -- next
 
+-- sqlite doesn't support alter table drop column,
+-- so create this intermediate table
 CREATE TABLE Dim_Staff_Coalesced (
     StaffID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     AcademicYear varchar(500) NULL,
@@ -100,9 +111,11 @@ CREATE TABLE Dim_Staff_Coalesced (
     FirstNameC varchar(500) NULL,
     MiddleNameC varchar(500) NULL,
     CertificateNumberC varchar(500) NULL,
+    BirthdateC varchar(500) NULL,
     --
     Birthdate varchar(500) NULL,
     Sex varchar(500) NULL,
+    Ethnicity varchar(500) NULL,
     Hispanic varchar(500) NULL,
     Race varchar(500) NULL,
     HighestDegree varchar(500) NULL,
@@ -113,6 +126,11 @@ CREATE TABLE Dim_Staff_Coalesced (
     NonDegreeCredits varchar(500) NULL,
     CertYearsOfExperience varchar(500) NULL,
     StaffMixFactor varchar(500) NULL,
+    StaffMixFactor1 varchar(500) NULL,
+    StaffMixFactor1A varchar(500) NULL,
+    StaffMixFactor1S varchar(500) NULL,
+    StaffMixFactor1Sa varchar(500) NULL,
+    StaffMixFactor1SB varchar(500) NULL,
     FTEHours varchar(500) NULL,
     FTEDays varchar(500) NULL,
     CertificatedFTE varchar(500) NULL,
@@ -146,9 +164,11 @@ INSERT INTO Dim_Staff_Coalesced (
     FirstNameC,
     MiddleNameC,
     CertificateNumberC,
+    BirthdateC,
     --
     Birthdate,
     Sex,
+    Ethnicity,
     Hispanic,
     Race,
     HighestDegree,
@@ -159,6 +179,11 @@ INSERT INTO Dim_Staff_Coalesced (
     NonDegreeCredits,
     CertYearsOfExperience,
     StaffMixFactor,
+    StaffMixFactor1,
+    StaffMixFactor1A,
+    StaffMixFactor1S,
+    StaffMixFactor1Sa,
+    StaffMixFactor1SB,
     FTEHours,
     FTEDays,
     CertificatedFTE,
@@ -175,6 +200,8 @@ INSERT INTO Dim_Staff_Coalesced (
     NationalBoardCertExpirationDate
 )
 SELECT DISTINCT
+    -- all these fields should, theoretically, be distinct to the combo key of AY/names/certnum/birthdate field.
+    -- if they aren't, it suggests problems in the source data.
     AcademicYear,
     Area,
     County,
@@ -189,9 +216,11 @@ SELECT DISTINCT
     FirstNameC,
     MiddleNameC,
     CertificateNumberC,
+    BirthdateC,
     --
     Birthdate,
     Sex,
+    Ethnicity,
     Hispanic,
     Race,
     HighestDegree,
@@ -202,6 +231,11 @@ SELECT DISTINCT
     NonDegreeCredits,
     CertYearsOfExperience,
     StaffMixFactor,
+    StaffMixFactor1,
+    StaffMixFactor1A,
+    StaffMixFactor1S,
+    StaffMixFactor1Sa,
+    StaffMixFactor1SB,
     FTEHours,
     FTEDays,
     CertificatedFTE,
@@ -220,6 +254,11 @@ FROM S275_Coalesced t;
 
 -- next
 
+-- creating this index fails when there are 'dupe' staff entries
+-- (each with their own set of assignments). these cases occurred
+-- in earlier years (from 1996 to 2001); they should have been removed
+-- prior to the S275 table being loaded, so that this index can be
+-- succesfully created.
 CREATE UNIQUE INDEX idx_Dim_Staff_Coalesced ON Dim_Staff_Coalesced (
     AcademicYear,
     Area,
@@ -227,7 +266,10 @@ CREATE UNIQUE INDEX idx_Dim_Staff_Coalesced ON Dim_Staff_Coalesced (
     LastNameC,
     FirstNameC,
     MiddleNameC,
-    CertificateNumberC
+    CertificateNumberC,
+    BirthdateC,
+    -- add staffid to make this a covering index
+    StaffID
 );
 
 -- next
@@ -319,6 +361,7 @@ JOIN Dim_Staff_Coalesced d ON
     AND d.FirstNameC = S275.FirstNameC
     AND d.MiddleNameC = S275.MiddleNameC
     AND d.CertificateNumberC = S275.CertificateNumberC
+    AND d.BirthdateC = S275.BirthdateC
 LEFT JOIN DutyCodes ON
     S275.DutyRoot = DutyCodes.DutyRoot
     AND (DutyCodes.DutySuffix IN ('x', 'y') OR DutyCodes.DutySuffix = S275.DutySuffix)
@@ -348,6 +391,7 @@ CREATE TABLE Dim_Staff (
     CertificateNumber varchar(500) NULL,
     Birthdate varchar(500) NULL,
     Sex varchar(500) NULL,
+    Ethnicity varchar(500) NULL,
     Hispanic varchar(500) NULL,
     Race varchar(500) NULL,
     RaceEthOSPI varchar(500) NULL,
@@ -359,6 +403,11 @@ CREATE TABLE Dim_Staff (
     NonDegreeCredits varchar(500) NULL,
     CertYearsOfExperience real null,
     StaffMixFactor varchar(500) NULL,
+    StaffMixFactor1 varchar(500) NULL,
+    StaffMixFactor1A varchar(500) NULL,
+    StaffMixFactor1S varchar(500) NULL,
+    StaffMixFactor1Sa varchar(500) NULL,
+    StaffMixFactor1SB varchar(500) NULL,
     FTEHours varchar(500) NULL,
     FTEDays varchar(500) NULL,
     CertificatedFTE varchar(500) NULL,
@@ -394,6 +443,7 @@ INSERT INTO Dim_Staff (
     CertificateNumber,
     Birthdate,
     Sex,
+    Ethnicity,
     Hispanic,
     Race,
     RaceEthOSPI,
@@ -405,6 +455,11 @@ INSERT INTO Dim_Staff (
     NonDegreeCredits,
     CertYearsOfExperience,
     StaffMixFactor,
+    StaffMixFactor1,
+    StaffMixFactor1A,
+    StaffMixFactor1S,
+    StaffMixFactor1Sa,
+    StaffMixFactor1SB,
     FTEHours,
     FTEDays,
     CertificatedFTE,
@@ -436,21 +491,35 @@ SELECT
     CertificateNumber,
     Birthdate,
     Sex,
+    Ethnicity,
     Hispanic,
     Race,
     CASE
-            WHEN Hispanic = 'Y' THEN 'Hispanic/Latino of any race(s)'
-            WHEN LEN(LTRIM(RTRIM(Race))) > 1 THEN 'Two or More Races'
-            ELSE
-                    CASE LTRIM(RTRIM(COALESCE(Race, '')))
-                            WHEN 'A' THEN 'Asian'
-                            WHEN 'W' THEN 'White'
-                            WHEN 'B' THEN 'Black/African American'
-                            WHEN 'P' THEN 'Native Hawaiian/Other Pacific Islander'
-                            WHEN 'I' THEN 'American Indian/Alaskan Native'
-                            WHEN '' THEN 'Not Provided'
-                            ELSE NULL -- should never happen
-                    END
+        WHEN Ethnicity IS NOT NULL THEN
+            CASE UPPER(Ethnicity)
+                -- note that there is no P code for Pacific Islander in this field
+                WHEN 'A' THEN 'Asian'
+                WHEN 'W' THEN 'White'
+                WHEN 'B' THEN 'Black/African American'
+                WHEN 'H' THEN 'Hispanic/Latino of any race(s)'
+                WHEN 'I' THEN 'American Indian/Alaskan Native'
+                ELSE 'Unknown' -- should never happen
+            END
+        ELSE
+            CASE
+                WHEN Hispanic = 'Y' THEN 'Hispanic/Latino of any race(s)'
+                WHEN LEN(LTRIM(RTRIM(Race))) > 1 THEN 'Two or More Races'
+                ELSE
+                        CASE LTRIM(RTRIM(COALESCE(Race, '')))
+                                WHEN 'A' THEN 'Asian'
+                                WHEN 'W' THEN 'White'
+                                WHEN 'B' THEN 'Black/African American'
+                                WHEN 'P' THEN 'Native Hawaiian/Other Pacific Islander'
+                                WHEN 'I' THEN 'American Indian/Alaskan Native'
+                                WHEN '' THEN 'Not Provided'
+                                ELSE NULL -- should never happen
+                        END
+            END
     END AS RaceEthOSPI,
     HighestDegree,
     HighestDegreeYear,
@@ -460,6 +529,11 @@ SELECT
     NonDegreeCredits,
     CertYearsOfExperience,
     StaffMixFactor,
+    StaffMixFactor1,
+    StaffMixFactor1A,
+    StaffMixFactor1S,
+    StaffMixFactor1Sa,
+    StaffMixFactor1SB,
     FTEHours,
     FTEDays,
     CertificatedFTE,

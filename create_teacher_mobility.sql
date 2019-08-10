@@ -194,7 +194,8 @@ YearBrackets AS (
         -- MovedInBuildingChange and MovedInRoleChange are components of MovedIn
         ,CASE WHEN
             StayedInDistrict = 1
-            AND COALESCE(StartBuilding, -1) <> COALESCE(EndBuilding, -1)
+            -- there are a handful of 'ELE' building codes, so coalesce to string, not int
+            AND COALESCE(StartBuilding, 'NONE') <> COALESCE(EndBuilding, 'NONE')
         THEN 1 ELSE 0 END AS MovedInBuildingChange
         ,CASE WHEN
             StayedInDistrict = 1
@@ -255,6 +256,14 @@ SELECT
         EndBuilding IS NULL
     THEN 1 ELSE 0 END AS Exited
 FROM Transitions;
+
+-- next
+
+CREATE INDEX idx_Fact_TeacherMobility ON Fact_TeacherMobility(StartStaffID, EndStaffID);
+
+-- next
+
+CREATE INDEX idx_Fact_TeacherMobility2 ON Fact_TeacherMobility(StartYear, StartCountyAndDistrictCode, StartBuilding);
 
 -- next
 

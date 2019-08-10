@@ -1,7 +1,9 @@
 
 import pandas as pd
 import codecs
+import collections
 import csv
+import datetime
 import glob
 import numpy as np
 import pyodbc
@@ -19,8 +21,10 @@ except:
 
 #### Parameters
 
-# columns from source data to stage
-raw_columns = [
+# union of all column names found across files for all years.
+# we list these explicitly here to eliminate variations in column order;
+# this way, we can import all flat files into a single table
+all_possible_columns = [
     "SchoolYear"
     ,"area"
     ,"cou"
@@ -29,9 +33,16 @@ raw_columns = [
     ,"LastName"
     ,"FirstName"
     ,"MiddleName"
+    ,"lname"
+    ,"fname"
+    ,"mname"
     ,"cert"
     ,"bdate"
+    ,"byr"
+    ,"bmo"
+    ,"bday"
     ,"sex"
+    ,"ethnic"
     ,"hispanic"
     ,"race"
     ,"hdeg"
@@ -41,7 +52,12 @@ raw_columns = [
     ,"bcred"
     ,"vcred"
     ,"exp"
+    ,"camix"
     ,"camix1"
+    ,"camix1A"
+    ,"camix1S"
+    ,"camix1Sa"
+    ,"camix1SB"
     ,"ftehrs"
     ,"ftedays"
     ,"certfte"
@@ -80,79 +96,23 @@ raw_columns = [
     ,"yr"
 ]
 
-column_names_map = {
-    "SchoolYear": "AcademicYear"
-    ,"area": "Area"
-    ,"cou": "County"
-    ,"dis": "District"
-    ,"codist": "CountyAndDistrictCode"
-    ,"LastName": "LastName"
-    ,"FirstName": "FirstName"
-    ,"MiddleName": "MiddleName"
-    ,"cert": "CertificateNumber"
-    ,"bdate": "Birthdate"
-    ,"sex": "Sex"
-    ,"hispanic": "Hispanic"
-    ,"race": "Race"
-    ,"hdeg": "HighestDegree"
-    ,"hyear": "HighestDegreeYear"
-    ,"acred": "AcademicCredits"
-    ,"icred": "InServiceCredits"
-    ,"bcred": "ExcessCredits"
-    ,"vcred": "NonDegreeCredits"
-    ,"exp": "CertYearsOfExperience"
-    ,"camix1": "StaffMixFactor"
-    ,"ftehrs": "FTEHours"
-    ,"ftedays": "FTEDays"
-    ,"certfte": "CertificatedFTE"
-    ,"clasfte": "ClassifiedFTE"
-    ,"certbase": "CertificatedBase"
-    ,"clasbase": "ClassifiedBase"
-    ,"othersal": "OtherSalary"
-    ,"tfinsal": "TotalFinalSalary"
-    ,"cins": "ActualAnnualInsurance"
-    ,"cman": "ActualAnnualMandatory"
-    ,"cbrtn": "CBRTNCode"
-    ,"clasflag": "ClassificationFlag"
-    ,"certflag": "CertifiedFlag"
-    ,"NBcertexpdate": "NationalBoardCertExpirationDate"
-    ,"recno": "RecordNumber"
-    ,"prog": "ProgramCode"
-    ,"act": "ActivityCode"
-    ,"darea": "DutyArea"
-    ,"droot": "DutyRoot"
-    ,"dsufx": "DutySuffix"
-    ,"grade": "Grade"
-    ,"bldgn": "Building"
-    ,"asspct": "AssignmentPercent"
-    ,"assfte": "AssignmentFTEDesignation"
-    ,"asssal": "AssignmentSalaryTotal"
-    ,"asshpy": "AssignmentHoursPerYear"
-    ,"major": "Major"
-    ,"yr": "TwoDigitYear"
-}
-
-cleaned_column_names = [column_names_map[col] for col in raw_columns]
-
 #### End Parameters
 
 global_conn = None
 
-def transform_raw_row(raw_columns, row):
+def transform_raw_row(row):
     new_row = []
-    for column_name in raw_columns:
-        value = getattr(row, column_name, None)
+    for column_name in all_possible_columns:
+        value = row.get(column_name)
         if value is not None:
             new_value = str(value).rstrip()
-            if column_name == 'SchoolYear':
-                new_value = value[-4:]
-            elif column_name in ['acred','icred','bcred','vcred','exp', 'ftehrs']:
+            if column_name in ['acred','icred','bcred','vcred','exp', 'ftehrs']:
                 new_value = '%.1f' % (value)
             elif column_name in ['certfte']:
                 new_value = '%.2f' % (value)
-            elif column_name in ['ftedays','clasfte', 'camix1S','asspct','assfte','asshpy']:
+            elif column_name in ['ftedays','clasfte','asspct','assfte','asshpy']:
                 new_value = '%.4f' % (value)
-            elif column_name in ['camix1']:
+            elif column_name in ['camix','camix1','camix1A','camix1S','camix1Sa','camix1SB']:
                 new_value = '%.5f' % (value)
             elif column_name in ['certbase','clasbase','othersal','tfinsal','cins','cman','asssal']:
                 new_value = '%d' % (value)
@@ -179,17 +139,18 @@ def transform_final_row(final_columns, row):
     return new_row
 
 
-def fix_bad_data(row):
-    hyear = getattr(row, 'hyear', None)
-    if hyear:
-        hyear = hyear.strip()
-        if hyear == '07':
-            row.hyear = '2007'
-        elif hyear == '13':
-            row.hyear = '2013'
-        elif hyear == 'B0':
-            row.hyear = None
-    return row
+def pyodbc_row_to_dict(columns_in_result, row):
+    d = {}
+    for col in columns_in_result:
+        value = getattr(row, col, None)
+        d[col] = value
+    return d
+
+
+def strip_if_str(s):
+    if s is None:
+        return s
+    return s.strip()
 
 
 def empty_str_to_none(s):
@@ -197,7 +158,7 @@ def empty_str_to_none(s):
 
 
 def create_flat_file(access_db_path, file_type, output_path):
-
+    """ conform all the column names across tables and write to flat files """
     print("Processing %s" % (access_db_path))
 
     connectionString = "Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=%s" % access_db_path
@@ -205,7 +166,7 @@ def create_flat_file(access_db_path, file_type, output_path):
     cursor = dbConnection.cursor()
 
     f = codecs.open(output_path, "w", 'utf-8')
-    f.write("\t".join(cleaned_column_names + ['FileType']))
+    f.write("\t".join(all_possible_columns + ['FileType']))
     f.write("\n")
     f.flush()
 
@@ -224,11 +185,14 @@ def create_flat_file(access_db_path, file_type, output_path):
 
         rows = cursor.fetchall()
 
+        columns_in_result = [column[0] for column in cursor.description]
+
         print("Writing rows to file...")
 
         for row in rows:
-            row = fix_bad_data(row)
-            values = [to_file_value(value) for value in transform_raw_row(raw_columns, row)]
+            row = pyodbc_row_to_dict(columns_in_result, row)
+
+            values = [to_file_value(value) for value in transform_raw_row(row)]
             f.write("\t".join(values + [file_type]))
             f.write("\n")
 
@@ -293,7 +257,7 @@ def load_into_database(entries):
 
     if db_type == 'SQL Server':
         for (output_file, table_name) in entries:
-            os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (table_name, output_file, db_sqlserver_host, db_sqlserver_database))
+            os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000 -r 0x0a" % (table_name, output_file, db_sqlserver_host, db_sqlserver_database))
     else:
         # read in the flat files and load into sqlite
         conn = get_db_conn()
@@ -336,8 +300,6 @@ def create_auxiliary_tables():
 
 
 def create_base_S275():
-    execute_sql_file("create_s275.sql")
-
     output_files = []
     for entry in source_files:
         path = entry[0]
@@ -352,8 +314,9 @@ def create_base_S275():
 
         output_files.append(output_file)
 
-    load_into_database([(output_file, 'S275') for output_file in output_files])
-
+    execute_sql_file("create_Raw_S275.sql")
+    load_into_database([(output_file, 'Raw_S275') for output_file in output_files])
+    execute_sql_file("create_Cleaned_S275.sql")
 
 def output_teacher_assignments():
     conn = get_db_conn()
