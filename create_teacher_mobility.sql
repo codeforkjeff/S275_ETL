@@ -132,6 +132,7 @@ CREATE TABLE Fact_TeacherMobility (
     MovedInRoleChange int NOT NULL,
     MovedIn int NOT NULL,
     MovedOut int NOT NULL,
+    MovedOutOfRMR int NOT NULL,
     Exited int NOT NULL
 );
 
@@ -221,6 +222,7 @@ INSERT INTO Fact_TeacherMobility (
     MovedInRoleChange,
     MovedIn,
     MovedOut,
+    MovedOutOfRMR,
     Exited
 )
 SELECT
@@ -252,10 +254,32 @@ SELECT
         AND EndBuilding IS NOT NULL
         AND COALESCE(StartCountyAndDistrictCode, -1) <> COALESCE(EndCountyAndDistrictCode, -1)
     THEN 1 ELSE 0 END AS MovedOut
+    ,0 AS MovedOutOfRMR
     ,CASE WHEN
         EndBuilding IS NULL
     THEN 1 ELSE 0 END AS Exited
 FROM Transitions;
+
+-- next
+
+UPDATE Fact_TeacherMobility
+SET MovedOutOfRMR = CASE
+    WHEN MovedOut = 1
+        AND EXISTS (
+            SELECT 1
+            FROM SchoolCodes
+            WHERE Fact_TeacherMobility.StartBuilding = SchoolCode
+            AND RMRFlag = 1
+            )
+        AND NOT EXISTS (
+            SELECT 1
+            FROM SchoolCodes
+            WHERE Fact_TeacherMobility.EndBuilding = SchoolCode
+            AND RMRFlag = 1
+            )
+    THEN 1
+    ELSE 0
+    END;
 
 -- next
 
