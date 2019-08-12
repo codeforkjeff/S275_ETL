@@ -21,6 +21,8 @@ except:
 
 #### Parameters
 
+LINE_TERMINATOR = u"\r\n"
+
 # union of all column names found across files for all years.
 # we list these explicitly here to eliminate variations in column order;
 # this way, we can import all flat files into a single table
@@ -167,7 +169,7 @@ def create_flat_file(access_db_path, file_type, output_path):
 
     f = codecs.open(output_path, "w", 'utf-8')
     f.write("\t".join(all_possible_columns + ['FileType']))
-    f.write("\n")
+    f.write(LINE_TERMINATOR)
     f.flush()
 
     to_file_value = lambda s: '' if s is None else s
@@ -194,7 +196,7 @@ def create_flat_file(access_db_path, file_type, output_path):
 
             values = [to_file_value(value) for value in transform_raw_row(row)]
             f.write("\t".join(values + [file_type]))
-            f.write("\n")
+            f.write(LINE_TERMINATOR)
 
         f.flush()
 
@@ -257,7 +259,7 @@ def load_into_database(entries):
 
     if db_type == 'SQL Server':
         for (output_file, table_name) in entries:
-            os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000 -r 0x0a" % (table_name, output_file, db_sqlserver_host, db_sqlserver_database))
+            os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (table_name, output_file, db_sqlserver_host, db_sqlserver_database))
     else:
         # read in the flat files and load into sqlite
         conn = get_db_conn()
@@ -274,7 +276,7 @@ def load_into_database(entries):
                 count = 0
                 keep_going = True
                 while keep_going:
-                    line = f.readline().strip("\n")
+                    line = f.readline().strip("\n").strip("\r")
                     values = [empty_str_to_none(value) for value in line.split("\t")]
                     if line != '':
                         batch.append(values)
