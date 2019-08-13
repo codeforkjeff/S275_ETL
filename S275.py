@@ -233,7 +233,7 @@ def create_teacher_mobility():
     execute_sql_file("create_teacher_mobility.sql")
 
 
-def create_aggregations():
+def create_teacher_mobility_aggregations():
     print("creating teacher mobility aggregations")
     execute_sql_file("create_teacher_mobility_aggregations.sql")
 
