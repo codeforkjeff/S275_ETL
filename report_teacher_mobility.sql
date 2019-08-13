@@ -11,10 +11,12 @@ With Counts as (
 		SUM(CASE WHEN HighestDegree = 'B' THEN 1 ELSE 0 END) AS EdBachelors,
 		SUM(CASE WHEN HighestDegree = 'M' THEN 1 ELSE 0 END) AS EdMasters,
 		SUM(CASE WHEN RaceEthOSPI = 'American Indian/Alaskan Native' THEN 1 ELSE 0 END) AS RaceAmInd,
-		SUM(CASE WHEN RaceEthOSPI = 'Asian' THEN 1 ELSE 0 END) AS RaceAsian,
+		SUM(
+			CASE WHEN RaceEthOSPI = 'Asian' THEN 1 ELSE 0 END +
+			CASE WHEN RaceEthOSPI = 'Native Hawaiian/Other Pacific Islander' THEN 1 ELSE 0 END
+		) AS RaceAsianPacIsl,
 		SUM(CASE WHEN RaceEthOSPI = 'Black/African American' THEN 1 ELSE 0 END) AS RaceBlack,
 		SUM(CASE WHEN RaceEthOSPI = 'Hispanic/Latino of any race(s)' THEN 1 ELSE 0 END) AS RaceHispanic,
-		SUM(CASE WHEN RaceEthOSPI = 'Native Hawaiian/Other Pacific Islander' THEN 1 ELSE 0 END) AS RacePacIsl,
 		SUM(CASE WHEN RaceEthOSPI = 'Two or More Races' THEN 1 ELSE 0 END) AS RaceTwoOrMore,
 		SUM(CASE WHEN RaceEthOSPI = 'White' THEN 1 ELSE 0 END) AS RaceWhite,
 		SUM(CASE WHEN CertYearsOfExperience <= 4.5 THEN 1 ELSE 0 END) AS Exp0to4,
@@ -37,10 +39,9 @@ select
 	CAST(EdBachelors AS REAL) / CAST(TotalTeachers AS REAL) AS PctEdBachelors,
 	CAST(EdMasters AS REAL) / CAST(TotalTeachers AS REAL) AS PctEdMasters,
 	CAST(RaceAmInd AS REAL) / CAST(TotalTeachers AS REAL) AS PctRaceAmInd,
-	CAST(RaceAsian AS REAL) / CAST(TotalTeachers AS REAL) AS PctRaceAsian,
+	CAST(RaceAsianPacIsl AS REAL) / CAST(TotalTeachers AS REAL) AS PctRaceAsianPacIsl,
 	CAST(RaceBlack AS REAL) / CAST(TotalTeachers AS REAL) AS PctRaceBlack,
 	CAST(RaceHispanic AS REAL) / CAST(TotalTeachers AS REAL) AS PctRaceHispanic,
-	CAST(RacePacIsl AS REAL) / CAST(TotalTeachers AS REAL) AS PctRacePacIsl,
 	CAST(RaceTwoOrMore AS REAL) / CAST(TotalTeachers AS REAL) AS PctRaceTwoOrMore,
 	CAST(RaceWhite AS REAL) / CAST(TotalTeachers AS REAL) AS PctRaceWhite,
 	CAST(Exp0to4 AS REAL) / CAST(TotalTeachers AS REAL) AS PctExp0to4,
