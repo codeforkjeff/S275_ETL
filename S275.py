@@ -221,6 +221,10 @@ def create_teacher_assignments():
 
 def create_dimensional_models():
     print("creating dimensional models")
+
+    execute_sql_file("create_Dim_School.sql")
+    load_into_database([('Dim_school.txt', 'Dim_School')])
+
     execute_sql_file("create_dimensional_models.sql")
 
 
@@ -296,9 +300,6 @@ def load_into_database(entries):
 def create_auxiliary_tables():
     execute_sql_file("create_dutycodes.sql")
     load_into_database([('dutycodes.txt', 'DutyCodes')])
-
-    execute_sql_file("create_schoolcodes.sql")
-    load_into_database([('schoolcodes.txt', 'SchoolCodes')])
 
 
 def create_base_S275():

@@ -169,8 +169,11 @@ order by c.StartYear;
 
 With 
 Codes AS (
-	SELECT DISTINCT DistrictCode, DistrictName
-	FROM SchoolCodes
+	SELECT
+		DistrictCode,
+		max(DistrictName) as DistrictName
+	FROM Dim_School
+	GROUP BY DistrictCode
 )
 ,Counts as (
 	SELECT
@@ -245,8 +248,8 @@ With Counts as (
 select
 	Counts.StartYear,
 	Counts.EndYear,
-	codes.DistrictName,
-	codes.SchoolName,
+	Sch.DistrictName,
+	Sch.SchoolName,
 	Stayer,
 	cast(Stayer AS real) / cast(TotalTeachers as real) as StayerPct,
 	MovedIn,
@@ -256,13 +259,14 @@ select
 	Exited,
 	cast(Exited AS real) / cast(TotalTeachers as real) as ExitedPct
 from Counts
-LEFT JOIN SchoolCodes codes
-	ON Counts.StartBuilding = codes.SchoolCode
+LEFT JOIN Dim_School Sch
+	ON Counts.StartBuilding = Sch.SchoolCode
+	AND Counts.StartYear = Sch.AcademicYear
 WHERE
 	StartYear = 2011
 	AND EndYear = 2015
-	AND codes.DistrictName LIKE 'Auburn%'
-order by StartYear, endyear, codes.SchoolName;
+	AND Sch.DistrictName LIKE 'Auburn%'
+order by StartYear, endyear, Sch.SchoolName;
 
 
 ----------------------------------

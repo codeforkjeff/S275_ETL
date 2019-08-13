@@ -267,14 +267,18 @@ SET MovedOutOfRMR = CASE
     WHEN MovedOut = 1
         AND EXISTS (
             SELECT 1
-            FROM SchoolCodes
-            WHERE Fact_TeacherMobility.StartBuilding = SchoolCode
+            FROM Dim_School
+            WHERE
+                Fact_TeacherMobility.StartYear = AcademicYear
+                AND Fact_TeacherMobility.StartBuilding = SchoolCode
             AND RMRFlag = 1
             )
         AND NOT EXISTS (
             SELECT 1
-            FROM SchoolCodes
-            WHERE Fact_TeacherMobility.EndBuilding = SchoolCode
+            FROM Dim_School
+            WHERE
+                Fact_TeacherMobility.EndYear = AcademicYear
+                AND Fact_TeacherMobility.EndBuilding = SchoolCode
             AND RMRFlag = 1
             )
     THEN 1
