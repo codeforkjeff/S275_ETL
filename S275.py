@@ -233,6 +233,11 @@ def create_teacher_mobility():
     execute_sql_file("create_teacher_mobility.sql")
 
 
+def create_aggregations():
+    print("creating teacher mobility aggregations")
+    execute_sql_file("create_teacher_mobility_aggregations.sql")
+
+
 def execute_sql_file(path):
     """ files should default to using SQL Server dialect; we do some translation here """
     conn = get_db_conn()

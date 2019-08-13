@@ -53,6 +53,9 @@ python -c "import S275; S275.create_dimensional_models();"
 # create teacher mobility (single teacher per year)
 python -c "import S275; S275.create_teacher_mobility();"
 
+# create aggregations for teacher mobility
+python -c "import S275; S275.create_teacher_mobility_aggregations();"
+
 ```
 
 - The above commands will create files in the output directory.
