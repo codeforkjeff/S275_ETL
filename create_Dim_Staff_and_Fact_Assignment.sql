@@ -298,7 +298,9 @@ CREATE TABLE Fact_Assignment (
     TwoDigitYear varchar(500) NULL,
     FileType varchar(500) NULL,
     IsTeachingAssignment INT NOT NULL,
-    IsAdministrativeAssignment INT NOT NULL
+    IsAdministrativeAssignment INT NOT NULL,
+    IsPrincipalAssignment INT NOT NULL,
+    IsAsstPrincipalAssignment INT NOT NULL
 );
 
 -- next
@@ -323,7 +325,9 @@ INSERT INTO Fact_Assignment (
     TwoDigitYear,
     FileType,
     IsTeachingAssignment,
-    IsAdministrativeAssignment
+    IsAdministrativeAssignment,
+    IsPrincipalAssignment,
+    IsAsstPrincipalAssignment
 )
 SELECT
     StaffID,
@@ -351,7 +355,13 @@ SELECT
     THEN 1 ELSE 0 END AS IsTeachingAssignment,
     CASE WHEN
         CAST(S275.DutyRoot as integer) >= 11 AND CAST(S275.DutyRoot as integer) <= 25
-    THEN 1 ELSE 0 END AS IsAdministrativeAssignment
+    THEN 1 ELSE 0 END AS IsAdministrativeAssignment,
+    CASE WHEN
+        CAST(S275.DutyRoot as integer) = 21 OR CAST(S275.DutyRoot as integer) = 23
+    THEN 1 ELSE 0 END AS IsPrincipalAssignment,
+    CASE WHEN
+        CAST(S275.DutyRoot as integer) = 22 OR CAST(S275.DutyRoot as integer) = 24
+    THEN 1 ELSE 0 END AS IsAsstPrincipalAssignment
 from S275_Coalesced S275
 JOIN Dim_Staff_Coalesced d ON
     d.AcademicYear = S275.AcademicYear
@@ -424,6 +434,8 @@ CREATE TABLE Dim_Staff (
     NationalBoardCertExpirationDate varchar(500) NULL,
     IsTeacherFlag INT NOT NULL,
     IsNoviceTeacherFlag INT NOT NULL,
+    IsPrincipalFlag INT NOT NULL,
+    IsAsstPrincipalFlag INT NOT NULL,
     IsNationalBoardCertified INT NOT NULL,
     TempOrPermCert varchar(1) NULL
 );
@@ -476,6 +488,8 @@ INSERT INTO Dim_Staff (
     NationalBoardCertExpirationDate,
     IsTeacherFlag,
     IsNoviceTeacherFlag,
+    IsPrincipalFlag,
+    IsAsstPrincipalFlag,
     IsNationalBoardCertified
 )
 SELECT
@@ -550,6 +564,8 @@ SELECT
     NationalBoardCertExpirationDate,
     0 AS IsTeacherFlag,
     0 AS IsNoviceTeacherFlag,
+    0 AS IsPrincipalFlag,
+    0 AS IsAsstPrincipalFlag,
     0 AS IsNationalBoardCertified
 FROM Dim_Staff_Coalesced;
 
@@ -581,7 +597,43 @@ UPDATE Dim_Staff
 SET IsNoviceTeacherFlag = 1
 WHERE
     IsTeacherFlag = 1
-    AND CertYearsOfExperience < 2.0
+    AND CertYearsOfExperience < 2.0;
+
+-- next
+
+WITH grouped as (
+    select
+        s.StaffID,
+        max(IsPrincipalAssignment) as IsPrincipalFlag
+    FROM Dim_Staff s
+    JOIN Fact_Assignment a ON s.StaffID = a.StaffID
+    group by s.StaffID
+)
+UPDATE Dim_Staff
+SET IsPrincipalFlag = 1
+WHERE EXISTS (
+    select 1
+    from grouped
+    where StaffID = Dim_Staff.StaffID
+    and IsPrincipalFlag = 1);
+
+-- next
+
+WITH grouped as (
+    select
+        s.StaffID,
+        max(IsAsstPrincipalAssignment) as IsAsstPrincipalFlag
+    FROM Dim_Staff s
+    JOIN Fact_Assignment a ON s.StaffID = a.StaffID
+    group by s.StaffID
+)
+UPDATE Dim_Staff
+SET IsAsstPrincipalFlag = 1
+WHERE EXISTS (
+    select 1
+    from grouped
+    where StaffID = Dim_Staff.StaffID
+    and IsAsstPrincipalFlag = 1);
 
 -- next
 
@@ -598,100 +650,3 @@ SET TempOrPermCert = CASE WHEN CertificateNumber LIKE 'Z%' THEN 'T' ELSE 'P' END
 WHERE
     CertificateNumber IS NOT NULL;
 
--- next
-
--- we need this table for per-building rolled up fields, can't simply extend Fact_Assignment
-
-DROP TABLE IF EXISTS Fact_SchoolTeacher;
-
--- next
-
-CREATE TABLE Fact_SchoolTeacher (
-    SchoolTeacherID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-    StaffID INT NOT NULL,
-    AcademicYear INT NOT NULL,
-    Building varchar(500) NULL,
-    AssignmentPercent NUMERIC(14,4) NULL,
-    AssignmentFTEDesignation NUMERIC(14,4) NULL,
-    AssignmentSalaryTotal INT NULL,
-    PrimaryFlag INT NULL
-);
-
--- next
-
-INSERT INTO Fact_SchoolTeacher (
-    StaffID,
-    AcademicYear,
-    Building,
-    AssignmentPercent,
-    AssignmentFTEDesignation,
-    AssignmentSalaryTotal,
-    PrimaryFlag
-)
-select
-    a.StaffID
-    ,a.AcademicYear
-    ,Building
-    ,COALESCE(SUM(AssignmentPercent), 0) AS AssignmentPercent
-    ,SUM(AssignmentFTEDesignation) AS AssignmentFTEDesignation
-    ,SUM(AssignmentSalaryTotal) AS AssignmentSalaryTotal
-    ,0 AS PrimaryFlag
-from Fact_Assignment a
-JOIN Dim_Staff s ON a.StaffID = s.StaffID
-WHERE IsTeachingAssignment = 1
-GROUP BY
-    a.StaffID
-    ,a.AcademicYear
-    ,Building
-;
-
--- next
-
-DELETE FROM Fact_SchoolTeacher
-WHERE
-    EXISTS (
-        SELECT 1 from Dim_Staff
-        WHERE StaffID = Fact_SchoolTeacher.StaffID
-        AND (CertificateNumber IS NULL OR CertificateNumber = '')
-    )
-    OR AssignmentFTEDesignation IS NULL
-    OR AssignmentFTEDesignation <= 0;
-
--- next
-
-WITH Ranked AS (
-    SELECT
-        SchoolTeacherID
-        ,row_number() OVER (
-            PARTITION BY
-                st.AcademicYear,
-                CertificateNumber
-            ORDER BY
-                AssignmentFTEDesignation DESC,
-                -- tiebreaking below this line
-                AssignmentPercent DESC,
-                AssignmentSalaryTotal DESC
-        ) AS RN
-    FROM Fact_SchoolTeacher st
-    JOIN Dim_Staff s ON st.StaffID = s.StaffID
-)
-UPDATE Fact_SchoolTeacher
-SET PrimaryFlag = 1
-WHERE EXISTS (
-    SELECT 1
-    FROM Ranked
-    WHERE Ranked.SchoolTeacherID = Fact_SchoolTeacher.SchoolTeacherID
-    AND RN = 1
-);
-
--- next
-
-CREATE INDEX idx_Fact_SchoolTeacher ON Fact_SchoolTeacher (
-    StaffID, AcademicYear
-);
-
--- next
-
-CREATE INDEX idx_Fact_SchoolTeacher2 ON Fact_SchoolTeacher (
-    AcademicYear, StaffID
-);

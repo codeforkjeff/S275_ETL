@@ -225,7 +225,9 @@ def create_dimensional_models():
     execute_sql_file("create_Dim_School.sql")
     load_into_database([('Dim_school.txt', 'Dim_School')])
 
-    execute_sql_file("create_dimensional_models.sql")
+    execute_sql_file("create_Dim_Staff_and_Fact_Assignment.sql")
+
+    execute_sql_file("create_Fact_SchoolTeacher.sql")
 
 
 def create_teacher_mobility():
