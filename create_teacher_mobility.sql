@@ -35,6 +35,14 @@ WHERE PrimaryFlag = 1;
 
 -- next
 
+-- ensure we only have one teacher per year
+CREATE UNIQUE INDEX idx_BaseSchoolTeachers_unique ON BaseSchoolTeachers (
+    AcademicYear
+    ,CertificateNumber
+);
+
+-- next
+
 CREATE INDEX idx_BaseSchoolTeachers ON BaseSchoolTeachers (
     AcademicYear
     ,CertificateNumber
