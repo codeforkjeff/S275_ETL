@@ -390,7 +390,7 @@ DROP TABLE IF EXISTS Dim_Staff;
 
 CREATE TABLE Dim_Staff (
     StaffID INT NOT NULL PRIMARY KEY,
-    AcademicYear varchar(500) NULL,
+    AcademicYear INT NOT NULL,
     Area varchar(500) NULL,
     County varchar(500) NULL,
     District varchar(500) NULL,
@@ -437,7 +437,8 @@ CREATE TABLE Dim_Staff (
     IsPrincipalFlag INT NOT NULL,
     IsAsstPrincipalFlag INT NOT NULL,
     IsNationalBoardCertified INT NOT NULL,
-    TempOrPermCert varchar(1) NULL
+    TempOrPermCert varchar(1) NULL,
+    IsNewHireFlag INT NOT NULL
 );
 
 -- next
@@ -490,7 +491,8 @@ INSERT INTO Dim_Staff (
     IsNoviceTeacherFlag,
     IsPrincipalFlag,
     IsAsstPrincipalFlag,
-    IsNationalBoardCertified
+    IsNationalBoardCertified,
+    IsNewHireFlag
 )
 SELECT
     StaffID,
@@ -566,7 +568,8 @@ SELECT
     0 AS IsNoviceTeacherFlag,
     0 AS IsPrincipalFlag,
     0 AS IsAsstPrincipalFlag,
-    0 AS IsNationalBoardCertified
+    0 AS IsNationalBoardCertified,
+    0 AS IsNewHireFlag
 FROM Dim_Staff_Coalesced;
 
 -- next
@@ -642,6 +645,52 @@ SET IsNationalBoardCertified = 1
 WHERE
     SUBSTRING(NationalBoardCertExpirationDate, 1, 7) >=
     (CAST((AcademicYear - 1) as varchar) + '-09'); -- sqlite_concat
+
+-- next
+
+CREATE TABLE FirstYearInDistrict (
+    CertificateNumber varchar(500) NULL,
+    CountyAndDistrictCode varchar(500) NULL,
+    FirstYear INT NULL
+);
+
+-- next
+
+INSERT INTO FirstYearInDistrict
+SELECT
+    CertificateNumber,
+    CountyAndDistrictCode,
+    MIN(AcademicYear) AS FirstYear
+FROM Dim_Staff
+WHERE CertificateNumber is not null
+GROUP BY
+    CertificateNumber,
+    CountyAndDistrictCode;
+
+-- next
+
+CREATE INDEX idx_FirstYearInDistrict ON FirstYearInDistrict (
+    CertificateNumber,
+    CountyAndDistrictCode,
+    FirstYear
+);
+
+-- next
+
+UPDATE Dim_Staff
+SET IsNewHireFlag = 1
+WHERE
+    EXISTS (
+        SELECT 1
+        FROM FirstYearInDistrict
+        WHERE FirstYearInDistrict.CertificateNumber = Dim_Staff.CertificateNumber
+        AND FirstYearInDistrict.CountyAndDistrictCode = Dim_Staff.CountyAndDistrictCode
+        AND FirstYearInDistrict.FirstYear = Dim_Staff.AcademicYear
+    );
+
+-- next
+
+DROP TABLE FirstYearInDistrict;
 
 -- next
 
