@@ -27,12 +27,12 @@ On Windows:
 - Install required Python packages by running: `pip install -r requirements.txt`
 
 - Download and unzip the S275 files from [the OSPI website](https://www.k12.wa.us/safs-database-files).
-  The unzipped files are Access databases (have an `.accdb` extension). Put them
+  The unzipped files are Access databases (have an `.accdb` extension). Put these files
   in the `input/` directory.
 
 - Copy the `S275_settings_sample.py` file to `S275_settings.py` and edit to suit
   your environment. By default, the code does all data processing using the embedded sqlite3
-  database that comes with Python.
+  database that comes with Python but you can change this to use SQL Server instead.
 
 - Generate the data you want, as follows:
 
@@ -68,10 +68,11 @@ python -c "import S275; S275.create_teacher_mobility_aggregations();"
 `Fact_Assignment` - an assignment line item. This table is at the same grain as the rows in the S275 file.
 
 `Fact_SchoolTeacher` - table of teachers at schools, and rolled up Percentage, FTEDesignation,
-and Salary fields per teacher/school.
+and Salary fields per teacher/school. The PrimaryFlag field is used to support a single school selection
+for each teacher/year for reports that want to avoid double counting.
 
 `Fact_TeacherMobility` - mobility of teachers from their "primary" school,
-calculated both year over year and at a 5 year snapshot
+calculated both year over year and at 5 year snapshots.
 
 # Development Process
 
@@ -94,6 +95,5 @@ supported by research sponsors including the [Center for Strengthening the
 Teaching Profession (CSTP)](http://cstp-wa.org/), the [Washington State Board of Education (SBE)](https://www.sbe.wa.gov/), and
 the [Washington State Office of Superintendent of Public Instruction (OSPI)](https://www.k12.wa.us/).
 
-Jose M Hernandez [jmhernan](https://github.com/jmhernan) wrote the
-original implementation for teacher assignments following the decision rules
-suggested by the College of Education.
+[Jose M Hernandez](https://github.com/jmhernan) wrote the original implementation
+for teacher assignments following the decision rules suggested by the College of Education.
