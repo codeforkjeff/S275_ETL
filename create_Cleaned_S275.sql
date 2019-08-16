@@ -204,8 +204,15 @@ FROM Raw_S275;
 
 -- next
 
+-- numeric fields in AY <= 2000 were stored as integers; convert them to decimal values
 UPDATE S275
-SET CertYearsOfExperience = CAST((CAST(CertYearsOfExperience as real) / 10) as varchar)
+SET
+    CertYearsOfExperience = CAST((CAST(CertYearsOfExperience as real) / 10) as varchar)
+    ,CertificatedFTE = CAST((CAST(CertificatedFTE as real) / 1000) as varchar)
+    ,ClassifiedFTE = CAST((CAST(ClassifiedFTE as real) / 1000) as varchar)
+    ,AssignmentPercent = CAST((CAST(AssignmentPercent as real) / 10) as varchar)
+    ,AssignmentFTEDesignation = CAST((CAST(AssignmentFTEDesignation as real) / 1000) as varchar)
+    ,AssignmentHoursPerYear = CAST((CAST(AssignmentHoursPerYear as real) / 100) as varchar)
 WHERE CAST(AcademicYear as int) <= 2000
 
 -- next
