@@ -232,7 +232,7 @@ def create_dimensional_models():
 
 def create_teacher_mobility():
     print("creating teacher mobility tables (single teacher per year)")
-    execute_sql_file("create_teacher_mobility.sql")
+    execute_sql_file("create_Fact_TeacherMobility.sql")
 
 
 def create_teacher_mobility_aggregations():
