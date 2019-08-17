@@ -8,6 +8,7 @@ import urllib.request
 import os
 import requests
 import time
+import zipfile
 from bs4 import BeautifulSoup
 
 '''
@@ -21,7 +22,7 @@ all the links and then download the data.
 data_url = "http://www.k12.wa.us/safs/"
 archive_url = "http://www.k12.wa.us/safs/db.asp"
 
- 
+# OSPI's website changed in 2019: this no longer works
 def get_data_links():
      
     # create request object
@@ -45,7 +46,17 @@ def get_data_links():
 # ## Let's try to create a loop to do the job...
 
 hd = os.path.join(os.path.dirname(__file__), "input")
-data_links = get_data_links()
+
+#data_links = get_data_links()
+
+data_links = [
+"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1819/2018-2019PreliminaryS-275PersonnelDatabase.zip"
+,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1718/2017-2018FinalS-275PersonnelDatabase.zip"
+,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1617/2016-2017_Final_S-275_Personnel_Database.zip"
+,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1516/2015-2016_Final_S-275_Personnel_Database.zip"
+,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1415/2014-2015_Final_S-275_Personnel_Database.zip"
+,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1314/2013-2014_Final_S-275_Personnel_Database.zip"
+]
 
 for link in data_links:
 
@@ -69,3 +80,8 @@ for link in data_links:
             tries = tries + 1
     else:
         print("File already exists, skipping download: %s" % (file_name,))
+
+    print("Unzipping  %s" % (file_name,))
+
+    with zipfile.ZipFile(file_name, 'r') as zip_ref:
+        zip_ref.extractall(hd)

@@ -27,10 +27,17 @@ On Windows:
 
 - Install required Python packages by running: `pip install -r requirements.txt`
 
-- Download and unzip the S275 files from [the OSPI website](https://www.k12.wa.us/safs-database-files).
+- Download and unzip the S275 files for the desired years from [the OSPI website](https://www.k12.wa.us/safs-database-files).
   The unzipped files are Access databases (have an `.accdb` extension). Put these files
   in the `input/` directory. (Alternatively, you can set the path where the script looks for these files,
   using settings in the next step.)
+
+  Instead of doing this step manually, you can run this script to do it for you:
+
+```sh
+# this downloads all currently available files, as of Aug 2019
+python OSPI_data_downloader.py
+```
 
 - Copy the `S275_settings_sample.py` file to `S275_settings.py` and edit the paths and variables to suit
   your environment. By default, the code does all data processing using the embedded sqlite3

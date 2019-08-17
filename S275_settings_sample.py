@@ -11,26 +11,14 @@ output_dir = os.path.join(scriptDir, "output")
 
 # tuples of (filename, file type). file type is either FINAL or PRELIMINARY.
 source_files = [
-	(os.path.join(input_dir, "1995-1996S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "1996-1997S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "1997-1998S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "1998-1999S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "1999-2000S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2000-2001S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2001-2002S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2002-2003S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2003-2004S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2004-2005S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2005-2006S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2006-2007S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2007-2008S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2008-2009S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2009-2010S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2010-2011S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2011-2012S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2012-2013S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2013-2014S275FinalForPublic.mdb"), "FINAL")
-	,(os.path.join(input_dir, "2014-2015S275FinalForPublic.accdb"), "FINAL")
+
+	# OSPI periodically changes the names of files for past years, as well as
+	# how far back its available files go. You may need to change this list
+	# if OSPI's filenames change OR if you are working with archival files
+	# you downloaded in the past.
+
+	(os.path.join(input_dir, "2013-2014_Final_S-275_Personnel_Database.accdb"), "FINAL")
+	,(os.path.join(input_dir, "2014-2015_Final_S-275_Personnel_Database.accdb"), "FINAL")
 	,(os.path.join(input_dir, "2015-2016_Final_S-275_Personnel_Database.accdb"), "FINAL")
 	,(os.path.join(input_dir, "2016-2017_Final_S-275_Personnel_Database.accdb"), "FINAL")
 	,(os.path.join(input_dir, "2017-2018FinalS-275PersonnelDatabase.accdb"), "FINAL")
