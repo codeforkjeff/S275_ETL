@@ -648,6 +648,10 @@ WHERE
 
 -- next
 
+DROP TABLE IF EXISTS FirstYearInDistrict;
+
+-- next
+
 CREATE TABLE FirstYearInDistrict (
     CertificateNumber varchar(500) NULL,
     CountyAndDistrictCode varchar(500) NULL,

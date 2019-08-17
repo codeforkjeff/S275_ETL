@@ -146,9 +146,11 @@ SELECT
     ,cert as CertificateNumber
     ,CASE
         WHEN
-            byr IS NOT NULL AND LEN(byr) > 1 AND NOT (byr = '00' AND  bmo = '00' and bday = '00')
+            bdate IS NULL AND byr IS NOT NULL AND LEN(byr) > 1 AND NOT (byr = '00' AND  bmo = '00' and bday = '00')
         THEN
-            '19' + CAST(byr as varchar) + '-' + CAST(bmo as varchar) + '-' + CAST(bday as varchar) + ' 00:00:00' -- sqlite_concat
+            '19' + CAST(byr as varchar) + '-'  -- sqlite_concat
+            + CASE WHEN LEN(bmo) = 1 THEN '0' ELSE '' END + CAST(bmo as varchar) + '-' -- sqlite_concat
+            + CASE WHEN LEN(bday) = 1 THEN '0' ELSE '' END + CAST(bday as varchar) + ' 00:00:00' -- sqlite_concat
         ELSE bdate
     END as Birthdate
     ,sex as Sex

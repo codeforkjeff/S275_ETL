@@ -2,6 +2,7 @@
 import pandas as pd
 import codecs
 import collections
+import copy
 import csv
 import datetime
 import glob
@@ -193,6 +194,11 @@ def create_flat_file(access_db_path, file_type, output_path):
 
         for row in rows:
             row = pyodbc_row_to_dict(columns_in_result, row)
+
+            # in 2001 file, Cert is uppercased
+            if 'Cert' in row:
+                row['cert'] = row['Cert']
+                del row['Cert']
 
             values = [to_file_value(value) for value in transform_raw_row(row)]
             f.write("\t".join(values + [file_type]))
