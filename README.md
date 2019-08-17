@@ -6,7 +6,8 @@ This is a perpetual work in progress!
 
 # Features
 
-- Does ETL and data cleaning of the [S275 files from OSPI](https://www.k12.wa.us/safs-database-files). Files for 1996 - 2019 are supported.
+- Does ETL and data cleaning of the [S275 files from OSPI](https://www.k12.wa.us/safs-database-files) into a single SQL table.
+  Files for 1996 - 2019 are currently supported.
 - Creates dimensional models for flexible reporting
 - Generates dataset of teacher demographics and retention/mobility
 - Supports sqlite3 (included with Python) and SQL Server databases
@@ -15,7 +16,7 @@ This is a perpetual work in progress!
 
 Make sure you install all 32-bit or 64-bit programs; don't mix and match or you'll get errors about missing data sources.
 
-- Python 3.7.4
+- Python 3.7.4 - this includes the minimum version of sqlite3 needed to support the window functions used in this code.
 - ODBC drivers for Microsoft Access (included with [Microsoft Access Database Engine 2016](https://www.microsoft.com/en-us/download/details.aspx?id=54920))
 
 # Instructions
@@ -28,9 +29,10 @@ On Windows:
 
 - Download and unzip the S275 files from [the OSPI website](https://www.k12.wa.us/safs-database-files).
   The unzipped files are Access databases (have an `.accdb` extension). Put these files
-  in the `input/` directory.
+  in the `input/` directory. (Alternatively, you can set the path where the script looks for these files,
+  using settings in the next step.)
 
-- Copy the `S275_settings_sample.py` file to `S275_settings.py` and edit to suit
+- Copy the `S275_settings_sample.py` file to `S275_settings.py` and edit the paths and variables to suit
   your environment. By default, the code does all data processing using the embedded sqlite3
   database that comes with Python but you can change this to use SQL Server instead.
 
@@ -62,6 +64,8 @@ python -c "import S275; S275.create_teacher_mobility_aggregations();"
   the tables can be found in `report_teacher_mobility.sql`
 
 # Generated Tables
+
+Note that AcademicYear values are based on the "end year": e.g. 2016 means 2015-2016.
 
 `Dim_Staff` - dimension table for staff person for a given year, county, and district.
 

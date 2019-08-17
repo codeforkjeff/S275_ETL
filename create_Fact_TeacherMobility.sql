@@ -70,6 +70,9 @@ CREATE TABLE ByBuilding (
 
 -- next
 
+-- FIXME: this rolls up to a building, and hence, more than row for a person/year row,
+-- which results multiple rows in the transitions table for a person/year.
+
 -- query assignments here, b/c we want to know if teachers became non-teachers
 INSERT INTO ByBuilding (
     StaffID,
