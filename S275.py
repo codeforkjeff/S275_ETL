@@ -125,7 +125,7 @@ def transform_raw_row(row):
     return new_row
 
 
-def transform_final_row(final_columns, row):
+def transform_row_for_export(final_columns, row):
     """ row is a list of values """
     new_row = []
     i = 0
@@ -133,7 +133,8 @@ def transform_final_row(final_columns, row):
         column_name = final_columns[i]
         if value is not None:
             new_value = str(value)
-            if column_name in ['AssignmentPercent','AssignmentFTEDesignation']:
+            #if column_name in ['AssignmentPercent','AssignmentFTEDesignation']:
+            if isinstance(value, float):
                 new_value = '%.4f' % (value)
         else:
             new_value = ''
@@ -220,9 +221,6 @@ def create_teacher_assignments():
 
     print("creating teacher assignments")
     execute_sql_file("create_teacher_assignments.sql")
-
-    print("Writing output file...")
-    output_teacher_assignments()
 
 
 def create_dimensional_models():
@@ -334,17 +332,16 @@ def create_base_S275():
     load_into_database([(output_file, 'Raw_S275') for output_file in output_files])
     execute_sql_file("create_Cleaned_S275.sql")
 
-def output_teacher_assignments():
+
+def export_query(sql, output_path):
     conn = get_db_conn()
     cursor = conn.cursor()
 
-    cursor.execute("Select * From TeacherAssignments")
+    cursor.execute(sql)
 
     output_columns = [item[0] for item in cursor.description]
 
-    output_file = os.path.join(output_dir, "teacher_assignments.txt")
-
-    f = open(output_file, "w")
+    f = open(output_path, "w")
     f.write("\t".join(output_columns))
     f.write("\n")
     f.flush()
@@ -354,7 +351,7 @@ def output_teacher_assignments():
         rows = cursor.fetchmany(100000)
         keep_going = False
         for row in rows:
-            f.write("\t".join(transform_final_row(output_columns, row)))
+            f.write("\t".join(transform_row_for_export(output_columns, row)))
             f.write("\n")
             keep_going = True
         f.flush()
@@ -362,6 +359,10 @@ def output_teacher_assignments():
     f.close()
 
     conn.close()
+
+
+def export_table(table, output_path):
+    export_query("Select * From %s" % (table,), output_path)
 
 
 def get_db_conn():

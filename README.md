@@ -6,7 +6,7 @@ This is a perpetual work in progress!
 
 # Features
 
-- Does ETL and data cleaning of the [S275 files from OSPI](https://www.k12.wa.us/safs-database-files) into a single SQL table.
+- Does ETL and data cleaning of the [S275 files from OSPI](https://www.k12.wa.us/safs-database-files) into a single table in a SQL database.
   Files for 1996 - 2019 are currently supported.
 - Creates dimensional models for flexible reporting
 - Generates dataset of teacher demographics and retention/mobility
@@ -18,6 +18,7 @@ Make sure you install all 32-bit or 64-bit programs; don't mix and match or you'
 
 - Python 3.7.4 - this includes the minimum version of sqlite3 needed to support the window functions used in this code.
 - ODBC drivers for Microsoft Access (included with [Microsoft Access Database Engine 2016](https://www.microsoft.com/en-us/download/details.aspx?id=54920))
+- Roughly 1GB of disk space for each academic year of data, when using sqlite3
 
 # Instructions
 
@@ -66,9 +67,20 @@ python -c "import S275; S275.create_teacher_mobility_aggregations();"
 
 ```
 
-- Use a SQL client such as [DBeaver](https://dbeaver.io/) to connect to the database
-  and to work with the generated tables. Sample queries demonstrating how to use
-  the tables can be found in `report_teacher_mobility.sql`
+- You can export the generated data into tab-separated files for use in Excel, R, etc. as follows:
+
+```sh
+# output Dim_Staff
+python -c "import S275; S275.export_table('Dim_Staff', 'output/Dim_Staff.txt')"
+# output Fact_TeacherMobility
+python -c "import S275; S275.export_table('Fact_TeacherMobility', 'output/Fact_TeacherMobility.txt')"
+
+```
+
+  Or you can use a SQL client such as [DBeaver](https://dbeaver.io/) to connect directly
+  to the database and to work with the generated tables.
+
+  Sample queries demonstrating how to use the tables can be found in `report_teacher_mobility.sql`
 
 # Generated Tables
 
