@@ -233,6 +233,8 @@ def create_dimensional_models():
 
     execute_sql_file("create_Fact_SchoolTeacher.sql")
 
+    execute_sql_file("create_Fact_SchoolPrincipal.sql")
+
 
 def create_teacher_mobility():
     print("creating teacher mobility tables (single teacher per year)")
@@ -242,6 +244,11 @@ def create_teacher_mobility():
 def create_teacher_mobility_aggregations():
     print("creating teacher mobility aggregations")
     execute_sql_file("create_teacher_mobility_aggregations.sql")
+
+
+def create_principal_mobility():
+    print("creating principal mobility tables")
+    execute_sql_file("create_Fact_PrincipalMobility.sql")
 
 
 def execute_sql_file(path):

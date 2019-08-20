@@ -65,6 +65,8 @@ python -c "import S275; S275.create_teacher_mobility();"
 # create aggregations for teacher mobility (work in progress)
 python -c "import S275; S275.create_teacher_mobility_aggregations();"
 
+# create principal mobility (single princpal or asst principal per year)
+python -c "import S275; S275.create_principal_mobility();"
 ```
 
 - You can export the generated data into tab-separated files for use in Excel, R, etc. as follows:
