@@ -11,6 +11,8 @@ DROP TABLE IF EXISTS Dim_School;
 --  ,DistrictName
 --  ,SchoolCode
 --  ,SchoolName
+--  ,Lat
+--  ,Long
 --  ,dRoadMapRegionFlag
 -- FROM Dim.School;
 
@@ -20,6 +22,8 @@ CREATE TABLE Dim_School (
     DistrictName varchar(250) NULL,
     SchoolCode varchar(8) NOT NULL,
     SchoolName varchar(250) NULL,
+    Lat real NULL,
+    Long real NULL,
     RMRFlag int
 );
 

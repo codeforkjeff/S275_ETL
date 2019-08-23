@@ -128,6 +128,7 @@ DROP TABLE IF EXISTS Fact_TeacherMobility;
 -- next
 
 CREATE TABLE Fact_TeacherMobility (
+    TeacherMobilityID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     StartStaffID int not null,
     EndStaffID int null,
     StartYear int NOT NULL,
@@ -139,6 +140,7 @@ CREATE TABLE Fact_TeacherMobility (
     EndCountyAndDistrictCode varchar(500) NULL,
     EndBuilding varchar(500) NULL,
     EndTeacherFlag int NULL,
+    Distance real NULL,
     RoleChanged int NULL,
     Stayer int NOT NULL,
     MovedInBuildingChange int NOT NULL,

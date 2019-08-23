@@ -6,6 +6,8 @@ import copy
 import csv
 import datetime
 import glob
+import haversine
+import itertools
 import numpy as np
 import pyodbc
 import os
@@ -231,6 +233,8 @@ def create_dimensional_models():
 
     execute_sql_file("create_Dim_Staff_and_Fact_Assignment.sql")
 
+    execute_sql_file("backfill_Dim_School.sql")
+
     execute_sql_file("create_Fact_SchoolTeacher.sql")
 
     execute_sql_file("create_Fact_SchoolPrincipal.sql")
@@ -239,6 +243,7 @@ def create_dimensional_models():
 def create_teacher_mobility():
     print("creating teacher mobility tables (single teacher per year)")
     execute_sql_file("create_Fact_TeacherMobility.sql")
+    populate_distance()
 
 
 def create_teacher_mobility_aggregations():
@@ -249,6 +254,23 @@ def create_teacher_mobility_aggregations():
 def create_principal_mobility():
     print("creating principal mobility tables")
     execute_sql_file("create_Fact_PrincipalMobility.sql")
+
+
+def create_everything():
+
+    create_auxiliary_tables()
+
+    create_base_S275()
+
+    create_teacher_assignments()
+
+    create_dimensional_models()
+
+    create_teacher_mobility()
+
+    create_teacher_mobility_aggregations()
+
+    create_principal_mobility()
 
 
 def execute_sql_file(path):
@@ -390,4 +412,94 @@ def create_year_range(years_str):
         pieces = years_str.split("-")
         return list(range(int(pieces[0]), int(pieces[1]) + 1))
     return [int(years_str)]
+
+
+def grouper(iterable, n, fillvalue=None):
+    "Collect data into fixed-length chunks or blocks"
+    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
+    args = [iter(iterable)] * n
+    return itertools.zip_longest(*args, fillvalue=fillvalue)
+
+
+def populate_distance():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    print("Populating distance")
+
+    cursor.execute("DROP TABLE IF EXISTS Distances;")
+
+    cursor.execute("CREATE TABLE Distances (TeacherMobilityID int, Distance real)")
+
+    cursor.execute("CREATE INDEX idx_Distances ON Distances (TeacherMobilityID, Distance)");
+
+    print("Querying Fact_TeacherMobility")
+
+    # cursor.execute("""
+    #     SELECT
+    #         TeacherMobilityID
+    #         ,s1.Lat AS LatStart
+    #         ,s1.Long AS LongStart
+    #         ,s2.Lat AS LatEnd
+    #         ,s2.Long AS LongEnd
+    #     FROM Fact_TeacherMobility m
+    #     LEFT JOIN Dim_School s1 ON m.StartBuilding = s1.SchoolCode AND m.StartYear = s1.AcademicYear
+    #     LEFT JOIN Dim_School s2 ON m.EndBuilding = s2.SchoolCode AND m.EndYear = s2.AcademicYear
+    # """)
+
+    cursor.execute("""
+        WITH Ranked as (
+            -- there are a handul of rows in Dim_School where same school code is reused across districts
+            -- so de-dupe here
+            Select 
+                SchoolCode
+                ,AcademicYear
+                ,Lat
+                ,Long
+                ,Row_number() over (partition by SchoolCode, AcademicYear ORDER BY DistrictCode) as Ranked
+            from Dim_School
+        )
+        ,DistinctSchools as (
+            select * 
+            from Ranked 
+            WHERE Ranked = 1
+        )
+        SELECT
+            TeacherMobilityID
+            ,s1.Lat AS LatStart
+            ,s1.Long AS LongStart
+            ,s2.Lat AS LatEnd
+            ,s2.Long AS LongEnd
+        FROM Fact_TeacherMobility m
+        LEFT JOIN DistinctSchools s1 ON m.StartBuilding = s1.SchoolCode AND m.StartYear = s1.AcademicYear 
+        LEFT JOIN DistinctSchools s2 ON m.EndBuilding = s2.SchoolCode AND m.EndYear = s2.AcademicYear
+    """)
+
+    rows = cursor.fetchall()
+
+    rows_to_insert = []
+
+    for raw_row in rows:
+        row = {}
+        (row['TeacherMobilityID'], row['LatStart'], row['LongStart'], row['LatEnd'], row['LongEnd']) = raw_row
+        if row['LatStart'] and row['LatEnd']:
+            dist = haversine.haversine((row['LatStart'], row['LongStart']), (row['LatEnd'], row['LongEnd']), unit=haversine.Unit.MILES)
+            rows_to_insert.append((row['TeacherMobilityID'], dist))
+
+    print("Inserting %d entries in Distances" % (len(rows_to_insert)))
+
+    for group in grouper(rows_to_insert, 10000):
+        group = [item for item in list(group) if item]
+        cursor.executemany('INSERT INTO Distances (TeacherMobilityID, Distance) VALUES (?, ?)', group)
+        conn.commit()
+
+    print("Updating Fact_TeacherMobility")
+
+    cursor.execute("UPDATE Fact_TeacherMobility SET Distance = (Select Distance FROM Distances WHERE TeacherMobilityID = Fact_TeacherMobility.TeacherMobilityID)")
+    conn.commit()
+
+    cursor.execute("DROP TABLE Distances")
+    conn.commit()
+
+    conn.close()
 

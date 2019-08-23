@@ -4,4 +4,4 @@ pyodbc
 sqlalchemy
 requests
 BeautifulSoup4
-
+haversine==2.1.2

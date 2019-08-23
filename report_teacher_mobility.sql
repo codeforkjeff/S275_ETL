@@ -298,3 +298,47 @@ select
 from Counts
 where StartYear IN (2006, 2014, 2015, 2016, 2017, 2018)
 order by StartYear;
+
+
+----------------------------------
+-- Sample query with range buckets for distance moved
+----------------------------------
+
+With 
+Base as (
+	select 
+		*
+		,case when Distance > 0 then 1 else 0 end as Moved
+		,CASE WHEN Distance > 0 AND Distance <= 5.0 THEN 1 ELSE 0 END AS DistanceUpTo5 
+		,CASE WHEN Distance > 5.0 AND Distance <= 10.0 THEN 1 ELSE 0 END AS Distance5To10
+		,CASE WHEN Distance > 10.0 AND Distance <= 25.0 THEN 1 ELSE 0 END AS Distance10To25
+		,CASE WHEN Distance > 25.0 AND Distance <= 50.0 THEN 1 ELSE 0 END AS Distance25To50
+		,CASE WHEN Distance > 50.0 THEN 1 ELSE 0 END AS DistanceOver50
+	FROM Fact_TeacherMobility
+)
+,Counts as (
+	SELECT
+		StartYear,
+		EndYear,
+		count(*) as TotalTeachers,
+		sum(moved) as Moved,
+		Sum(DistanceUpTo5) as DistanceUpTo5, 
+		Sum(Distance5To10) as Distance5To10,
+		sum(Distance10To25) as Distance10To25,
+		sum(Distance25To50) as Distance25To50,
+		sum(DistanceOver50) as DistanceOver50
+	FROM Base m
+	where DiffYears = 1
+	GROUP BY
+		StartYear,
+		EndYear
+)
+select
+	*,
+	cast(DistanceUpTo5 as real) / cast(moved as real) as DistanceUpTo5Pct,
+	cast(Distance5To10 as real) / cast(moved as real) as Distance5To10Pct,
+	cast(Distance10To25 as real) / cast(moved as real) as Distance10To25Pct,
+	cast(Distance25To50 as real) / cast(moved as real) as Distance25To50Pct,
+	cast(DistanceOver50 as real) / cast(moved as real) as DistanceOver50Pct
+from Counts
+order by StartYear;
