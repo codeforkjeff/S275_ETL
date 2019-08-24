@@ -432,6 +432,7 @@ def populate_distance():
     cursor.execute("CREATE TABLE Distances (TeacherMobilityID int, Distance real)")
 
     cursor.execute("CREATE INDEX idx_Distances ON Distances (TeacherMobilityID, Distance)");
+    conn.commit()
 
     print("Querying Fact_TeacherMobility")
 
@@ -486,12 +487,20 @@ def populate_distance():
             dist = haversine.haversine((row['LatStart'], row['LongStart']), (row['LatEnd'], row['LongEnd']), unit=haversine.Unit.MILES)
             rows_to_insert.append((row['TeacherMobilityID'], dist))
 
+    with open("distances.tmp", "w") as f:
+        f.write("TeacherMobilityID\tDistance")
+        f.write(LINE_TERMINATOR)
+        for row in rows_to_insert:
+            f.write(str(row[0]))
+            f.write("\t")
+            f.write(str(row[1]))
+            f.write(LINE_TERMINATOR)
+
     print("Inserting %d entries in Distances" % (len(rows_to_insert)))
 
-    for group in grouper(rows_to_insert, 10000):
-        group = [item for item in list(group) if item]
-        cursor.executemany('INSERT INTO Distances (TeacherMobilityID, Distance) VALUES (?, ?)', group)
-        conn.commit()
+    load_into_database([('distances.tmp', 'Distances')])
+
+    os.remove("distances.tmp")
 
     print("Updating Fact_TeacherMobility")
 
