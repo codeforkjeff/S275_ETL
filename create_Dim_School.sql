@@ -4,17 +4,25 @@ DROP TABLE IF EXISTS Dim_School;
 -- next
 
 -- Created by running this in RMP database:
---
+-- there's 53 rows with duplicate schoolcodes b/c of bad data quality
+-- WITH T AS (
+--     SELECT
+--         *
+--         ,ROW_NUMBER() OVER (PARTITION BY SchoolCode, AcademicYear
+--             ORDER BY DistrictCode) AS Ranked
+--     FROM Dim.School
+-- )
 -- SELECT
---  AcademicYear
---  ,DistrictCode
---  ,DistrictName
---  ,SchoolCode
---  ,SchoolName
---  ,Lat
---  ,Long
---  ,dRoadMapRegionFlag
--- FROM Dim.School;
+--     AcademicYear
+--     ,DistrictCode
+--     ,DistrictName
+--     ,SchoolCode
+--     ,SchoolName
+--     ,Lat
+--     ,Long
+--     ,dRoadMapRegionFlag
+-- FROM T
+-- WHERE Ranked = 1;
 
 CREATE TABLE Dim_School (
     AcademicYear int NOT NULL,

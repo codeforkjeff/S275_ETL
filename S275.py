@@ -449,22 +449,6 @@ def populate_distance():
     # """)
 
     cursor.execute("""
-        WITH Ranked as (
-            -- there are a handul of rows in Dim_School where same school code is reused across districts
-            -- so de-dupe here
-            Select 
-                SchoolCode
-                ,AcademicYear
-                ,Lat
-                ,Long
-                ,Row_number() over (partition by SchoolCode, AcademicYear ORDER BY DistrictCode) as Ranked
-            from Dim_School
-        )
-        ,DistinctSchools as (
-            select * 
-            from Ranked 
-            WHERE Ranked = 1
-        )
         SELECT
             TeacherMobilityID
             ,s1.Lat AS LatStart
@@ -472,8 +456,8 @@ def populate_distance():
             ,s2.Lat AS LatEnd
             ,s2.Long AS LongEnd
         FROM Fact_TeacherMobility m
-        LEFT JOIN DistinctSchools s1 ON m.StartBuilding = s1.SchoolCode AND m.StartYear = s1.AcademicYear 
-        LEFT JOIN DistinctSchools s2 ON m.EndBuilding = s2.SchoolCode AND m.EndYear = s2.AcademicYear
+        LEFT JOIN Dim_School s1 ON m.StartBuilding = s1.SchoolCode AND m.StartYear = s1.AcademicYear 
+        LEFT JOIN Dim_School s2 ON m.EndBuilding = s2.SchoolCode AND m.EndYear = s2.AcademicYear
     """)
 
     rows = cursor.fetchall()
