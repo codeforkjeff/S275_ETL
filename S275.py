@@ -494,5 +494,4 @@ def populate_distance():
     cursor.execute("DROP TABLE Distances")
     conn.commit()
 
-    conn.close()
 
