@@ -4,7 +4,8 @@ DROP TABLE IF EXISTS Dim_School;
 -- next
 
 -- Created by running this in RMP database:
--- there's 53 rows with duplicate schoolcodes b/c of bad data quality
+-- there's 53 rows with duplicate schoolcodes b/c of bad data quality;
+-- we arbitrarily order by districtcode to de-dupe these
 -- WITH T AS (
 --     SELECT
 --         *
