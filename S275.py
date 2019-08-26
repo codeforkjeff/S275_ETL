@@ -436,18 +436,6 @@ def populate_distance():
 
     print("Querying Fact_TeacherMobility")
 
-    # cursor.execute("""
-    #     SELECT
-    #         TeacherMobilityID
-    #         ,s1.Lat AS LatStart
-    #         ,s1.Long AS LongStart
-    #         ,s2.Lat AS LatEnd
-    #         ,s2.Long AS LongEnd
-    #     FROM Fact_TeacherMobility m
-    #     LEFT JOIN Dim_School s1 ON m.StartBuilding = s1.SchoolCode AND m.StartYear = s1.AcademicYear
-    #     LEFT JOIN Dim_School s2 ON m.EndBuilding = s2.SchoolCode AND m.EndYear = s2.AcademicYear
-    # """)
-
     cursor.execute("""
         SELECT
             TeacherMobilityID
