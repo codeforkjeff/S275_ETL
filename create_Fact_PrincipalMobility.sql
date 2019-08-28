@@ -136,7 +136,8 @@ CREATE TABLE Fact_PrincipalMobility (
     SameAssignment int NOT NULL,
     NoLongerAnyPrincipal int NOT NULL,
     AsstToPrincipal int NOT NULL,
-    PrincipalToAsst int NOT NULL
+    PrincipalToAsst int NOT NULL,
+    MetaCreatedAt DATETIME
 );
 
 -- next
@@ -238,7 +239,8 @@ INSERT INTO Fact_PrincipalMobility (
     SameAssignment,
     NoLongerAnyPrincipal,
     AsstToPrincipal,
-    PrincipalToAsst
+    PrincipalToAsst,
+    MetaCreatedAt
 )
 SELECT
     StartStaffID
@@ -262,6 +264,7 @@ SELECT
     ,NoLongerAnyPrincipal
     ,AsstToPrincipal
     ,PrincipalToAsst
+    ,GETDATE() as MetaCreatedAt
 FROM Transitions;
 
 -- next

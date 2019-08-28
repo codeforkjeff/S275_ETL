@@ -59,7 +59,8 @@ CREATE TABLE S275 (
     AssignmentHoursPerYear varchar(500) NULL,
     Major varchar(500) NULL,
     TwoDigitYear varchar(500) NULL,
-    FileType varchar(500) NULL
+    FileType varchar(500) NULL,
+    MetaCreatedAt DATETIME
 );
 
 -- next
@@ -120,7 +121,8 @@ INSERT INTO S275 (
     AssignmentHoursPerYear,
     Major,
     TwoDigitYear,
-    FileType
+    FileType,
+    MetaCreatedAt
 )
 SELECT
     -- only 2 digit 'yr' field was available in the file 1999-2000 AY and prior
@@ -202,6 +204,7 @@ SELECT
     ,major as Major
     ,yr as TwoDigitYear
     ,FileType
+    ,GETDATE() as MetaCreatedAt
 FROM Raw_S275;
 
 -- next

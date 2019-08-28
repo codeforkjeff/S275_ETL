@@ -66,6 +66,7 @@ CREATE TABLE S275_Coalesced (
     Major varchar(500) NULL,
     TwoDigitYear varchar(500) NULL,
     FileType varchar(500) NULL,
+    MetaCreatedAt DATETIME,
     -- coalesced fields
     LastNameC varchar(500) NULL,
     FirstNameC varchar(500) NULL,
@@ -144,7 +145,8 @@ CREATE TABLE Dim_Staff_Coalesced (
     CBRTNCode varchar(500) NULL,
     ClassificationFlag varchar(500) NULL,
     CertifiedFlag varchar(500) NULL,
-    NationalBoardCertExpirationDate varchar(500) NULL
+    NationalBoardCertExpirationDate varchar(500) NULL,
+    FileType varchar(500) NULL
 );
 
 -- next
@@ -197,7 +199,8 @@ INSERT INTO Dim_Staff_Coalesced (
     CBRTNCode,
     ClassificationFlag,
     CertifiedFlag,
-    NationalBoardCertExpirationDate
+    NationalBoardCertExpirationDate,
+    FileType
 )
 SELECT DISTINCT
     -- all these fields should, theoretically, be distinct to the combo key of AY/names/certnum/birthdate field.
@@ -249,7 +252,8 @@ SELECT DISTINCT
     CBRTNCode,
     ClassificationFlag,
     CertifiedFlag,
-    NationalBoardCertExpirationDate
+    NationalBoardCertExpirationDate,
+    FileType
 FROM S275_Coalesced t;
 
 -- next
@@ -300,7 +304,8 @@ CREATE TABLE Fact_Assignment (
     IsTeachingAssignment INT NOT NULL,
     IsAdministrativeAssignment INT NOT NULL,
     IsPrincipalAssignment INT NOT NULL,
-    IsAsstPrincipalAssignment INT NOT NULL
+    IsAsstPrincipalAssignment INT NOT NULL,
+    MetaCreatedAt DATETIME
 );
 
 -- next
@@ -327,7 +332,8 @@ INSERT INTO Fact_Assignment (
     IsTeachingAssignment,
     IsAdministrativeAssignment,
     IsPrincipalAssignment,
-    IsAsstPrincipalAssignment
+    IsAsstPrincipalAssignment,
+    MetaCreatedAt
 )
 SELECT
     StaffID,
@@ -347,7 +353,7 @@ SELECT
     AssignmentHoursPerYear,
     Major ,
     TwoDigitYear,
-    FileType,
+    S275.FileType,
     CASE WHEN
         CAST(S275.DutyRoot as integer) IN (31, 32, 33, 34)
         AND ActivityCode ='27'
@@ -361,7 +367,8 @@ SELECT
     THEN 1 ELSE 0 END AS IsPrincipalAssignment,
     CASE WHEN
         CAST(S275.DutyRoot as integer) = 22 OR CAST(S275.DutyRoot as integer) = 24
-    THEN 1 ELSE 0 END AS IsAsstPrincipalAssignment
+    THEN 1 ELSE 0 END AS IsAsstPrincipalAssignment,
+    GETDATE() as MetaCreatedAt
 from S275_Coalesced S275
 JOIN Dim_Staff_Coalesced d ON
     d.AcademicYear = S275.AcademicYear
@@ -432,13 +439,15 @@ CREATE TABLE Dim_Staff (
     ClassificationFlag varchar(500) NULL,
     CertifiedFlag varchar(500) NULL,
     NationalBoardCertExpirationDate varchar(500) NULL,
+    FileType varchar(500) NULL,
     IsTeacherFlag INT NOT NULL,
     IsNoviceTeacherFlag INT NOT NULL,
     IsPrincipalFlag INT NOT NULL,
     IsAsstPrincipalFlag INT NOT NULL,
     IsNationalBoardCertified INT NOT NULL,
     TempOrPermCert varchar(1) NULL,
-    IsNewHireFlag INT NOT NULL
+    IsNewHireFlag INT NOT NULL,
+    MetaCreatedAt DATETIME
 );
 
 -- next
@@ -492,7 +501,8 @@ INSERT INTO Dim_Staff (
     IsPrincipalFlag,
     IsAsstPrincipalFlag,
     IsNationalBoardCertified,
-    IsNewHireFlag
+    IsNewHireFlag,
+    MetaCreatedAt
 )
 SELECT
     StaffID,
@@ -569,7 +579,8 @@ SELECT
     0 AS IsPrincipalFlag,
     0 AS IsAsstPrincipalFlag,
     0 AS IsNationalBoardCertified,
-    0 AS IsNewHireFlag
+    0 AS IsNewHireFlag,
+    GETDATE() as MetaCreatedAt
 FROM Dim_Staff_Coalesced;
 
 -- next

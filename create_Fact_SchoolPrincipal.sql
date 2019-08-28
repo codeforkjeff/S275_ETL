@@ -11,10 +11,11 @@ CREATE TABLE Fact_SchoolPrincipal (
     Building varchar(500) NULL,
     DutyRoot varchar(2) NULL,
     PrincipalType VARCHAR(50) NULL,
-    Percentage NUMERIC(14,4) NULL,
-    FTEDesignation NUMERIC(14,4) NULL,
-    SalaryTotal INT NULL,
-    PrimaryFlag INT NULL
+    PrincipalPercentage NUMERIC(14,4) NULL,
+    PrincipalFTEDesignation NUMERIC(14,4) NULL,
+    PrincipalSalaryTotal INT NULL,
+    PrimaryFlag INT NULL,
+    MetaCreatedAt DATETIME
 );
 
 -- next
@@ -25,10 +26,11 @@ INSERT INTO Fact_SchoolPrincipal (
     Building,
     DutyRoot,
     PrincipalType,
-    Percentage,
-    FTEDesignation,
-    SalaryTotal,
-    PrimaryFlag
+    PrincipalPercentage,
+    PrincipalFTEDesignation,
+    PrincipalSalaryTotal,
+    PrimaryFlag,
+    MetaCreatedAt
 )
 select
     a.StaffID
@@ -39,10 +41,11 @@ select
         WHEN cast(DutyRoot as integer) IN (21, 23) THEN 'Principal'
         WHEN cast(DutyRoot as integer) IN (22, 24) THEN 'AssistantPrincipal'
     END AS PrincipalType
-    ,COALESCE(SUM(AssignmentPercent), 0) AS Percentage
-    ,SUM(AssignmentFTEDesignation) AS FTEDesignation
-    ,SUM(AssignmentSalaryTotal) AS SalaryTotal
+    ,COALESCE(SUM(AssignmentPercent), 0) AS PrincipalPercentage
+    ,SUM(AssignmentFTEDesignation) AS PrincipalFTEDesignation
+    ,SUM(AssignmentSalaryTotal) AS PrincipalSalaryTotal
     ,0 AS PrimaryFlag
+    ,GETDATE() as MetaCreatedAt
 from Fact_Assignment a
 JOIN Dim_Staff s ON a.StaffID = s.StaffID
 WHERE IsPrincipalAssignment = 1 OR IsAsstPrincipalAssignment = 1
@@ -57,8 +60,8 @@ GROUP BY
 
 DELETE FROM Fact_SchoolPrincipal
 WHERE
-    FTEDesignation IS NULL
-    OR FTEDesignation <= 0;
+    PrincipalFTEDesignation IS NULL
+    OR PrincipalFTEDesignation <= 0;
 
 -- next
 
@@ -70,11 +73,11 @@ WITH Ranked AS (
                 sp.AcademicYear,
                 CertificateNumber
             ORDER BY
-                FTEDesignation DESC,
+                PrincipalFTEDesignation DESC,
                 -- TODO: add school enrollment count as tiebreaker
                 -- tiebreaking below this line
-                Percentage DESC,
-                SalaryTotal DESC
+                PrincipalPercentage DESC,
+                PrincipalSalaryTotal DESC
         ) AS RN
     FROM Fact_SchoolPrincipal sp
     JOIN Dim_Staff s ON sp.StaffID = s.StaffID

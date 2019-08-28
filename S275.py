@@ -284,6 +284,7 @@ def execute_sql_file(path):
             statement = statement.replace("LEN(", "LENGTH(")
             statement = statement.replace("SUBSTRING(", "SUBSTR(")
             statement = statement.replace("INT IDENTITY(1,1) NOT NULL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
+            statement = statement.replace("GETDATE()", "DATETIME('NOW')")
             # handle ||
             lines = statement.split("\n")
             transformed = []
@@ -459,7 +460,7 @@ def populate_distance():
             dist = haversine.haversine((row['LatStart'], row['LongStart']), (row['LatEnd'], row['LongEnd']), unit=haversine.Unit.MILES)
             rows_to_insert.append((row['TeacherMobilityID'], dist))
 
-    with open("distances.tmp", "w") as f:
+    with codecs.open("distances.tmp", "w", 'utf-8') as f:
         f.write("TeacherMobilityID\tDistance")
         f.write(LINE_TERMINATOR)
         for row in rows_to_insert:
