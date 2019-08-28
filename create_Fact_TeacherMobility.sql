@@ -148,7 +148,8 @@ CREATE TABLE Fact_TeacherMobility (
     MovedIn int NOT NULL,
     MovedOut int NOT NULL,
     MovedOutOfRMR int NOT NULL,
-    Exited int NOT NULL
+    Exited int NOT NULL,
+    MetaCreatedAt DATETIME
 );
 
 -- next
@@ -238,7 +239,8 @@ INSERT INTO Fact_TeacherMobility (
     MovedIn,
     MovedOut,
     MovedOutOfRMR,
-    Exited
+    Exited,
+    MetaCreatedAt
 )
 SELECT
     StartStaffID
@@ -273,6 +275,7 @@ SELECT
     ,CASE WHEN
         EndBuilding IS NULL
     THEN 1 ELSE 0 END AS Exited
+    ,GETDATE() as MetaCreatedAt
 FROM Transitions;
 
 -- next

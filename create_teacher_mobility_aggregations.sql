@@ -57,7 +57,8 @@ CREATE TABLE Agg_MobilityIndicators (
 	Subgroup varchar(500) NULL,
 	Met int NULL,
 	Total int NULL,
-	Percentage real NULL
+	Percentage real NULL,
+	MetaCreatedAt DATETIME
 );
 
 -- next
@@ -182,7 +183,8 @@ INSERT INTO Agg_MobilityIndicators (
 	Subgroup,
 	Met,
 	Total,
-	Percentage
+	Percentage,
+	MetaCreatedAt
 )
 SELECT
 	StartYear,
@@ -197,7 +199,8 @@ SELECT
 	Subgroup,
 	Met,
 	Total,
-	CAST(Met AS REAL) / Total AS Percentage
+	CAST(Met AS REAL) / Total AS Percentage,
+	GETDATE() as MetaCreatedAt
 FROM Aggregated;
 
 -- next
@@ -216,7 +219,8 @@ CREATE TABLE Agg_MobilityFromTo (
 	Stayer int NULL,
 	MovedIn int NULL,
 	MovedOut int NULL,
-	Exited int NULL
+	Exited int NULL,
+	MetaCreatedAt DATETIME
 );
 
 -- next
@@ -283,7 +287,8 @@ INSERT INTO Agg_MobilityFromTo (
 	Stayer,
 	MovedIn,
 	MovedOut,
-	Exited
+	Exited,
+	MetaCreatedAt
 )
 SELECT
 	StartYear
@@ -296,6 +301,7 @@ SELECT
 	,MovedIn
 	,MovedOut
 	,Exited
+	,GETDATE() as MetaCreatedAt
 FROM Agg
 LEFT JOIN DistrictCodes StartDistrict
 	ON StartDistrict.DistrictCode = StartDistrictCode

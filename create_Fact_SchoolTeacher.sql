@@ -9,10 +9,11 @@ CREATE TABLE Fact_SchoolTeacher (
     StaffID INT NOT NULL,
     AcademicYear INT NOT NULL,
     Building varchar(500) NULL,
-    AssignmentPercent NUMERIC(14,4) NULL,
-    AssignmentFTEDesignation NUMERIC(14,4) NULL,
-    AssignmentSalaryTotal INT NULL,
-    PrimaryFlag INT NULL
+    TeachingPercent NUMERIC(14,4) NULL,
+    TeachingFTEDesignation NUMERIC(14,4) NULL,
+    TeachingSalaryTotal INT NULL,
+    PrimaryFlag INT NULL,
+    MetaCreatedAt DATETIME
 );
 
 -- next
@@ -21,19 +22,21 @@ INSERT INTO Fact_SchoolTeacher (
     StaffID,
     AcademicYear,
     Building,
-    AssignmentPercent,
-    AssignmentFTEDesignation,
-    AssignmentSalaryTotal,
-    PrimaryFlag
+    TeachingPercent,
+    TeachingFTEDesignation,
+    TeachingSalaryTotal,
+    PrimaryFlag,
+    MetaCreatedAt
 )
 select
     a.StaffID
     ,a.AcademicYear
     ,Building
-    ,COALESCE(SUM(AssignmentPercent), 0) AS AssignmentPercent
-    ,SUM(AssignmentFTEDesignation) AS AssignmentFTEDesignation
-    ,SUM(AssignmentSalaryTotal) AS AssignmentSalaryTotal
+    ,COALESCE(SUM(AssignmentPercent), 0) AS TeachingPercent
+    ,SUM(AssignmentFTEDesignation) AS TeachingFTEDesignation
+    ,SUM(AssignmentSalaryTotal) AS TeachingSalaryTotal
     ,0 AS PrimaryFlag
+    ,GETDATE() as MetaCreatedAt
 from Fact_Assignment a
 JOIN Dim_Staff s ON a.StaffID = s.StaffID
 WHERE IsTeachingAssignment = 1
@@ -52,8 +55,8 @@ WHERE
         WHERE StaffID = Fact_SchoolTeacher.StaffID
         AND (CertificateNumber IS NULL OR CertificateNumber = '')
     )
-    OR AssignmentFTEDesignation IS NULL
-    OR AssignmentFTEDesignation <= 0;
+    OR TeachingFTEDesignation IS NULL
+    OR TeachingFTEDesignation <= 0;
 
 -- next
 
@@ -65,10 +68,10 @@ WITH Ranked AS (
                 st.AcademicYear,
                 CertificateNumber
             ORDER BY
-                AssignmentFTEDesignation DESC,
+                TeachingFTEDesignation DESC,
                 -- tiebreaking below this line
-                AssignmentPercent DESC,
-                AssignmentSalaryTotal DESC
+                TeachingPercent DESC,
+                TeachingSalaryTotal DESC
         ) AS RN
     FROM Fact_SchoolTeacher st
     JOIN Dim_Staff s ON st.StaffID = s.StaffID
