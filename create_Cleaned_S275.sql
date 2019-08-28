@@ -159,11 +159,14 @@ SELECT
     ,ethnic as Ethnicity
     ,hispanic as Hispanic
     ,race as Race
+    ,hdeg as HighestDegree
     ,CASE
-        WHEN LEN(hdeg) = 2 AND hdeg <> 'B0' THEN '19' + cast(hdeg as varchar) --sqlite_concat
-        ELSE hdeg
-    END as HighestDegree
-    ,hyear as HighestDegreeYear
+        WHEN hyear = 'B0' THEN NULL
+        WHEN hyear = '07' THEN '2007'
+        WHEN hyear = '13' THEN '2013'
+        WHEN hyear = '19' THEN '2019'
+        ELSE hyear
+    END as HighestDegreeYear
     ,acred as AcademicCredits
     ,icred as InServiceCredits
     ,bcred as ExcessCredits
