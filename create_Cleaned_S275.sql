@@ -161,10 +161,13 @@ SELECT
     ,race as Race
     ,hdeg as HighestDegree
     ,CASE
+        -- AY 1996 (yr=95) has 2 digit years, so we can safely assume they're in 20th century
+        WHEN yr = '95' AND LEN(hyear) = 2 AND hyear <> '00' THEN '19' + hyear -- sqlite_concat
         WHEN hyear = 'B0' THEN NULL
         WHEN hyear = '07' THEN '2007'
         WHEN hyear = '13' THEN '2013'
         WHEN hyear = '19' THEN '2019'
+        WHEN UNICODE(hyear) = 0 THEN NULL -- 4 rows with weird NUL ascii chars?!
         ELSE hyear
     END as HighestDegreeYear
     ,acred as AcademicCredits
@@ -222,6 +225,13 @@ SET
     ,AssignmentFTEDesignation = CAST((CAST(AssignmentFTEDesignation as real) / 1000) as varchar)
     ,AssignmentHoursPerYear = CAST((CAST(AssignmentHoursPerYear as real) / 100) as varchar)
 WHERE CAST(AcademicYear as int) <= 2000
+
+-- next
+
+-- Fix invalid birthdate
+UPDATE S275
+SET Birthdate = '1946-02-28 00:00:00'
+WHERE Birthdate = '1946-02-29 00:00:00' AND AcademicYear = 1997;
 
 -- next
 
