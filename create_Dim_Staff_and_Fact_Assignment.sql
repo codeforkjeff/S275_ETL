@@ -283,6 +283,7 @@ DROP TABLE IF EXISTS Fact_Assignment;
 -- next
 
 CREATE TABLE Fact_Assignment (
+    AssignmentID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     StaffID INT NOT NULL,
     AcademicYear INT NOT NULL,
     RecordNumber varchar(500) NULL,
@@ -299,7 +300,6 @@ CREATE TABLE Fact_Assignment (
     AssignmentSalaryTotal INT NULL,
     AssignmentHoursPerYear varchar(500) NULL,
     Major varchar(500) NULL,
-    TwoDigitYear varchar(500) NULL,
     FileType varchar(500) NULL,
     IsTeachingAssignment INT NOT NULL,
     IsAdministrativeAssignment INT NOT NULL,
@@ -327,7 +327,6 @@ INSERT INTO Fact_Assignment (
     AssignmentSalaryTotal,
     AssignmentHoursPerYear,
     Major ,
-    TwoDigitYear,
     FileType,
     IsTeachingAssignment,
     IsAdministrativeAssignment,
@@ -352,7 +351,6 @@ SELECT
     AssignmentSalaryTotal,
     AssignmentHoursPerYear,
     Major ,
-    TwoDigitYear,
     S275.FileType,
     CASE WHEN
         CAST(S275.DutyRoot as integer) IN (31, 32, 33, 34)
