@@ -475,7 +475,7 @@ def populate_distance():
 
     os.remove("distances.tmp")
 
-    print("Updating Fact_TeacherMobility")
+    print("Updating Fact_TeacherMobility with distance values")
 
     cursor.execute("UPDATE Fact_TeacherMobility SET Distance = (Select Distance FROM Distances WHERE TeacherMobilityID = Fact_TeacherMobility.TeacherMobilityID)")
     conn.commit()

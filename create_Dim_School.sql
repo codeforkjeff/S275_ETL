@@ -21,6 +21,8 @@ DROP TABLE IF EXISTS Dim_School;
 --     ,SchoolName
 --     ,Lat
 --     ,Long
+--    ,NCESLocaleCode
+--    ,NCESLocale
 --     ,dRoadMapRegionFlag
 -- FROM T
 -- WHERE Ranked = 1;
@@ -33,6 +35,8 @@ CREATE TABLE Dim_School (
     SchoolName varchar(250) NULL,
     Lat real NULL,
     Long real NULL,
+    NCESLocaleCode VARCHAR(2) NULL,
+    NCESLocale VARCHAR(50) NULL,
     RMRFlag int
 );
 

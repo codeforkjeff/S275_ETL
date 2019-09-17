@@ -28,6 +28,8 @@ INSERT INTO Dim_School
     SchoolName,
     Lat,
     Long,
+    NCESLocaleCode,
+    NCESLocale,
     RMRFlag
 )
 SELECT
@@ -38,6 +40,8 @@ SELECT
 	,COALESCE(recent.SchoolName, 'UNKNOWN') AS SchoolName
 	,recent.Lat
     ,recent.Long
+    ,recent.NCESLocaleCode
+    ,recent.NCESLocale
 	,COALESCE(recent.RMRFlag, 0) AS RMRFlag
 FROM MissingSchools missing
 LEFT JOIN MostRecentSchools recent

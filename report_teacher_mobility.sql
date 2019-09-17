@@ -342,3 +342,55 @@ select
 	cast(DistanceOver50 as real) / cast(moved as real) as DistanceOver50Pct
 from Counts
 order by StartYear;
+
+
+----------------------------------
+-- Sample query showing top 10 counts of different locale changes for each start/end year period
+----------------------------------
+
+WITH PeriodTotals AS (
+	SELECT
+		StartYear,
+		EndYear,
+		COUNT(*) AS Total
+	FROM Fact_TeacherMobility
+	GROUP BY StartYear, EndYear
+)
+,LocaleChanges AS (
+	SELECT
+		StartYear,
+		EndYear,
+		StartLocale,
+		EndLocale,
+		COUNT(*) AS ChangeTotal
+	FROM Fact_TeacherMobility
+	WHERE
+		StartLocale IS NOT NULL
+		AND EndLocale IS NOT NULL
+	GROUP BY StartYear, EndYear, StartLocale, EndLocale
+)
+,Percentages AS (
+	SELECT
+		l.StartYear,
+		l.EndYear,
+		StartLocale,
+		EndLocale,
+		ChangeTotal,
+		Total,
+		CAST(ChangeTotal AS NUMERIC(10,2)) / Total AS Pct
+	FROM LocaleChanges l
+	LEFT JOIN PeriodTotals T
+		ON l.StartYear = T.StartYear
+		AND l.EndYear = T.EndYear
+)
+,Ranked AS (
+	SELECT
+		*
+		,ROW_NUMBER() OVER (PARTITION BY StartYear, EndYear ORDER BY Pct DESC) AS RN
+	FROM Percentages
+)
+SELECT *
+FROM Ranked
+WHERE RN <= 10 -- top 10
+ORDER BY
+	StartYear, EndYear, Pct DESC;
