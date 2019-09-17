@@ -214,17 +214,6 @@ def create_flat_file(access_db_path, file_type, output_path):
     f.close()
 
 
-def create_teacher_assignments():
-    print("creating teachers")
-    execute_sql_file("create_teachers.sql")
-
-    print("creating all teacher assignments")
-    execute_sql_file("create_teacher_assignments_all.sql")
-
-    print("creating teacher assignments")
-    execute_sql_file("create_teacher_assignments.sql")
-
-
 def create_dimensional_models():
     print("creating dimensional models")
 
@@ -261,8 +250,6 @@ def create_everything():
     create_auxiliary_tables()
 
     create_base_S275()
-
-    create_teacher_assignments()
 
     create_dimensional_models()
 
