@@ -53,9 +53,6 @@ python -c "import S275; S275.create_auxiliary_tables();"
 # create S275 table with improved column names, cleaned and standardized data
 python -c "import S275; S275.create_base_S275();"
 
-# DEPRECATED: use the Fact_SchoolTeachers table created by create_dimensional_models() instead
-python -c "import S275; S275.create_teacher_assignments();"
-
 # create dimensional models
 python -c "import S275; S275.create_dimensional_models();"
 
