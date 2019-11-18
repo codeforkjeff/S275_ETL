@@ -22,7 +22,7 @@ source_files = [
 	,(os.path.join(input_dir, "2015-2016_Final_S-275_Personnel_Database.accdb"), "FINAL")
 	,(os.path.join(input_dir, "2016-2017_Final_S-275_Personnel_Database.accdb"), "FINAL")
 	,(os.path.join(input_dir, "2017-2018FinalS-275PersonnelDatabase.accdb"), "FINAL")
-	,(os.path.join(input_dir, "2018-2019PreliminaryS-275PersonnelDatabase.accdb"), "PRELIMINARY")
+	,(os.path.join(input_dir, "2018-2019_Final_S-275_Personnel_Database"), "FINAL")
 ]
 
 # currently supported: "SQL Server" or "sqlite"
