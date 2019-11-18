@@ -26,6 +26,10 @@ On Windows:
 
 - Open a Command Prompt window.
 
+- Create a virtual environment: `python -m venv ./S275_env`
+
+- Activate the virtual env: `./S275_env/Scripts/activate`
+
 - Install required Python packages by running: `pip install -r requirements.txt`
 
 - Download and unzip the S275 files for the desired years from [the OSPI website](https://www.k12.wa.us/safs-database-files).
@@ -44,7 +48,13 @@ python OSPI_data_downloader.py
   your environment. By default, the code does all data processing using the embedded sqlite3
   database that comes with Python but you can change this to use SQL Server instead.
 
-- Generate the data you want, as follows:
+- Generate everything:
+
+```sh
+python -c "import S275; S275.create_everything();"
+```
+
+OR you can generate only the data you want, as follows:
 
 ```sh
 # create auxiliary tables (usually for lookups)
