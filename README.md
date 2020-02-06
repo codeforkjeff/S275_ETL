@@ -61,7 +61,7 @@ gpg -d -o S275_settings.py S275_settings.py.gpg
   If you update it, encrypt it back to the .gpg file to commit to the repo:
 
 ```sh
-gpg -c -o S275_settings.py.gpg --cipher-algo AES256 S275_settings.py
+gpg -c -a -o S275_settings.py.gpg --cipher-algo AES256 S275_settings.py
 ```
 
 - Generate everything:
