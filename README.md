@@ -119,7 +119,12 @@ Note that AcademicYear values are based on the "end year": e.g. 2016 means 2015-
 and Salary fields per teacher/school. The PrimaryFlag field is used to support a single school selection
 for each teacher/year for reports that want to avoid double counting.
 
+`Fact_SchoolPrincipal` - table of principals and asst principals
+
 `Fact_TeacherMobility` - mobility of teachers from their "primary" school,
+calculated both year over year and at 5 year snapshots.
+
+`Fact_PrincipalMobility` - mobility of principals from their "primary" school,
 calculated both year over year and at 5 year snapshots.
 
 # Development Process
