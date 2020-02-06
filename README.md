@@ -48,6 +48,22 @@ python OSPI_data_downloader.py
   your environment. By default, the code does all data processing using the embedded sqlite3
   database that comes with Python but you can change this to use SQL Server instead.
 
+  For CCER production environment, you can use the encrypted settings file,
+  `S275_settings.py.gpg` There's nothing really secret in there but we encrypt it anyway. Look in
+  you-know-where for the passphrase.
+
+  To decrypt it:
+
+```sh
+gpg -d -o S275_settings.py S275_settings.py.gpg
+```
+
+  If you update it, encrypt it back to the .gpg file to commit to the repo:
+
+```sh
+gpg -c -o S275_settings.py.gpg --cipher-algo AES256 S275_settings.py
+```
+
 - Generate everything:
 
 ```sh
