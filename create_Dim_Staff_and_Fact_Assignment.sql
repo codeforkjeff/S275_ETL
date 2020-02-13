@@ -451,6 +451,7 @@ CREATE TABLE Dim_Staff (
     IsNationalBoardCertified INT NOT NULL,
     TempOrPermCert varchar(1) NULL,
     IsNewHireFlag INT NOT NULL,
+    IsNewHireWAStateFlag INT NOT NULL,
     MetaCreatedAt DATETIME
 );
 
@@ -506,6 +507,7 @@ INSERT INTO Dim_Staff (
     IsAsstPrincipalFlag,
     IsNationalBoardCertified,
     IsNewHireFlag,
+    IsNewHireWAStateFlag,
     MetaCreatedAt
 )
 SELECT
@@ -584,6 +586,7 @@ SELECT
     0 AS IsAsstPrincipalFlag,
     0 AS IsNationalBoardCertified,
     0 AS IsNewHireFlag,
+    0 AS IsNewHireWAStateFlag,
     GETDATE() as MetaCreatedAt
 FROM Dim_Staff_Coalesced;
 
@@ -709,6 +712,44 @@ WHERE
 
 -- next
 
+DROP TABLE IF EXISTS FirstYearInWA;
+
+-- next
+
+CREATE TABLE FirstYearInWA (
+    CertificateNumber varchar(500) NULL,
+    FirstYear INT NULL
+);
+
+-- next
+
+INSERT INTO FirstYearInWA
+SELECT
+    CertificateNumber,
+    MIN(AcademicYear) AS FirstYear
+FROM Dim_Staff
+WHERE CertificateNumber is not null
+GROUP BY
+    CertificateNumber;
+
+-- next
+
+CREATE INDEX idx_FirstYearInWA ON FirstYearInWA (
+    CertificateNumber,
+    FirstYear
+);
+
+UPDATE Dim_Staff
+SET IsNewHireWAStateFlag = 1
+WHERE
+    EXISTS (
+        SELECT 1
+        FROM FirstYearInWA
+        WHERE FirstYearInWA.CertificateNumber = Dim_Staff.CertificateNumber
+        AND FirstYearInWA.FirstYear = Dim_Staff.AcademicYear
+    );
+
+-- next
 DROP TABLE FirstYearInDistrict;
 
 -- next
