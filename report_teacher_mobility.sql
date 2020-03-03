@@ -394,3 +394,127 @@ FROM Ranked
 WHERE RN <= 10 -- top 10
 ORDER BY
 	StartYear, EndYear, Pct DESC;
+
+
+----------------------------------
+-- Leaky pipeline for 2015 cohort of teachers by race (white/teachers of color)
+----------------------------------
+
+-- this traces what happens to an initial cohort of teachers over several years,
+-- comparing where they were during their cohort year with where they were in each subsequent year.
+-- accordingly, this does not account for multiple moves or years where a teacher disappears
+-- from S275 (there is no data).
+
+WITH TeacherCohort AS (
+	-- build initial cohort, including their district/building which we use to compare to each future year
+	SELECT
+		a.StartStaffID AS CohortStaffID
+		,a.CertificateNumber
+		,a.StartYear AS CohortYear
+		,a.StartCountyAndDistrictCode AS CohortCountyAndDistrictCode
+		,a.StartBuilding AS CohortBuilding
+	from Fact_TeacherMobility a
+	JOIN Dim_Staff b
+		ON a.StartStaffID = b.StaffID
+	WHERE
+		EXISTS (select 1 from Dim_School s where s.DistrictCode = a.StartCountyAndDistrictCode and s.SchoolCode = a.StartBuilding and RMRFlag = 1)
+		and a.DiffYears = 1
+		and a.StartYear = 2015
+		AND b.IsNoviceTeacherFlag = 1
+)
+,Mobility AS (
+	-- find all the mobility records for the cohort (CertNumber)
+	SELECT
+		tc.CohortYear
+		,tc.CertificateNumber
+		,tc.CohortCountyAndDistrictCode
+		,a.StartYear
+		,a.StartCountyAndDistrictCode
+		,a.StartBuilding
+		,a.EndYear
+		,a.EndCountyAndDistrictCode
+		,a.EndBuilding
+		,a.Stayer
+		,b.RaceEthOSPI
+		,b.Sex
+		,TeacherCategory = CASE
+			WHEN b.RaceEthOSPI IN ('White', 'Not Provided') THEN b.RaceEthOSPI
+			ELSE 'Teacher of Color'
+		END
+		,CASE WHEN CohortBuilding = EndBuilding THEN 1 ELSE 0 END AS StayedInSchool
+		,CASE WHEN CohortBuilding <> EndBuilding AND CohortCountyAndDistrictCode = EndCountyAndDistrictCode AND a.EndTeacherFlag = 1 THEN 1 ELSE 0 END AS ChangedBuildingStayedDistrict 
+		,CASE WHEN CohortBuilding <> EndBuilding AND CohortCountyAndDistrictCode = EndCountyAndDistrictCode AND a.EndTeacherFlag = 0 THEN 1 ELSE 0 END AS ChangedRoleStayedDistrict 
+		,CASE WHEN CohortCountyAndDistrictCode <> EndCountyAndDistrictCode THEN 1 ELSE 0 END AS MovedOutDistrict 
+		,Exited
+	FROM TeacherCohort tc
+	JOIN Fact_TeacherMobility a
+		ON tc.CertificateNumber = a.CertificateNumber
+	JOIN Dim_Staff b
+		on tc.CohortStaffID = b.StaffID
+	WHERE
+		a.DiffYears = 1
+		AND a.StartYear >= 2015
+)
+,Agg AS (
+	SELECT
+		CohortYear
+		,EndYear
+		,TeacherCategory
+		,SUM(StayedInSchool) AS StayedInSchool
+		,SUM(ChangedBuildingStayedDistrict) AS ChangedBuildingStayedDistrict
+		,SUM(ChangedRoleStayedDistrict) AS ChangedRoleStayedDistrict
+		,SUM(MovedOutDistrict) as MovedOutDistrict
+		,SUM(Exited) as Exited
+		,COUNT(*) AS TotalTeachersYr
+	FROM Mobility
+	GROUP BY
+		CohortYear
+		,EndYear
+		,TeacherCategory
+)
+,CohortDenominator AS (
+	SELECT
+		TeacherCategory,
+		TotalTeachersYr AS CohortDenominator
+	FROM Agg
+	WHERE
+		CohortYear = 2015
+		AND EndYear = 2016
+)
+,Final AS (
+	SELECT
+		CohortYear
+		,EndYear
+		,t1.TeacherCategory
+		,StayedInSchool
+		,ChangedBuildingStayedDistrict
+		,ChangedRoleStayedDistrict
+		,MovedOutDistrict
+		-- use running total for Exited
+		,SUM(Exited) OVER (PARTITION BY CohortYear, t1.TeacherCategory ORDER BY EndYear) as Exited
+		-- not all fields will add up to CohortDenominator b/c of
+		-- small number of teachers who are missing data in some years between 2015 and 2019
+		,CohortDenominator
+	FROM Agg t1
+	LEFT JOIN CohortDenominator t2
+		ON t1.TeacherCategory = t2.TeacherCategory
+)
+SELECT
+	CohortYear
+	,EndYear
+	,TeacherCategory
+	,StayedInSchool
+	,CONVERT(FLOAT, StayedInSchool) / CohortDenominator AS StayedInSchoolPct
+	,ChangedBuildingStayedDistrict
+	,CONVERT(FLOAT, ChangedBuildingStayedDistrict) / CohortDenominator AS ChangedBuildingStayedDistrictPct
+	,ChangedRoleStayedDistrict
+	,CONVERT(FLOAT, ChangedRoleStayedDistrict) / CohortDenominator AS ChangedRoleStayedDistrictPct
+	,MovedOutDistrict
+	,CONVERT(FLOAT, MovedOutDistrict) / CohortDenominator AS MovedOutDistrictPct
+	,Exited
+	,CONVERT(FLOAT, Exited) / CohortDenominator AS ExitedPct
+	,CohortDenominator
+FROM Final
+ORDER BY
+	EndYear
+	,TeacherCategory
