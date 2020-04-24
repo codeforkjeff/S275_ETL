@@ -416,6 +416,7 @@ CREATE TABLE Dim_Staff (
     Hispanic varchar(500) NULL,
     Race varchar(500) NULL,
     RaceEthOSPI varchar(500) NULL,
+    PersonOfColorCategory VARCHAR(500) NULL,
     HighestDegree varchar(500) NULL,
     HighestDegreeYear varchar(500) NULL,
     AcademicCredits varchar(500) NULL,
@@ -474,6 +475,7 @@ INSERT INTO Dim_Staff (
     Hispanic,
     Race,
     RaceEthOSPI,
+    PersonOfColorCategory,
     HighestDegree,
     HighestDegreeYear,
     AcademicCredits,
@@ -553,6 +555,7 @@ SELECT
                         END
             END
     END AS RaceEthOSPI,
+    NULL AS PersonOfColorCategory,
     HighestDegree,
     HighestDegreeYear,
     AcademicCredits,
@@ -593,6 +596,14 @@ FROM Dim_Staff_Coalesced;
 -- next
 
 DROP TABLE Dim_Staff_Coalesced;
+
+-- next
+
+UPDATE Dim_Staff
+SET PersonOfColorCategory = CASE
+    WHEN RaceEthOSPI IN ('White', 'Not Provided') THEN RaceEthOSPI
+    ELSE 'Person of Color'
+END;
 
 -- next
 
