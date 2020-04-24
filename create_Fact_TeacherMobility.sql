@@ -144,6 +144,8 @@ CREATE TABLE Fact_TeacherMobility (
     EndTeacherFlag int NULL,
     Distance real NULL,
     RoleChanged int NULL,
+    RoleChangedToPrincipal int NULL,
+    RoleChangedToAsstPrincipal int NULL,
     Stayer int NOT NULL,
     MovedInBuildingChange int NOT NULL,
     MovedInRoleChange int NOT NULL,
@@ -316,6 +318,34 @@ SET MovedOutOfRMR = CASE
     THEN 1
     ELSE 0
     END;
+
+-- next
+
+UPDATE Fact_TeacherMobility
+SET
+    RoleChangedToPrincipal = CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM Fact_SchoolPrincipal p
+            WHERE
+                p.PrincipalType = 'Principal'
+                AND p.StaffID = Fact_TeacherMobility.EndStaffID
+        )
+        THEN 1
+        ELSE 0
+    END
+    ,RoleChangedToAsstPrincipal = CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM Fact_SchoolPrincipal p
+            WHERE
+                p.PrincipalType = 'AssistantPrincipal'
+                AND p.StaffID = Fact_TeacherMobility.EndStaffID
+        )
+        THEN 1
+        ELSE 0
+    END
+WHERE EndTeacherFlag = 0;
 
 -- next
 
