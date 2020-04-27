@@ -231,15 +231,17 @@ def create_dimensional_models():
     # populate DimSchool w/ teacher counts
     execute_sql_file("update_Dim_School.sql")
 
-    execute_sql_file("create_Fact_TeacherCohort.sql")
-
-    execute_sql_file("create_Fact_TeacherCohortMobility.sql")
-
 
 def create_teacher_mobility():
     print("creating teacher mobility tables (single teacher per year)")
     execute_sql_file("create_Fact_TeacherMobility.sql")
     populate_distance()
+
+
+def create_teacher_cohort_mobility():
+    print("creating teacher cohort mobility tables")
+    execute_sql_file("create_Fact_TeacherCohort.sql")
+    execute_sql_file("create_Fact_TeacherCohortMobility.sql")
 
 
 def create_teacher_mobility_aggregations():
@@ -261,6 +263,8 @@ def create_everything():
     create_dimensional_models()
 
     create_teacher_mobility()
+
+    create_teacher_cohort_mobility()
 
     create_teacher_mobility_aggregations()
 
