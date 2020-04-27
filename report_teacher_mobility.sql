@@ -518,3 +518,49 @@ FROM Final
 ORDER BY
 	EndYear
 	,TeacherCategory
+
+----------------------------------
+-- Leaky pipeline for 2015 cohort of teachers by race, using Fact_TeacherCohortMobility
+----------------------------------
+
+-- Similar to the previous query but uses new Fact_TeacherCohortMobility table for greater simplicity
+
+;WITH
+Cohort2015RMP AS (
+	SELECT
+		a.*
+		,PersonOfColorCategory AS TeacherCategory
+	FROM Fact_TeacherCohortMobility a
+	JOIN Dim_Staff b
+		ON a.CohortStaffID = b.StaffID
+	WHERE
+		CohortYear = 2015
+		AND b.IsNoviceTeacherFlag = 1
+		AND EXISTS (
+			SELECT 1
+			FROM Dim_School s
+			WHERE
+				s.DistrictCode = a.CohortCountyAndDistrictCode
+				AND s.SchoolCode = a.CohortBuilding
+				AND RMRFlag = 1
+		)
+)
+SELECT
+	CohortYear
+	,EndYear
+	,TeacherCategory
+	,SUM(StayedInSchool) AS StayedInSchool
+	,SUM(ChangedBuildingStayedDistrict) AS ChangedBuildingStayedDistrict
+	,SUM(ChangedRoleStayedDistrict) AS ChangedRoleStayedDistrict
+	,SUM(MovedOutDistrict) as MovedOutDistrict
+	,SUM(Exited) as Exited
+	,COUNT(*) TotalTeachersYr
+FROM Cohort2015RMP
+GROUP BY
+	CohortYear
+	,EndYear
+	,TeacherCategory
+ORDER BY
+	CohortYear
+	,EndYear
+	,TeacherCategory
