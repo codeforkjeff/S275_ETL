@@ -26,6 +26,11 @@ INSERT INTO Dim_School
     DistrictName,
     SchoolCode,
     SchoolName,
+	GradeLevelStart,
+    GradeLevelEnd,
+    GradeLevelSortOrderStart,
+    GradeLevelSortOrderEnd,
+    SchoolType,
     Lat,
     Long,
     NCESLocaleCode,
@@ -38,6 +43,11 @@ SELECT
 	,COALESCE(recent.DistrictName, 'UNKNOWN') AS DistrictName
 	,missing.Building AS SchoolCode
 	,COALESCE(recent.SchoolName, 'UNKNOWN') AS SchoolName
+	,recent.GradeLevelStart
+    ,recent.GradeLevelEnd
+    ,recent.GradeLevelSortOrderStart
+    ,recent.GradeLevelSortOrderEnd
+    ,recent.SchoolType
 	,recent.Lat
     ,recent.Long
     ,recent.NCESLocaleCode

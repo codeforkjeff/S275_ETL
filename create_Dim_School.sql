@@ -14,18 +14,25 @@ DROP TABLE IF EXISTS Dim_School;
 --     FROM Dim.School
 -- )
 -- SELECT
---     AcademicYear
---     ,DistrictCode
---     ,DistrictName
---     ,SchoolCode
---     ,SchoolName
+--     T.AcademicYear
+--     ,T.DistrictCode
+--     ,T.DistrictName
+--     ,T.SchoolCode
+--     ,T.SchoolName
+--     ,GradeLevelStart
+--     ,GradeLevelEnd
+--     ,GradeLevelSortOrderStart 
+--     ,GradeLevelSortOrderEnd
+--     ,SchoolType
 --     ,Lat
 --     ,Long
---    ,NCESLocaleCode
---    ,NCESLocale
+--     ,NCESLocaleCode
+--     ,NCESLocale
 --     ,dRoadMapRegionFlag
+-- into S275.dbo.Dim_School
 -- FROM T
 -- WHERE Ranked = 1;
+
 
 CREATE TABLE Dim_School (
     AcademicYear int NOT NULL,
@@ -33,6 +40,11 @@ CREATE TABLE Dim_School (
     DistrictName varchar(250) NULL,
     SchoolCode varchar(8) NOT NULL,
     SchoolName varchar(250) NULL,
+    GradeLevelStart varchar(3) NULL,
+    GradeLevelEnd varchar(3) NULL,
+    GradeLevelSortOrderStart tinyint NULL,
+    GradeLevelSortOrderEnd tinyint NULL,
+    SchoolType varchar(50) NULL,
     Lat real NULL,
     Long real NULL,
     NCESLocaleCode VARCHAR(2) NULL,
@@ -42,7 +54,7 @@ CREATE TABLE Dim_School (
 
 -- next
 
-CREATE INDEX idx_Dim_School ON Dim_School (
+CREATE UNIQUE INDEX idx_Dim_School ON Dim_School (
     AcademicYear,
     DistrictCode,
     DistrictName,

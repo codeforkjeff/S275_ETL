@@ -228,6 +228,9 @@ def create_dimensional_models():
 
     execute_sql_file("create_Fact_SchoolPrincipal.sql")
 
+    # populate DimSchool w/ teacher counts
+    execute_sql_file("update_Dim_School.sql")
+
     execute_sql_file("create_Fact_TeacherCohort.sql")
 
     execute_sql_file("create_Fact_TeacherCohortMobility.sql")
