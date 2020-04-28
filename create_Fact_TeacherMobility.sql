@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS BaseSchoolTeachers;
 
 CREATE TABLE BaseSchoolTeachers (
     StaffID int not null,
-    AcademicYear int NOT NULL,
+    AcademicYear smallint NOT NULL,
     CertificateNumber varchar(500) NULL,
     CountyAndDistrictCode varchar(500) NULL,
     Building varchar(500) NULL
@@ -60,7 +60,7 @@ DROP TABLE IF EXISTS ByBuilding;
 
 CREATE TABLE ByBuilding (
     StaffID int not null,
-    AcademicYear int NOT NULL,
+    AcademicYear smallint NOT NULL,
     CertificateNumber varchar(500) NULL,
     CountyAndDistrictCode varchar(500) NULL,
     Building varchar(500) NULL,
@@ -131,9 +131,9 @@ CREATE TABLE Fact_TeacherMobility (
     TeacherMobilityID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     StartStaffID int not null,
     EndStaffID int null,
-    StartYear int NOT NULL,
-    EndYear int NULL,
-    DiffYears int NULL,
+    StartYear smallint NOT NULL,
+    EndYear smallint NULL,
+    DiffYears smallint NULL,
     CertificateNumber varchar(500) NULL,
     StartCountyAndDistrictCode varchar(500) NULL,
     StartBuilding varchar(500) NULL,
@@ -141,18 +141,18 @@ CREATE TABLE Fact_TeacherMobility (
     EndCountyAndDistrictCode varchar(500) NULL,
     EndBuilding varchar(500) NULL,
     EndLocale varchar(50) NULL,
-    EndTeacherFlag int NULL,
+    EndTeacherFlag tinyint NULL,
     Distance real NULL,
-    RoleChanged int NULL,
-    RoleChangedToPrincipal int NULL,
-    RoleChangedToAsstPrincipal int NULL,
-    Stayer int NOT NULL,
-    MovedInBuildingChange int NOT NULL,
-    MovedInRoleChange int NOT NULL,
-    MovedIn int NOT NULL,
-    MovedOut int NOT NULL,
-    MovedOutOfRMR int NOT NULL,
-    Exited int NOT NULL,
+    RoleChanged tinyint NULL,
+    RoleChangedToPrincipal tinyint NULL,
+    RoleChangedToAsstPrincipal tinyint NULL,
+    Stayer tinyint NOT NULL,
+    MovedInBuildingChange tinyint NOT NULL,
+    MovedInRoleChange tinyint NOT NULL,
+    MovedIn tinyint NOT NULL,
+    MovedOut tinyint NOT NULL,
+    MovedOutOfRMR tinyint NOT NULL,
+    Exited tinyint NOT NULL,
     MetaCreatedAt DATETIME
 );
 

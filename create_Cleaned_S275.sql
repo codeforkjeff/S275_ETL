@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS S275;
 -- next
 
 CREATE TABLE S275 (
-    AcademicYear varchar(500) NULL,
+    AcademicYear smallint NULL,
     Area varchar(500) NULL,
     County varchar(500) NULL,
     District varchar(500) NULL,

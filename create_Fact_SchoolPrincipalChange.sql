@@ -31,8 +31,8 @@ CREATE TABLE TeacherRetention (
 	CohortYear      smallint     NOT   NULL,
 	EndYear         smallint     NOT   NULL,
 	Interval        tinyint      not   null,
-	CohortBuilding  varchar(500) NULL,
-	TeacherCategory varchar(50)  null,
+	CohortBuilding  varchar(500) NOT NULL,
+	TeacherCategory varchar(50)  NOT   null,
 	StayedInSchool  int          null,
 	PRIMARY KEY (CohortYear, CohortBuilding, TeacherCategory, Interval)
 );
@@ -164,7 +164,7 @@ DROP TABLE IF EXISTS TeacherCounts;
 -- next
 
 CREATE TABLE TeacherCounts (
-	CohortYear int,
+	CohortYear smallint,
 	CohortBuilding varchar(50),
 	StaffID int,
 	PersonOfColorCategory varchar(50),

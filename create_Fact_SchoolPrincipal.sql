@@ -7,14 +7,14 @@ DROP TABLE IF EXISTS Fact_SchoolPrincipal;
 CREATE TABLE Fact_SchoolPrincipal (
     SchoolPrincipalID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     StaffID INT NOT NULL,
-    AcademicYear INT NOT NULL,
+    AcademicYear SMALLINT NOT NULL,
     Building varchar(500) NULL,
     DutyRoot varchar(2) NULL,
     PrincipalType VARCHAR(50) NULL,
     PrincipalPercentage NUMERIC(14,4) NULL,
     PrincipalFTEDesignation NUMERIC(14,4) NULL,
     PrincipalSalaryTotal INT NULL,
-    PrimaryFlag INT NULL,
+    PrimaryFlag TINYINT NULL,
     MetaCreatedAt DATETIME
 );
 

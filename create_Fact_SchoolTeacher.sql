@@ -7,12 +7,12 @@ DROP TABLE IF EXISTS Fact_SchoolTeacher;
 CREATE TABLE Fact_SchoolTeacher (
     SchoolTeacherID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     StaffID INT NOT NULL,
-    AcademicYear INT NOT NULL,
+    AcademicYear SMALLINT NOT NULL,
     Building varchar(500) NULL,
     TeachingPercent NUMERIC(14,4) NULL,
     TeachingFTEDesignation NUMERIC(14,4) NULL,
     TeachingSalaryTotal INT NULL,
-    PrimaryFlag INT NULL,
+    PrimaryFlag TINYINT NULL,
     MetaCreatedAt DATETIME
 );
 

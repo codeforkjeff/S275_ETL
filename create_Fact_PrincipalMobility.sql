@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS BaseSchoolPrincipals;
 
 CREATE TABLE BaseSchoolPrincipals (
     StaffID int not null,
-    AcademicYear int NOT NULL,
+    AcademicYear smallint NOT NULL,
     CertificateNumber varchar(500) NULL,
     CountyAndDistrictCode varchar(500) NULL,
     Building varchar(500) NULL,
@@ -55,7 +55,7 @@ DROP TABLE IF EXISTS HighestFTE;
 
 CREATE TABLE HighestFTE (
     StaffID int not null,
-    AcademicYear int NOT NULL,
+    AcademicYear smallint NOT NULL,
     CertificateNumber varchar(500) NULL,
     CountyAndDistrictCode varchar(500) NULL,
     Building varchar(500) NULL,
@@ -118,9 +118,9 @@ DROP TABLE IF EXISTS Fact_PrincipalMobility;
 CREATE TABLE Fact_PrincipalMobility (
     StartStaffID int not null,
     EndStaffID int null,
-    StartYear int NOT NULL,
-    EndYear int NULL,
-    DiffYears int NULL,
+    StartYear smallint NOT NULL,
+    EndYear smallint NULL,
+    DiffYears smallint NULL,
     CertificateNumber varchar(500) NULL,
     StartCountyAndDistrictCode varchar(500) NULL,
     StartBuilding varchar(500) NULL,
@@ -128,15 +128,15 @@ CREATE TABLE Fact_PrincipalMobility (
     EndHighestFTECountyAndDistrictCode varchar(500) NULL,
     EndHighestFTEBuilding varchar(500) NULL,
     EndPrincipalType varchar(50) NULL,
-    Stayer int NOT NULL,
-    MovedIn int NOT NULL,
-    MovedOut int NOT NULL,
-    MovedOutOfRMR int NOT NULL,
-    Exited int NOT NULL,
-    SameAssignment int NOT NULL,
-    NoLongerAnyPrincipal int NOT NULL,
-    AsstToPrincipal int NOT NULL,
-    PrincipalToAsst int NOT NULL,
+    Stayer tinyint NOT NULL,
+    MovedIn tinyint NOT NULL,
+    MovedOut tinyint NOT NULL,
+    MovedOutOfRMR tinyint NOT NULL,
+    Exited tinyint NOT NULL,
+    SameAssignment tinyint NOT NULL,
+    NoLongerAnyPrincipal tinyint NOT NULL,
+    AsstToPrincipal tinyint NOT NULL,
+    PrincipalToAsst tinyint NOT NULL,
     MetaCreatedAt DATETIME
 );
 

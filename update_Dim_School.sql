@@ -4,10 +4,11 @@ DROP TABLE IF EXISTS TeacherCounts;
 -- next
 
 CREATE TABLE TeacherCounts (
-	AcademicYear INT NOT NULL,
-    Building varchar(500) NULL,
+	AcademicYear SMALLINT NOT NULL,
+    Building varchar(500) NOT NULL,
 	TeachersOfColor INT NULL,
-	TotalTeachers INT NULL
+	TotalTeachers INT NULL,
+	PRIMARY KEY (AcademicYear, Building)
 );
 
 -- next
