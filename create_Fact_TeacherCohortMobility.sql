@@ -17,7 +17,8 @@ CREATE TABLE Fact_TeacherCohortMobility (
 	ChangedBuildingStayedDistrict tinyint          NOT   NULL,
 	ChangedRoleStayedDistrict     tinyint          NOT   NULL,
 	MovedOutDistrict              tinyint          NOT   NULL,
-	Exited                        tinyint          NOT   NULL
+	Exited                        tinyint          NOT   NULL,
+	MetaCreatedAt                 DATETIME
 );
 
 -- next
@@ -40,6 +41,7 @@ SELECT
         ,ChangedRoleStayedDistrict = CASE WHEN CohortBuilding <> EndBuilding AND CohortCountyAndDistrictCode = EndCountyAndDistrictCode AND a.EndTeacherFlag = 0 THEN 1 ELSE 0 END -- definitely not in the same building
         ,MovedOutDistrict = CASE WHEN CohortCountyAndDistrictCode <> EndCountyAndDistrictCode THEN 1 ELSE 0 END
         ,Exited 
+        ,GETDATE() as MetaCreatedAt
 FROM Fact_TeacherCohort tc
 JOIN Fact_TeacherMobility a
 	ON tc.CertificateNumber = a.CertificateNumber
@@ -50,11 +52,11 @@ WHERE
 
 
 -- validation: this should return 0 rows
-select top 1000 * 
-from Fact_TeacherCohortMobility
-where
-	StayedInSchool = 0
-	and ChangedBuildingStayedDistrict = 0
-	and ChangedRoleStayedDistrict = 0
-	and MovedOutDistrict = 0
-	and Exited = 0 
+-- select top 1000 * 
+-- from Fact_TeacherCohortMobility
+-- where
+-- 	StayedInSchool = 0
+-- 	and ChangedBuildingStayedDistrict = 0
+-- 	and ChangedRoleStayedDistrict = 0
+-- 	and MovedOutDistrict = 0
+-- 	and Exited = 0 

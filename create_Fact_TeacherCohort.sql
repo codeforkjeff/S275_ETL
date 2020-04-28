@@ -9,7 +9,8 @@ CREATE TABLE Fact_TeacherCohort (
 	CohortStaffID                 int          NOT   NULL,
 	CertificateNumber             varchar(500) NULL,
 	CohortCountyAndDistrictCode   varchar(500) NULL,
-	CohortBuilding                varchar(500) NULL
+	CohortBuilding                varchar(500) NULL,
+	MetaCreatedAt                 DATETIME
 );
 
 -- next
@@ -21,6 +22,7 @@ SELECT
 	,CertificateNumber
     ,StartCountyAndDistrictCode AS CohortCountyAndDistrictCode
     ,StartBuilding AS CohortBuilding
+    ,GETDATE() as MetaCreatedAt
 FROM Fact_TeacherMobility
 WHERE
 	DiffYears = 1

@@ -56,3 +56,7 @@ SET TeachersOfColor = (
 		AND TeacherCounts.Building = Dim_school.SchoolCode
 )
 ;
+
+-- next
+
+DROP TABLE TeacherCounts;
