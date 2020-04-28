@@ -34,12 +34,12 @@ SELECT
 		,a.EndYear
         ,a.EndCountyAndDistrictCode
         ,a.EndBuilding
-        ,StayedInSchool = CASE WHEN CohortBuilding = EndBuilding THEN 1 ELSE 0 END
+        ,CASE WHEN CohortBuilding = EndBuilding THEN 1 ELSE 0 END AS StayedInSchool
         -- people who stayed in district (may or may not be same building) and stayed teachers
         --,StayedInDistrict = CASE WHEN CohortCountyAndDistrictCode = EndCountyAndDistrictCode AND a.EndTeacherFlag = 1 THEN 1 ELSE 0 END -- may be in the same building
-        ,ChangedBuildingStayedDistrict = CASE WHEN CohortBuilding <> EndBuilding AND CohortCountyAndDistrictCode = EndCountyAndDistrictCode AND a.EndTeacherFlag = 1 THEN 1 ELSE 0 END -- definitely not in the same building 
-        ,ChangedRoleStayedDistrict = CASE WHEN CohortBuilding <> EndBuilding AND CohortCountyAndDistrictCode = EndCountyAndDistrictCode AND a.EndTeacherFlag = 0 THEN 1 ELSE 0 END -- definitely not in the same building
-        ,MovedOutDistrict = CASE WHEN CohortCountyAndDistrictCode <> EndCountyAndDistrictCode THEN 1 ELSE 0 END
+        ,CASE WHEN CohortBuilding <> EndBuilding AND CohortCountyAndDistrictCode = EndCountyAndDistrictCode AND a.EndTeacherFlag = 1 THEN 1 ELSE 0 END AS ChangedBuildingStayedDistrict -- definitely not in the same building  
+        ,CASE WHEN CohortBuilding <> EndBuilding AND CohortCountyAndDistrictCode = EndCountyAndDistrictCode AND a.EndTeacherFlag = 0 THEN 1 ELSE 0 END AS ChangedRoleStayedDistrict -- definitely not in the same building
+        ,CASE WHEN CohortCountyAndDistrictCode <> EndCountyAndDistrictCode THEN 1 ELSE 0 END AS MovedOutDistrict
         ,Exited 
         ,GETDATE() as MetaCreatedAt
 FROM Fact_TeacherCohort tc

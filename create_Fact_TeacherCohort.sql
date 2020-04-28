@@ -32,4 +32,4 @@ WHERE
 
 -- next
 
-CREATE UNIQUE INDEX idx_Fact_TeacherCohort ON dbo.Fact_TeacherCohort (CertificateNumber, CohortYear);
+CREATE UNIQUE INDEX idx_Fact_TeacherCohort ON Fact_TeacherCohort (CertificateNumber, CohortYear);
