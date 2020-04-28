@@ -269,4 +269,8 @@ SET TeachersWhiteRetained2Yr    =
 
 -- next
 
+DROP TABLE TeacherRetention;
+
+-- next
+
 DROP TABLE TeacherCounts;
