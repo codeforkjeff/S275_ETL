@@ -259,11 +259,9 @@ def create_school_principal_change():
     execute_sql_file("create_Fact_SchoolPrincipalChange.sql")
 
 
-def create_everything():
+def create_derived_tables():
 
     create_auxiliary_tables()
-
-    create_base_S275()
 
     create_dimensional_models()
 
@@ -276,6 +274,13 @@ def create_everything():
     create_principal_mobility()
 
     create_school_principal_change()
+
+
+def create_everything():
+
+    create_base_S275()
+
+    create_derived_tables()
 
 
 def execute_sql_file(path):
