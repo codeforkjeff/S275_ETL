@@ -33,7 +33,12 @@ ORDER BY
 	st.Building
 ;
 
+-- next
+
 ALTER TABLE Dim_School ADD TeachersOfColor INT NULL;
+
+-- next
+
 ALTER TABLE Dim_School ADD TotalTeachers INT NULL;
 
 -- next

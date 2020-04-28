@@ -750,6 +750,8 @@ CREATE INDEX idx_FirstYearInWA ON FirstYearInWA (
     FirstYear
 );
 
+-- next
+
 UPDATE Dim_Staff
 SET IsNewHireWAStateFlag = 1
 WHERE
@@ -761,6 +763,7 @@ WHERE
     );
 
 -- next
+
 DROP TABLE FirstYearInDistrict;
 
 -- next
