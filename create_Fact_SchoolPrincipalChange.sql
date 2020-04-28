@@ -33,7 +33,8 @@ CREATE TABLE TeacherRetention (
 	Interval        tinyint      not   null,
 	CohortBuilding  varchar(500) NULL,
 	TeacherCategory varchar(50)  null,
-	StayedInSchool  int          null
+	StayedInSchool  int          null,
+	PRIMARY KEY (CohortYear, CohortBuilding, TeacherCategory, Interval)
 );
 
 -- next
@@ -42,7 +43,7 @@ INSERT INTO TeacherRetention
 SELECT
 	CohortYear
 	,EndYear
-	,Interval = EndYear - CohortYear 
+	,EndYear - CohortYear AS Interval
 	,CohortBuilding
 	,PersonOfColorCategory AS TeacherCategory
 	,SUM(StayedInSchool) AS StayedInSchool
@@ -154,16 +155,40 @@ FROM PrincipalChanges t1
 LEFT JOIN FirstTenureEndYear t2
 	ON t1.CertificateNumber = t2.CertificateNumber  
 	AND t1.Building = t2.Building
-ORDER BY Building, AcademicYear;
+;
+
+-- next
+
+DROP TABLE IF EXISTS TeacherCounts;
+
+-- next
+
+CREATE TABLE TeacherCounts (
+	CohortYear int,
+	CohortBuilding varchar(50),
+	StaffID int,
+	PersonOfColorCategory varchar(50),
+	PRIMARY KEY(CohortYear, CohortBuilding, PersonOfColorCategory, StaffID)
+);
+
+-- next
+
+INSERT INTO TeacherCounts
+SELECT
+	CohortYear,
+	CohortBuilding,
+	StaffID,
+	PersonOfColorCategory
+FROM Fact_TeacherCohort t1
+INNER JOIN Dim_Staff t2
+	ON t1.CohortStaffID = t2.StaffID
 
 -- next
 
 UPDATE Fact_SchoolPrincipalChange
 SET TeachersTotal = 
 	(SELECT COUNT(*) as total
-	FROM Fact_TeacherCohort t1
-	INNER JOIN Dim_Staff t2
-		ON t1.CohortStaffID = t2.StaffID
+	FROM TeacherCounts t1
 	WHERE
 		t1.CohortYear = Fact_SchoolPrincipalChange.AcademicYear
 		AND t1.CohortBuilding = Fact_SchoolPrincipalChange.Building);
@@ -173,11 +198,9 @@ SET TeachersTotal =
 UPDATE Fact_SchoolPrincipalChange
 SET TeachersOfColor = 
 	(SELECT COUNT(*) as total
-	FROM Fact_TeacherCohort t1
-	INNER JOIN Dim_Staff t2
-		ON t1.CohortStaffID = t2.StaffID
+	FROM TeacherCounts t1
 	WHERE
-		t2.PersonOfColorCategory = 'Person of Color'
+		t1.PersonOfColorCategory = 'Person of Color'
 		AND t1.CohortYear = Fact_SchoolPrincipalChange.AcademicYear
 		AND t1.CohortBuilding = Fact_SchoolPrincipalChange.Building);
 
@@ -186,11 +209,9 @@ SET TeachersOfColor =
 UPDATE Fact_SchoolPrincipalChange
 SET TeachersWhite = 
 	(SELECT COUNT(*) as total
-	FROM Fact_TeacherCohort t1
-	INNER JOIN Dim_Staff t2
-		ON t1.CohortStaffID = t2.StaffID
+	FROM TeacherCounts t1
 	WHERE
-		t2.PersonOfColorCategory = 'White'
+		t1.PersonOfColorCategory = 'White'
 		AND t1.CohortYear = Fact_SchoolPrincipalChange.AcademicYear
 		AND t1.CohortBuilding = Fact_SchoolPrincipalChange.Building);
 
@@ -245,3 +266,7 @@ SET TeachersWhiteRetained2Yr    =
 		AND t.CohortYear = Fact_SchoolPrincipalChange.AcademicYear
 		AND t.CohortBuilding = Fact_SchoolPrincipalChange.Building
 	);
+
+-- next
+
+DROP TABLE TeacherCounts;
