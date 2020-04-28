@@ -321,12 +321,32 @@ SET MovedOutOfRMR = CASE
 
 -- next
 
+DROP TABLE IF EXISTS PrincipalsLookup;
+
+-- next
+
+CREATE TABLE PrincipalsLookup (
+    PrincipalType varchar(50),
+    StaffID int,
+    PRIMARY KEY (PrincipalType, StaffID)
+);
+
+-- next
+
+INSERT INTO PrincipalsLookup
+SELECT DISTINCT
+    PrincipalType
+    ,StaffID
+FROM Fact_SchoolPrincipal;
+
+-- next
+
 UPDATE Fact_TeacherMobility
 SET
     RoleChangedToPrincipal = CASE
         WHEN EXISTS (
             SELECT 1
-            FROM Fact_SchoolPrincipal p
+            FROM PrincipalsLookup p
             WHERE
                 p.PrincipalType = 'Principal'
                 AND p.StaffID = Fact_TeacherMobility.EndStaffID
@@ -337,7 +357,7 @@ SET
     ,RoleChangedToAsstPrincipal = CASE
         WHEN EXISTS (
             SELECT 1
-            FROM Fact_SchoolPrincipal p
+            FROM PrincipalsLookup p
             WHERE
                 p.PrincipalType = 'AssistantPrincipal'
                 AND p.StaffID = Fact_TeacherMobility.EndStaffID
@@ -345,7 +365,7 @@ SET
         THEN 1
         ELSE 0
     END
-WHERE EndTeacherFlag = 0;
+;
 
 -- next
 
@@ -363,3 +383,7 @@ DROP TABLE BaseSchoolTeachers;
 -- next
 
 DROP TABLE ByBuilding;
+
+-- next
+
+DROP TABLE PrincipalsLookup;
