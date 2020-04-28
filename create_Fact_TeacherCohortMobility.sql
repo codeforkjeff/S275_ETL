@@ -6,11 +6,11 @@ DROP TABLE IF EXISTS Fact_TeacherCohortMobility;
 CREATE TABLE Fact_TeacherCohortMobility (
 	CohortYear                    smallint          NOT   NULL,
 	CohortStaffID                 int          NOT   NULL,
-	CertificateNumber             varchar(500) NULL,
+	CertificateNumber             varchar(500) NOT NULL,
 	CohortCountyAndDistrictCode   varchar(500) NULL,
 	CohortBuilding                varchar(500) NULL,
 	EndStaffID                    int          NULL,
-	EndYear                       smallint          NULL,
+	EndYear                       smallint          NOT NULL,
 	EndCountyAndDistrictCode      varchar(500) NULL,
 	EndBuilding                   varchar(500) NULL,
 	StayedInSchool                tinyint          NOT   NULL,
@@ -18,7 +18,8 @@ CREATE TABLE Fact_TeacherCohortMobility (
 	ChangedRoleStayedDistrict     tinyint          NOT   NULL,
 	MovedOutDistrict              tinyint          NOT   NULL,
 	Exited                        tinyint          NOT   NULL,
-	MetaCreatedAt                 DATETIME
+	MetaCreatedAt                 DATETIME,
+	PRIMARY KEY (CohortYear, EndYear, CertificateNumber)
 );
 
 -- next
@@ -50,6 +51,45 @@ WHERE
 	a.DiffYears = 1
 	AND a.StartYear >= tc.CohortYear
 
+-- next
+
+-- ensure full representation of every CohortYear + EndYear combo for each teacher:
+-- creating rows for missing EndYears (people who no longer appear in S275 and are thus considered exited)
+
+INSERT INTO Fact_TeacherCohortMobility
+SELECT
+        tc.CohortYear
+        ,tc.CohortStaffID
+		,tc.CertificateNumber
+        ,tc.CohortCountyAndDistrictCode
+		,tc.CohortBuilding
+        ,NULL as EndStaffID
+		,y.AcademicYear as EndYear
+        ,NULL AS EndCountyAndDistrictCode
+        ,NULL AS EndBuilding
+        ,0 AS StayedInSchool
+        ,0 AS ChangedBuildingStayedDistrict
+        ,0 AS ChangedRoleStayedDistrict
+        ,0 AS MovedOutDistrict
+        ,1 AS Exited
+        ,GETDATE() as MetaCreatedAt
+FROM Fact_TeacherCohort tc
+CROSS JOIN
+(
+	SELECT DISTINCT
+		AcademicYear
+	FROM Dim_Staff
+) AS y
+WHERE
+	y.AcademicYear > tc.CohortYear
+	AND NOT EXISTS (
+		SELECT 1
+		FROM Fact_TeacherCohortMobility exists_
+		WHERE
+			exists_.CohortYear = tc.CohortYear
+			AND exists_.EndYear = y.AcademicYear
+			AND exists_.CertificateNumber = tc.CertificateNumber
+	);
 
 -- validation: this should return 0 rows
 -- select top 1000 * 
