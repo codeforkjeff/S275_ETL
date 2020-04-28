@@ -254,6 +254,11 @@ def create_principal_mobility():
     execute_sql_file("create_Fact_PrincipalMobility.sql")
 
 
+def create_school_principal_change():
+    print("creating school principal change tables")
+    execute_sql_file("create_Fact_SchoolPrincipalChange.sql")
+
+
 def create_everything():
 
     create_auxiliary_tables()
@@ -269,6 +274,8 @@ def create_everything():
     create_teacher_mobility_aggregations()
 
     create_principal_mobility()
+
+    create_school_principal_change()
 
 
 def execute_sql_file(path):
