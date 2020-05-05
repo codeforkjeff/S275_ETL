@@ -218,7 +218,12 @@ def create_dimensional_models():
     print("creating dimensional models")
 
     execute_sql_file("create_Dim_School.sql")
-    load_into_database([('Dim_school.txt', 'Dim_School')])
+    load_into_database([('Dim_school.txt', 'Dim_School_Base')])
+
+    if os.path.exists(dim_school_fields):
+        load_into_database([(dim_school_fields, 'Dim_School_Fields')])
+
+    execute_sql_file("populate_Dim_School_Fields.sql")
 
     execute_sql_file("create_Dim_Staff_and_Fact_Assignment.sql")
 
@@ -312,14 +317,13 @@ def execute_sql_file(path):
 def load_into_database(entries):
     """ entries should be a tuple of (path, tablename) """
 
-    if db_type == 'SQL Server':
-        for (output_file, table_name) in entries:
+    for (output_file, table_name) in entries:
+        if db_type == 'SQL Server':
             os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (table_name, output_file, db_sqlserver_host, db_sqlserver_database))
-    else:
-        # read in the flat files and load into sqlite
-        conn = get_db_conn()
-        cursor = conn.cursor()
-        for (output_file, table_name) in entries:
+        else:
+            # read in the flat files and load into sqlite
+            conn = get_db_conn()
+            cursor = conn.cursor()
             print("Loading %s" % (output_file,))
             f = codecs.open(output_file, 'r', 'utf-8')
             column_names = f.readline().split("\t")

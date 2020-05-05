@@ -25,6 +25,9 @@ source_files = [
 	,(os.path.join(input_dir, "2018-2019_Final_S-275_Personnel_Database"), "FINAL")
 ]
 
+# Dim_School_Fields table gets loaded from this only if file exists
+dim_school_fields = "Dim_School_Fields.txt"
+
 # currently supported: "SQL Server" or "sqlite"
 # python typically comes with sqlite compiled into it.
 # if you use SQL Server (on Windows), you'll need the bcp program installed.

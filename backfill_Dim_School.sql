@@ -35,7 +35,8 @@ INSERT INTO Dim_School
     Long,
     NCESLocaleCode,
     NCESLocale,
-    RMRFlag
+    RMRFlag,
+    MetaCreatedAt
 )
 SELECT
 	missing.AcademicYear
@@ -53,6 +54,7 @@ SELECT
     ,recent.NCESLocaleCode
     ,recent.NCESLocale
 	,COALESCE(recent.RMRFlag, 0) AS RMRFlag
+	,GETDATE() AS MetaCreatedAt
 FROM MissingSchools missing
 LEFT JOIN MostRecentSchools recent
 	ON missing.Building = recent.SchoolCode
