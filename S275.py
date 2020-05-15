@@ -218,7 +218,7 @@ def create_dimensional_models():
     print("creating dimensional models")
 
     execute_sql_file("create_Dim_School.sql")
-    load_into_database([('Dim_school.txt', 'Dim_School_Base')])
+    load_into_database([('Dim_School.txt', 'Dim_School_Base')])
 
     if os.path.exists(dim_school_fields):
         load_into_database([(dim_school_fields, 'Dim_School_Fields')])
