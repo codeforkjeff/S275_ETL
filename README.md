@@ -16,7 +16,7 @@ This is a perpetual work in progress!
 
 Make sure you install all 32-bit or 64-bit programs; don't mix and match or you'll get errors about missing data sources.
 
-- Python 3.7.4 - this includes the minimum version of sqlite3 needed to support the window functions used in this code.
+- Python >= 3.7.4 - this includes the minimum version of sqlite3 (3.28.0) needed to support the window functions used in this code.
 - ODBC drivers for Microsoft Access (included with [Microsoft Access Database Engine 2016](https://www.microsoft.com/en-us/download/details.aspx?id=54920))
 - Roughly 1GB of disk space for each academic year of data, when using sqlite3
 
