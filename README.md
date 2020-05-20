@@ -16,15 +16,14 @@ This is a perpetual work in progress!
 
 Make sure you install all 32-bit or 64-bit programs; don't mix and match or you'll get errors about missing data sources.
 
+- Windows 10 (needed for ODBC)
 - Python >= 3.7.4 - this includes the minimum version of sqlite3 (3.28.0) needed to support the window functions used in this code.
 - ODBC drivers for Microsoft Access (included with [Microsoft Access Database Engine 2016](https://www.microsoft.com/en-us/download/details.aspx?id=54920))
 - Roughly 1GB of disk space for each academic year of data, when using sqlite3
 
-# Instructions
+# Setup
 
-On Windows:
-
-- Open a Command Prompt window.
+- Open a PowerShell window.
 
 - Create a virtual environment: `python -m venv ./S275_env`
 
@@ -64,35 +63,34 @@ gpg -d -o S275_settings.py S275_settings.py.gpg
 gpg -c -a -o S275_settings.py.gpg --cipher-algo AES256 S275_settings.py
 ```
 
-- Generate everything:
+# Creating the Data
+
+To generate everything:
 
 ```sh
 python -c "import S275; S275.create_everything();"
 ```
 
-OR you can generate only the data you want, as follows:
+The `create_everything()` function is composed of calls to two fuctions:
+- `create_base_S275()` - this creates a cleaned `S275` table with inconsistent
+values normalized, bad data removed, etc.
+- `create_derived_tables()` - this uses the cleaned `S275` table to create all
+derivative tables
 
-```sh
-# create auxiliary tables (usually for lookups)
-python -c "import S275; S275.create_auxiliary_tables();"
+If you are doing development and changing the SQL files and Python code, you
+can probably re-run `create_derived_tables()` instead of everything, to save
+some time. You could further selectively re-run only parts of that function to
+save time, if you feel confident about the dependencies. For details, see the code
+in `S275.py`.
 
-# create S275 table with improved column names, cleaned and standardized data
-python -c "import S275; S275.create_base_S275();"
+# Working with the Data
 
-# create dimensional models
-python -c "import S275; S275.create_dimensional_models();"
+When the transforms above are finished, you can connect directly to the resulting
+database to work with the generated tables. If you built a sqlite database, you
+can use a client such as [DBeaver](https://dbeaver.io/).
 
-# create teacher mobility (single teacher per year)
-python -c "import S275; S275.create_teacher_mobility();"
-
-# create aggregations for teacher mobility (work in progress)
-python -c "import S275; S275.create_teacher_mobility_aggregations();"
-
-# create principal mobility (single princpal or asst principal per year)
-python -c "import S275; S275.create_principal_mobility();"
-```
-
-- You can export the generated data into tab-separated files for use in Excel, R, etc. as follows:
+You can also export the generated data into tab-separated files for use in
+Excel, R, Tableau, or any other program that can read such files. Do this as follows:
 
 ```sh
 # output Dim_Staff
@@ -102,10 +100,7 @@ python -c "import S275; S275.export_table('Fact_TeacherMobility', 'output/Fact_T
 
 ```
 
-  Or you can use a SQL client such as [DBeaver](https://dbeaver.io/) to connect directly
-  to the database and to work with the generated tables.
-
-  Sample queries demonstrating how to use the tables can be found in `report_teacher_mobility.sql`
+Sample queries demonstrating how to use the tables can be found in `report_teacher_mobility.sql`
 
 # Generated Tables
 
@@ -119,13 +114,26 @@ Note that AcademicYear values are based on the "end year": e.g. 2016 means 2015-
 and Salary fields per teacher/school. The PrimaryFlag field is used to support a single school selection
 for each teacher/year for reports that want to avoid double counting.
 
+`Fact_TeacherMobility` - mobility of teachers from their "primary" school,
+calculated both year over year and at 5 year snapshots, with flag fields describing
+the transitions.
+
+`Fact_TeacherCohort` - cohort table containining teahers for each year.
+
+`Fact_TeacherCohortMobility` - mobility of teachers from their CohortYear to
+each successive EndYear up to the present. In this table, the flag fields
+describe the transitions between CohortYear and EndYear.
+
 `Fact_SchoolPrincipal` - table of principals and asst principals
 
-`Fact_TeacherMobility` - mobility of teachers from their "primary" school,
-calculated both year over year and at 5 year snapshots.
+`Fact_PrincipalCohort` - cohort table containing principals and assistant principals.
 
 `Fact_PrincipalMobility` - mobility of principals from their "primary" school,
 calculated both year over year and at 5 year snapshots.
+
+`Fact_PrincipalCohortMobility` - mobility of principals and asst principals from
+their CohortYear to each successive EndYear up to the present. In this table,
+the flag fields describe the transitions between CohortYear and EndYear.
 
 # Development Process
 
