@@ -35,6 +35,8 @@ CREATE TABLE Dim_School_Fields (
     SchoolName varchar(250) NULL,
     -- attributes
     TotalEnrollmentOct smallint,
+    GraduationMet smallint,
+    GraduationTotal smallint,
     GraduationPercent numeric(9,4),
     FRPL smallint,
     FRPLPercent numeric(10,2),
@@ -125,6 +127,8 @@ CREATE TABLE Dim_School (
     RMRFlag int,
     -- from Fields
     TotalEnrollmentOct smallint,
+    GraduationMet smallint,
+    GraduationTotal smallint,
     GraduationPercent numeric(9,4),
     FRPL smallint,
     FRPLPercent numeric(10,2),

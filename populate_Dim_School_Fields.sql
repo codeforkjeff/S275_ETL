@@ -50,6 +50,22 @@ SET
 			AND Dim_School.DistrictCode = d.DistrictCode
 			AND Dim_School.SchoolCode = d.SchoolCode
 	)
+	,GraduationMet = (
+		SELECT GraduationMet
+		FROM Dim_School_Fields d
+		WHERE 
+			Dim_School.AcademicYear = d.AcademicYear
+			AND Dim_School.DistrictCode = d.DistrictCode
+			AND Dim_School.SchoolCode = d.SchoolCode
+	)
+	,GraduationTotal = (
+		SELECT GraduationTotal
+		FROM Dim_School_Fields d
+		WHERE 
+			Dim_School.AcademicYear = d.AcademicYear
+			AND Dim_School.DistrictCode = d.DistrictCode
+			AND Dim_School.SchoolCode = d.SchoolCode
+	)
 	,GraduationPercent = (
 		SELECT GraduationPercent
 		FROM Dim_School_Fields d
