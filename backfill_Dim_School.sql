@@ -1,5 +1,5 @@
 
-WITH MissingSchools as (
+WITH MissingSchoolsBase as (
 	SELECT AcademicYear, Building
 	FROM Fact_Assignment
 	WHERE Building is not null
@@ -8,15 +8,29 @@ WITH MissingSchools as (
 	FROM Dim_School
 	WHERE SchoolCode is not null
 )
-,Ranked AS (
+,MissingSchoolsCombos AS (
+	-- create all combinations of missing years * existing years; then rank to get the closest one
 	SELECT
-		*,
-		ROW_NUMBER() OVER (PARTITION BY SchoolCode ORDER BY AcademicYear DESC) AS Rank
-	FROM Dim_School
+		m.*
+		,s.AcademicYear AS ExistingYearInDimSchool
+		,m.AcademicYear - s.AcademicYear AS YearDiff
+		,ROW_NUMBER() OVER (
+			PARTITION BY
+			m.AcademicYear, m.Building
+			ORDER BY
+				-- prioritize closest year (smallest difference), and then the earlier year if both earlier and later years exist
+				ABS(m.AcademicYear - s.AcademicYear), s.AcademicYear ASC
+		) AS Rank
+	FROM MissingSchoolsBase m
+	LEFT JOIN Dim_School s
+		ON m.Building = s.SchoolCode
 ),
-MostRecentSchools AS (
-	SELECT *
-	FROM Ranked
+MissingSchools AS (
+	SELECT
+		AcademicYear,
+		Building,
+		ExistingYearInDimSchool AS ClosestYearThatExists
+	FROM MissingSchoolsCombos
 	WHERE Rank = 1
 )
 INSERT INTO Dim_School
@@ -40,22 +54,23 @@ INSERT INTO Dim_School
 )
 SELECT
 	missing.AcademicYear
-	,COALESCE(recent.DistrictCode, 'UNKNOWN') AS DistrictCode
-	,COALESCE(recent.DistrictName, 'UNKNOWN') AS DistrictName
+	,COALESCE(s.DistrictCode, 'UNKNOWN') AS DistrictCode
+	,COALESCE(s.DistrictName, 'UNKNOWN') AS DistrictName
 	,missing.Building AS SchoolCode
-	,COALESCE(recent.SchoolName, 'UNKNOWN') AS SchoolName
-	,recent.GradeLevelStart
-    ,recent.GradeLevelEnd
-    ,recent.GradeLevelSortOrderStart
-    ,recent.GradeLevelSortOrderEnd
-    ,recent.SchoolType
-	,recent.Lat
-    ,recent.Long
-    ,recent.NCESLocaleCode
-    ,recent.NCESLocale
-	,COALESCE(recent.RMRFlag, 0) AS RMRFlag
+	,COALESCE(s.SchoolName, 'UNKNOWN') AS SchoolName
+	,s.GradeLevelStart
+    ,s.GradeLevelEnd
+    ,s.GradeLevelSortOrderStart
+    ,s.GradeLevelSortOrderEnd
+    ,s.SchoolType
+	,s.Lat
+    ,s.Long
+    ,s.NCESLocaleCode
+    ,s.NCESLocale
+	,COALESCE(s.RMRFlag, 0) AS RMRFlag
 	,GETDATE() AS MetaCreatedAt
 FROM MissingSchools missing
-LEFT JOIN MostRecentSchools recent
-	ON missing.Building = recent.SchoolCode
+LEFT JOIN Dim_School s
+	ON missing.Building = s.SchoolCode
+	AND missing.ClosestYearThatExists = s.AcademicYear
 ;
