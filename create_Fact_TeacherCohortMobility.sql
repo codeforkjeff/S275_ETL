@@ -31,25 +31,23 @@ SELECT
 		,tc.CertificateNumber
         ,tc.CohortCountyAndDistrictCode
 		,tc.CohortBuilding
-        ,a.EndStaffID
-		,a.EndYear
-        ,a.EndCountyAndDistrictCode
-        ,a.EndBuilding
-        ,CASE WHEN CohortBuilding = EndBuilding THEN 1 ELSE 0 END AS StayedInSchool
+        ,a.StaffID AS EndStaffID
+		,a.AcademicYear AS EndYear
+        ,a.CountyAndDistrictCode AS EndCountyAndDistrictCode
+        ,a.Building AS EndBuilding
+        ,CASE WHEN CohortBuilding = a.Building THEN 1 ELSE 0 END AS StayedInSchool
         -- people who stayed in district (may or may not be same building) and stayed teachers
         --,StayedInDistrict = CASE WHEN CohortCountyAndDistrictCode = EndCountyAndDistrictCode AND a.EndTeacherFlag = 1 THEN 1 ELSE 0 END -- may be in the same building
-        ,CASE WHEN CohortBuilding <> EndBuilding AND CohortCountyAndDistrictCode = EndCountyAndDistrictCode AND a.EndTeacherFlag = 1 THEN 1 ELSE 0 END AS ChangedBuildingStayedDistrict -- definitely not in the same building  
-        ,CASE WHEN CohortBuilding <> EndBuilding AND CohortCountyAndDistrictCode = EndCountyAndDistrictCode AND a.EndTeacherFlag = 0 THEN 1 ELSE 0 END AS ChangedRoleStayedDistrict -- definitely not in the same building
-        ,CASE WHEN CohortCountyAndDistrictCode <> EndCountyAndDistrictCode THEN 1 ELSE 0 END AS MovedOutDistrict
-        ,Exited 
+        ,CASE WHEN CohortBuilding <> a.Building AND CohortCountyAndDistrictCode = a.CountyAndDistrictCode AND a.TeacherFlag = 1 THEN 1 ELSE 0 END AS ChangedBuildingStayedDistrict -- definitely not in the same building  
+        ,CASE WHEN CohortBuilding <> a.Building AND CohortCountyAndDistrictCode = a.CountyAndDistrictCode AND a.TeacherFlag = 0 THEN 1 ELSE 0 END AS ChangedRoleStayedDistrict -- definitely not in the same building
+        ,CASE WHEN CohortCountyAndDistrictCode <> a.CountyAndDistrictCode THEN 1 ELSE 0 END AS MovedOutDistrict
+        ,0 AS Exited 
         ,GETDATE() as MetaCreatedAt
 FROM Fact_TeacherCohort tc
-JOIN Fact_TeacherMobility a
+JOIN StaffByBuilding a
 	ON tc.CertificateNumber = a.CertificateNumber
 WHERE
-	-- take only the single year changes
-	a.DiffYears = 1
-	AND a.StartYear >= tc.CohortYear
+	a.AcademicYear > tc.CohortYear
 
 -- next
 

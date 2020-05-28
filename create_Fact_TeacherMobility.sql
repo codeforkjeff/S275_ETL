@@ -54,11 +54,14 @@ CREATE INDEX idx_BaseSchoolTeachers ON BaseSchoolTeachers (
 
 -- next
 
-DROP TABLE IF EXISTS ByBuilding;
+-- this is table used to determine EndYear fields: we need this to account
+-- for teachers who stopped being teachers but are still in the system
+
+DROP TABLE IF EXISTS StaffByBuilding;
 
 -- next
 
-CREATE TABLE ByBuilding (
+CREATE TABLE StaffByBuilding (
     StaffID int not null,
     AcademicYear smallint NOT NULL,
     CertificateNumber varchar(500) NULL,
@@ -74,7 +77,7 @@ CREATE TABLE ByBuilding (
 -- which results multiple rows in the transitions table for a person/year.
 
 -- query assignments here, b/c we want to know if teachers became non-teachers
-INSERT INTO ByBuilding (
+INSERT INTO StaffByBuilding (
     StaffID,
     AcademicYear,
     CertificateNumber,
@@ -111,12 +114,12 @@ GROUP BY
 
 -- next
 
-DELETE FROM ByBuilding
+DELETE FROM StaffByBuilding
 WHERE RN <> 1;
 
 -- next
 
-CREATE INDEX idx_ByBuilding ON ByBuilding (
+CREATE INDEX idx_StaffByBuilding ON StaffByBuilding (
     CertificateNumber
     ,AcademicYear
 );
@@ -194,7 +197,7 @@ YearBrackets AS (
     FROM BaseSchoolTeachers t1
     JOIN YearBrackets y
         ON t1.AcademicYear = y.StartYear
-    LEFT JOIN ByBuilding t2
+    LEFT JOIN StaffByBuilding t2
         ON t1.CertificateNumber = t2.CertificateNumber
         AND y.EndYear = t2.AcademicYear
 )
@@ -379,10 +382,6 @@ CREATE INDEX idx_Fact_TeacherMobility2 ON Fact_TeacherMobility(StartYear, StartC
 
 -- cleanup
 DROP TABLE BaseSchoolTeachers;
-
--- next
-
-DROP TABLE ByBuilding;
 
 -- next
 
