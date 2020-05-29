@@ -252,13 +252,13 @@ select
 	Sch.DistrictName,
 	Sch.SchoolName,
 	Stayer,
-	cast(Stayer AS real) / cast(TotalTeachers as real) as StayerPct,
+	cast(Stayer AS real) / cast(Counts.TotalTeachers as real) as StayerPct,
 	MovedIn,
-	cast(MovedIn AS real) / cast(TotalTeachers as real) as MovedInPct,
+	cast(MovedIn AS real) / cast(Counts.TotalTeachers as real) as MovedInPct,
 	MovedOut,
-	cast(MovedOut AS real) / cast(TotalTeachers as real) as MovedOutPct,
+	cast(MovedOut AS real) / cast(Counts.TotalTeachers as real) as MovedOutPct,
 	Exited,
-	cast(Exited AS real) / cast(TotalTeachers as real) as ExitedPct
+	cast(Exited AS real) / cast(Counts.TotalTeachers as real) as ExitedPct
 from Counts
 LEFT JOIN Dim_School Sch
 	ON Counts.StartBuilding = Sch.SchoolCode
