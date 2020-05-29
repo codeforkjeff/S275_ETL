@@ -1,4 +1,9 @@
 
+-- Fact_TeacherMobility was designed to reproduce COE's numbers,
+-- so it follows their logic very closely. It should probably be kept that way
+-- for reference. See Fact_TeacherCohortMobility for a table that's more tailored
+-- to analysis by CCER.
+
 -- This logic selects a single teacher/building per year
 
 DROP TABLE IF EXISTS BaseSchoolTeachers;

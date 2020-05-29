@@ -1,4 +1,12 @@
 
+-- Fact_TeacherCohortMobility was designed to support analysis by CCER;
+-- as such, the logic for the transition fields differ somewhat from
+-- Fact_TeacherMobility, which was built to reproduce COE's work.
+--
+-- Note that Fact_TeacherCohortMobility contains every possible combination
+-- of CohortYear + EndYEar, which is a superset of the rows found in
+-- Fact_TeacherMobility.
+
 DROP TABLE IF EXISTS Fact_TeacherCohortMobility;
 
 -- next
