@@ -34,24 +34,26 @@ SELECT
         ,pc.CohortCountyAndDistrictCode
 		,pc.CohortBuilding
 		,pc.CohortPrincipalType
-        ,a.EndStaffID
-		,a.EndYear
-        ,a.EndHighestFTECountyAndDistrictCode
-        ,a.EndHighestFTEBuilding
-        ,a.EndPrincipalType
-        ,CASE WHEN CohortBuilding = EndHighestFTEBuilding THEN 1 ELSE 0 END AS StayedInSchool
-        ,CASE WHEN CohortBuilding <> EndHighestFTEBuilding AND CohortCountyAndDistrictCode = EndHighestFTECountyAndDistrictCode AND pc.CohortPrincipalType = a.EndPrincipalType THEN 1 ELSE 0 END AS ChangedBuildingStayedDistrict
-        ,CASE WHEN CohortBuilding <> EndHighestFTEBuilding AND CohortCountyAndDistrictCode = EndHighestFTECountyAndDistrictCode AND pc.CohortPrincipalType <> COALESCE(a.EndPrincipalType, '') THEN 1 ELSE 0 END AS ChangedRoleStayedDistrict
-        ,CASE WHEN CohortCountyAndDistrictCode <> EndHighestFTECountyAndDistrictCode THEN 1 ELSE 0 END AS MovedOutDistrict
-        ,Exited
+        ,h.StaffID AS EndStaffID
+		,h.AcademicYear AS EndYear
+        ,h.CountyAndDistrictCode AS EndHighestFTECountyAndDistrictCode
+        ,h.Building AS EndHighestFTEBuilding
+        ,endpc.CohortPrincipalType
+        ,CASE WHEN pc.CohortBuilding = h.Building THEN 1 ELSE 0 END AS StayedInSchool
+        ,CASE WHEN pc.CohortBuilding <> h.Building AND pc.CohortCountyAndDistrictCode = h.CountyAndDistrictCode  AND pc.CohortPrincipalType = endpc.CohortPrincipalType THEN 1 ELSE 0 END AS ChangedBuildingStayedDistrict
+        ,CASE WHEN pc.CohortBuilding <> h.Building AND pc.CohortCountyAndDistrictCode = h.CountyAndDistrictCode  AND pc.CohortPrincipalType <> COALESCE(endpc.CohortPrincipalType, '') THEN 1 ELSE 0 END AS ChangedRoleStayedDistrict
+        ,CASE WHEN pc.CohortCountyAndDistrictCode <> h.CountyAndDistrictCode  THEN 1 ELSE 0 END AS MovedOutDistrict
+        ,0 AS Exited
         ,GETDATE() as MetaCreatedAt
 FROM Fact_PrincipalCohort pc
-JOIN Fact_PrincipalMobility a
-	ON pc.CertificateNumber = a.CertificateNumber
+-- join to a wide set of staff/yr/highest duty root
+JOIN StaffByHighestFTE h
+	ON pc.CertificateNumber = h.CertificateNumber
+LEFT JOIN Fact_PrincipalCohort endpc
+    ON pc.CertificateNumber = endpc.CertificateNumber
+    AND h.AcademicYear = endpc.CohortYear
 WHERE
-	-- take only the single year changes
-	a.DiffYears = 1
-	AND a.StartYear >= pc.CohortYear
+	h.AcademicYear > pc.CohortYear
 
 -- next
 

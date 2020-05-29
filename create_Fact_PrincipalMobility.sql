@@ -49,11 +49,11 @@ CREATE INDEX idx_BaseSchoolPrincipals ON BaseSchoolPrincipals (
 
 -- next
 
-DROP TABLE IF EXISTS HighestFTE;
+DROP TABLE IF EXISTS StaffByHighestFTE;
 
 -- next
 
-CREATE TABLE HighestFTE (
+CREATE TABLE StaffByHighestFTE (
     StaffID int not null,
     AcademicYear smallint NOT NULL,
     CertificateNumber varchar(500) NULL,
@@ -86,7 +86,7 @@ WITH T AS (
     JOIN Dim_Staff s
         ON t.StaffID = s.StaffID
 )
-INSERT INTO HighestFTE (
+INSERT INTO StaffByHighestFTE (
     StaffID,
     AcademicYear,
     CertificateNumber,
@@ -104,7 +104,7 @@ WHERE RN = 1;
 
 -- next
 
-CREATE INDEX idx_HighestFTE ON HighestFTE (
+CREATE INDEX idx_StaffByHighestFTE ON StaffByHighestFTE (
     CertificateNumber
     ,AcademicYear
 );
@@ -125,8 +125,8 @@ CREATE TABLE Fact_PrincipalMobility (
     StartCountyAndDistrictCode varchar(500) NULL,
     StartBuilding varchar(500) NULL,
     StartPrincipalType varchar(50) NULL,
-    EndHighestFTECountyAndDistrictCode varchar(500) NULL,
-    EndHighestFTEBuilding varchar(500) NULL,
+    EndStaffByHighestFTECountyAndDistrictCode varchar(500) NULL,
+    EndStaffByHighestFTEBuilding varchar(500) NULL,
     EndPrincipalType varchar(50) NULL,
     Stayer tinyint NOT NULL,
     MovedIn tinyint NOT NULL,
@@ -173,21 +173,21 @@ YearBrackets AS (
         t1.Building AS StartBuilding,
         t1.DutyRoot AS StartDutyRoot,
         t1.PrincipalType AS StartPrincipalType,
-        -- end fields, using HighestFTE
-        t2.CountyAndDistrictCode AS EndHighestFTECountyAndDistrictCode,
-        t2.Building AS EndHighestFTEBuilding,
-        t2.DutyRoot AS EndHighestFTEDutyRoot,
+        -- end fields, using StaffByHighestFTE
+        t2.CountyAndDistrictCode AS EndStaffByHighestFTECountyAndDistrictCode,
+        t2.Building AS EndStaffByHighestFTEBuilding,
+        t2.DutyRoot AS EndStaffByHighestFTEDutyRoot,
         -- end fields, using principals table
         t3.PrincipalType AS EndPrincipalType,
         t3.DutyRoot AS EndPrincipalDutyRoot,
-        -- avoid counting exiters by checking for join to a HighestFTE row to ensure they're still employed somehow;
+        -- avoid counting exiters by checking for join to a StaffByHighestFTE row to ensure they're still employed somehow;
         -- if join didn't match anything in BaseSchoolPrincipals, then person isn't a Principal or AP in endyear
         CASE WHEN t2.CertificateNumber IS NOT NULL AND t3.CertificateNumber IS NULL THEN 1 ELSE 0 END AS NoLongerAnyPrincipal
     FROM BaseSchoolPrincipals t1
     JOIN YearBrackets y
         ON t1.AcademicYear = y.StartYear
     -- join to a wide set of staff/yr/highest duty root
-    LEFT JOIN HighestFTE t2
+    LEFT JOIN StaffByHighestFTE t2
         ON t1.CertificateNumber = t2.CertificateNumber
         AND y.EndYear = t2.AcademicYear
     -- join to a set of principals
@@ -199,15 +199,15 @@ YearBrackets AS (
     SELECT
         *
         -- mobility for principals is based strictly on location
-        ,CASE WHEN StartBuilding = EndHighestFTEBuilding THEN 1 ELSE 0 END as Stayer
+        ,CASE WHEN StartBuilding = EndStaffByHighestFTEBuilding THEN 1 ELSE 0 END as Stayer
         ,CASE WHEN
-            StartBuilding <> EndHighestFTEBuilding AND StartCountyAndDistrictCode = EndHighestFTECountyAndDistrictCode
+            StartBuilding <> EndStaffByHighestFTEBuilding AND StartCountyAndDistrictCode = EndStaffByHighestFTECountyAndDistrictCode
         THEN 1 ELSE 0 END as MovedIn
         ,CASE WHEN
-            StartCountyAndDistrictCode <> EndHighestFTECountyAndDistrictCode
+            StartCountyAndDistrictCode <> EndStaffByHighestFTECountyAndDistrictCode
         THEN 1 ELSE 0 END as MovedOut
         ,CASE WHEN
-            EndHighestFTEBuilding IS NULL
+            EndStaffByHighestFTEBuilding IS NULL
         THEN 1 ELSE 0 END AS Exited
         ,CASE WHEN StartDutyRoot = EndPrincipalDutyRoot THEN 1 ELSE 0 END AS SameAssignment
         ,CASE
@@ -228,8 +228,8 @@ INSERT INTO Fact_PrincipalMobility (
     StartCountyAndDistrictCode,
     StartBuilding,
     StartPrincipalType,
-    EndHighestFTECountyAndDistrictCode,
-    EndHighestFTEBuilding,
+    EndStaffByHighestFTECountyAndDistrictCode,
+    EndStaffByHighestFTEBuilding,
     EndPrincipalType,
     Stayer,
     MovedIn,
@@ -252,8 +252,8 @@ SELECT
     ,StartCountyAndDistrictCode
     ,StartBuilding
     ,StartPrincipalType
-    ,EndHighestFTECountyAndDistrictCode
-    ,EndHighestFTEBuilding
+    ,EndStaffByHighestFTECountyAndDistrictCode
+    ,EndStaffByHighestFTEBuilding
     ,EndPrincipalType
     ,Stayer
     ,MovedIn
@@ -285,7 +285,7 @@ SET MovedOutOfRMR = CASE
             FROM Dim_School
             WHERE
                 Fact_PrincipalMobility.EndYear = AcademicYear
-                AND Fact_PrincipalMobility.EndHighestFTEBuilding = SchoolCode
+                AND Fact_PrincipalMobility.EndStaffByHighestFTEBuilding = SchoolCode
             AND RMRFlag = 1
             )
     THEN 1
@@ -304,7 +304,3 @@ CREATE INDEX idx_Fact_PrincipalMobility2 ON Fact_PrincipalMobility(StartYear, St
 
 -- cleanup
 DROP TABLE BaseSchoolPrincipals;
-
--- next
-
-DROP TABLE HighestFTE;
