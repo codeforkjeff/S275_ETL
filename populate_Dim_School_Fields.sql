@@ -285,5 +285,5 @@ WHERE TotalEnrollmentOct > 0;
 
 UPDATE Dim_School
 SET
-	StudentsOfColorPercent = StudentsOfColor / TotalEnrollmentOct
+	StudentsOfColorPercent = CAST(StudentsOfColor AS real) / TotalEnrollmentOct
 WHERE TotalEnrollmentOct > 0;
