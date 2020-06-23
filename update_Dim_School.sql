@@ -66,3 +66,43 @@ SET TeachersOfColor = (
 -- next
 
 DROP TABLE TeacherCounts;
+
+-- next
+
+ALTER TABLE Dim_School ADD PrincipalOfColorFlag TINYINT NULL;
+
+-- next
+
+ALTER TABLE Dim_School ADD AsstPrincipalOfColorFlag TINYINT NULL;
+
+-- next
+
+UPDATE Dim_School
+SET
+	PrincipalOfColorFlag =
+		CASE WHEN EXISTS (
+			SELECT 1
+			FROM Fact_SchoolPrincipal p
+			JOIN Dim_Staff st
+				ON p.StaffID = st.StaffID
+			WHERE
+				p.PrincipalType = 'Principal'
+				AND st.PersonOfColorCategory = 'Person of Color'
+				AND p.AcademicYear = Dim_School.AcademicYear
+				AND st.CountyAndDistrictCode = Dim_School.DistrictCode
+				AND p.Building = Dim_School.SchoolCode
+		) THEN 1 ELSE 0 END,
+	AsstPrincipalOfColorFlag =
+		CASE WHEN EXISTS (
+			SELECT 1
+			FROM Fact_SchoolPrincipal p
+			JOIN Dim_Staff st
+				ON p.StaffID = st.StaffID
+			WHERE
+				p.PrincipalType = 'AssistantPrincipal'
+				AND st.PersonOfColorCategory = 'Person of Color'
+				AND p.AcademicYear = Dim_School.AcademicYear
+				AND st.CountyAndDistrictCode = Dim_School.DistrictCode
+				AND p.Building = Dim_School.SchoolCode
+		) THEN 1 ELSE 0 END
+;
