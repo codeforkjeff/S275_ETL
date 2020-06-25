@@ -73,16 +73,7 @@ To generate everything:
 python -c "import S275; S275.create_everything();"
 ```
 
-The `create_everything()` function is composed of calls to two fuctions:
-- `create_base_S275()` - this creates a cleaned `S275` table with inconsistent
-values normalized, bad data removed, etc. The structure is the same as the table
-found in the Access databases provided by OSPI except that the columns have been
-renamed to be more verbose/meaningful.
-- `create_derived_tables()` - this uses the cleaned `S275` table to create all
-derivative tables
-
-You can trace through what these functions do in the `S275.py` file
-in order to understand the complete set of steps for producing the final tables.
+See the section "Development Notes" below for details on what this does.
 
 # Working with the Data
 
@@ -106,6 +97,11 @@ python -c "import S275; S275.export_table('Fact_TeacherMobility', 'output/Fact_T
 Sample queries demonstrating how to use the tables can be found in `report_teacher_mobility.sql`
 
 # Generated Tables
+
+The end result is a set of tables based on [dimensional modeling](https://www.kimballgroup.com/2003/01/fact-tables-and-dimension-tables/).
+We follow this method so that the reporting tables can be reused for many
+types of research and reporting questions and so that what each table represents is
+clear and concise.
 
 Note that AcademicYear values are based on the "end year": e.g. 2016 means 2015-2016.
 
@@ -138,7 +134,18 @@ calculated both year over year and at 5 year snapshots.
 their CohortYear to each successive EndYear up to the present. In this table,
 the flag fields describe the transitions between CohortYear and EndYear.
 
-# Development Process
+# Development Notes
+
+The `create_everything()` function is composed of calls to two fuctions:
+- `create_base_S275()` - this creates a cleaned `S275` table with inconsistent
+values normalized, bad data removed, etc. The structure is the same as the table
+found in the Access databases provided by OSPI except that the columns have been
+renamed to be more verbose/meaningful.
+- `create_derived_tables()` - this uses the cleaned `S275` table to create all
+derivative tables
+
+You can trace through what these functions do in the `S275.py` file
+in order to understand the complete set of steps for producing the resulting tables.
 
 If you are changing the SQL files and Python code, you can probably re-run
 `create_derived_tables()` instead of everything, to save some time. You could further
