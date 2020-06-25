@@ -222,6 +222,8 @@ def create_dimensional_models():
 
     if os.path.exists(dim_school_fields):
         load_into_database([(dim_school_fields, 'Dim_School_Fields')])
+    else:
+        print(f"{dim_school_fields} not found, skipping processing for that file")
 
     execute_sql_file("populate_Dim_School_Fields.sql")
 
