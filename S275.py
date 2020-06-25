@@ -218,7 +218,7 @@ def create_dimensional_models():
     print("creating dimensional models")
 
     execute_sql_file("create_Dim_School.sql")
-    load_into_database([('Dim_School.txt', 'Dim_School_Base')])
+    load_into_database([('input/Dim_School_Base.txt', 'Dim_School_Base')])
 
     if os.path.exists(dim_school_fields):
         load_into_database([(dim_school_fields, 'Dim_School_Fields')])
@@ -362,7 +362,7 @@ def load_into_database(entries):
 
 def create_auxiliary_tables():
     execute_sql_file("create_dutycodes.sql")
-    load_into_database([('dutycodes.txt', 'DutyCodes')])
+    load_into_database([('input/DutyCodes.txt', 'DutyCodes')])
 
 
 def create_base_S275():
