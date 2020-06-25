@@ -6,11 +6,11 @@ This is a perpetual work in progress!
 
 # Features
 
-- Does ETL and data cleaning of the [S275 files from OSPI](https://www.k12.wa.us/safs-database-files) into a single table in a SQL database.
+- Does ETL and data cleaning of the [S275 Microsoft Access files from OSPI](https://www.k12.wa.us/safs-database-files) into a single table in a SQL database.
   Files for 1996 - 2019 are currently supported.
 - Creates dimensional models for flexible reporting
 - Generates dataset of teacher demographics and retention/mobility
-- Supports sqlite3 (included with Python) and SQL Server databases
+- Supports sqlite3 (included with Python) and Microsoft SQL Server databases
 
 # Requirements
 
@@ -20,6 +20,8 @@ Make sure you install all 32-bit or 64-bit programs; don't mix and match or you'
 - Python >= 3.7.4 - this includes the minimum version of sqlite3 (3.28.0) needed to support the window functions used in this code.
 - ODBC drivers for Microsoft Access (included with [Microsoft Access Database Engine 2016](https://www.microsoft.com/en-us/download/details.aspx?id=54920))
 - Roughly 1GB of disk space for each academic year of data, when using sqlite3
+
+Using Microsoft SQL Server is optional.
 
 # Setup
 
@@ -39,7 +41,7 @@ Make sure you install all 32-bit or 64-bit programs; don't mix and match or you'
   Instead of doing this step manually, you can run this script to do it for you:
 
 ```sh
-# this downloads all currently available files, as of Aug 2019
+# this downloads all currently available files, as of Jun 2020
 python OSPI_data_downloader.py
 ```
 
@@ -73,21 +75,22 @@ python -c "import S275; S275.create_everything();"
 
 The `create_everything()` function is composed of calls to two fuctions:
 - `create_base_S275()` - this creates a cleaned `S275` table with inconsistent
-values normalized, bad data removed, etc.
+values normalized, bad data removed, etc. The structure is the same as the table
+found in the Access databases provided by OSPI except that the columns have been
+renamed to be more verbose/meaningful.
 - `create_derived_tables()` - this uses the cleaned `S275` table to create all
 derivative tables
 
-If you are doing development and changing the SQL files and Python code, you
-can probably re-run `create_derived_tables()` instead of everything, to save
-some time. You could further selectively re-run only parts of that function to
-save time, if you feel confident about the dependencies. For details, see the code
-in `S275.py`.
+You can trace through what these functions do in the `S275.py` file
+in order to understand the complete set of steps for producing the final tables.
 
 # Working with the Data
 
 When the transforms above are finished, you can connect directly to the resulting
 database to work with the generated tables. If you built a sqlite database, you
-can use a client such as [DBeaver](https://dbeaver.io/).
+can connect to it and run queries using a compatible SQL client. Two freely
+available ones are [DBeaver](https://dbeaver.io/) and
+[SQuirreL](http://squirrel-sql.sourceforge.net/).
 
 You can also export the generated data into tab-separated files for use in
 Excel, R, Tableau, or any other program that can read such files. Do this as follows:
@@ -137,14 +140,14 @@ the flag fields describe the transitions between CohortYear and EndYear.
 
 # Development Process
 
-- Create one or more .sql files with the commands that you want to run.
+If you are changing the SQL files and Python code, you can probably re-run
+`create_derived_tables()` instead of everything, to save some time. You could further
+selectively re-run only parts of that function to save time, if you feel confident
+about the dependencies. For details, see the code in `S275.py`.
 
-- Add a new, appropriately-named function to `S275.py` to run your .sql files.
-Make sure the code runs successfully in both SQL Server and sqlite. .sql files
-should be written in SQL Server dialect where standard SQL isn't possible;
-see the `execute_sql_file()` in `S275.py` for the code that translates to sqlite.
-
-- Document your new command in this README (above).
+.sql files should be written in SQL Server dialect where standard SQL isn't possible;
+see the `execute_sql_file()` in `S275.py` for the code that translates SQL to the
+dialect for sqlite.
 
 # Credits
 
