@@ -4,3 +4,4 @@ S275_settings.py
 __pycache__/
 S275_env/
 .ipynb_checkpoints
+*.sublime-workspace
