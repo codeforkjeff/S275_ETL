@@ -7,9 +7,9 @@ This is a perpetual work in progress!
 # Features
 
 - Does ETL and data cleaning of the [S275 Microsoft Access files from OSPI](https://www.k12.wa.us/safs-database-files) into a single table in a SQL database.
-  Files for 1996 - 2019 are currently supported.
+  Files for 1996 - 2019 are currently supported; however, not all of these years are currently available for download on the website.
 - Creates dimensional models for flexible reporting
-- Generates dataset of teacher demographics and retention/mobility
+- Generates models for teacher/principal demographics, retention/mobility, and cohort analysis
 - Supports sqlite3 (included with Python) and Microsoft SQL Server databases
 
 # Requirements
