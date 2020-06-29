@@ -59,16 +59,15 @@ order by AcademicYear;
 
 With Counts as (
 	SELECT
-		StartYear AS AcademicYear,
+		st.AcademicYear,
 		count(*) as TotalTeachers,
 		SUM(IsNoviceTeacherFlag) AS TotalNoviceTeachers
-	FROM Fact_TeacherMobility m
+	FROM Fact_SchoolTeacher st
 	JOIN Dim_Staff s
-		ON m.StartStaffID = s.StaffID
-	where DiffYears = 1
+		ON st.StaffID = s.StaffID
+	where PrimaryFlag = 1
 	GROUP BY
-		StartYear,
-		EndYear
+		st.AcademicYear
 )
 select
 	*,
