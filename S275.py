@@ -18,8 +18,9 @@ import sys
 
 try:
     from S275_settings import *
-except:
-    print("ERROR: could't import S275_settings module, check that you created that file. See the README.")
+except Exception as e:
+    print(f"ERROR: could't import S275_settings module: {e}")
+    print("Check that you created that file and that it doesn't have any errors. See the README.")
     sys.exit(1)
 
 #### Parameters
