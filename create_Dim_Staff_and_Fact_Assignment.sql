@@ -669,6 +669,9 @@ WHERE EXISTS (
 
 -- next
 
+-- is board certified at the start of the AY (i.e. their cert expires after Sept of the AY)
+-- NationalBoardCertExpirationDate became available starting in 2017. note that this is different
+-- from the 'certflag' field which designates whether person is "certificated employee"
 UPDATE Dim_Staff
 SET IsNationalBoardCertified = 1
 WHERE
