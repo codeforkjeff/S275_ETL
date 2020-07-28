@@ -305,6 +305,7 @@ CREATE TABLE Fact_Assignment (
     IsAdministrativeAssignment TINYINT NOT NULL,
     IsPrincipalAssignment TINYINT NOT NULL,
     IsAsstPrincipalAssignment TINYINT NOT NULL,
+    IsPESBEducatorAssignment TINYINT NOT NULL,
     MetaCreatedAt DATETIME
 );
 
@@ -332,6 +333,7 @@ INSERT INTO Fact_Assignment (
     IsAdministrativeAssignment,
     IsPrincipalAssignment,
     IsAsstPrincipalAssignment,
+    IsPESBEducatorAssignment,
     MetaCreatedAt
 )
 SELECT
@@ -372,6 +374,12 @@ SELECT
     CASE WHEN
         CAST(S275.DutyRoot as integer) = 22 OR CAST(S275.DutyRoot as integer) = 24
     THEN 1 ELSE 0 END AS IsAsstPrincipalAssignment,
+    -- definition of an 'Educator' according to PESB
+    CASE
+        WHEN CAST(S275.DutyRoot as integer) IN (11, 12, 13, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 45, 46, 47, 48, 49, 51, 52, 63, 64)
+        THEN 1
+        ELSE 0
+    END AS IsPESBEducatorAssignment,
     GETDATE() as MetaCreatedAt
 from S275_Coalesced S275
 JOIN Dim_Staff_Coalesced d ON
@@ -453,6 +461,7 @@ CREATE TABLE Dim_Staff (
     TempOrPermCert varchar(1) NULL,
     IsNewHireFlag TINYINT NOT NULL,
     IsNewHireWAStateFlag TINYINT NOT NULL,
+    IsInPSESDFlag TINYINT NOT NULL,
     MetaCreatedAt DATETIME
 );
 
@@ -510,6 +519,7 @@ INSERT INTO Dim_Staff (
     IsNationalBoardCertified,
     IsNewHireFlag,
     IsNewHireWAStateFlag,
+    IsInPSESDFlag,
     MetaCreatedAt
 )
 SELECT
@@ -590,6 +600,46 @@ SELECT
     0 AS IsNationalBoardCertified,
     0 AS IsNewHireFlag,
     0 AS IsNewHireWAStateFlag,
+    CASE
+        WHEN CountyAndDistrictCode IN (
+            '17408', -- Auburn School District
+            '18303', -- Bainbridge Island School District
+            '17405', -- Bellevue School District
+            '27403', -- Bethel School District
+            '27019', -- Carbonado School District
+            '27400', -- Clover Park School District
+            '27343', -- Dieringer School District
+            '27404', -- Eatonville School District
+            '17216', -- Enumclaw School District
+            '17210', -- Federal Way School District
+            '27417', -- Fife School District
+            '27402', -- Franklin Pierce School District
+            '17401', -- Highline School District
+            '17411', -- Issaquah School District
+            '17415', -- Kent School District
+            '17414', -- Lake Washington School District
+            '17400', -- Mercer Island School District
+            '17417', -- Northshore School District
+            '27344', -- Orting School District
+            '27401', -- Peninsula School District
+            '27003', -- Puyallup School District
+            '17403', -- Renton School District
+            '17407', -- Riverview School District
+            '17001', -- Seattle Public Schools
+            '17412', -- Shoreline School District
+            '17404', -- Skykomish School District
+            '17410', -- Snoqualmie Valley School District
+            '27001', -- Steilacoom Hist. School District
+            '27320', -- Sumner School District
+            '27010', -- Tacoma School District
+            '17409', -- Tahoma School District
+            '17406', -- Tukwila School District
+            '27083', -- University Place School District
+            '17402', -- Vashon Island School District
+            '27416'  -- White River School District
+        ) THEN 1
+        ELSE 0
+    END AS IsInPSESDFlag,
     GETDATE() as MetaCreatedAt
 FROM Dim_Staff_Coalesced;
 
