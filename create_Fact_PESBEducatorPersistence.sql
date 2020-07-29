@@ -8,16 +8,17 @@ DROP TABLE IF EXISTS Fact_PESBEducatorPersistence;
 -- next
 
 CREATE TABLE Fact_PESBEducatorPersistence (
-	CertificateNumber     varchar(500) NOT   NULL,
-	StartYear             smallint     NOT   NULL,
-	EndYear               smallint     NOT   NULL,
-	IsInPSESDFlag         tinyint      NOT   NULL,
-	BeginningEducatorFlag tinyint      NOT   NULL,
-	PersonOfColorCategory varchar(50)  NULL,
-	YearCount             tinyint      NOT   NULL,
-	PersistedFlag         tinyint      NOT   NULL,
-	MetaCreatedAt         DATETIME,
-	PRIMARY KEY (CertificateNumber, StartYear, EndYear)
+	CertificateNumber           varchar(500) NOT   NULL,
+	CohortYear                  smallint     NOT   NULL,
+	CohortInPSESDFlag           tinyint      NOT   NULL,
+	CohortBeginningEducatorFlag tinyint      NOT   NULL,
+	CohortPersonOfColorCategory varchar(50)  NULL,
+	EndYear                     smallint     NOT   NULL,
+	YearCount                   tinyint      NOT   NULL,
+	PersistedFlag               tinyint      NOT   NULL,
+	PersistedWithinPSESDFlag    tinyint      NOT   NULL,
+	MetaCreatedAt               DATETIME,
+	PRIMARY KEY (CertificateNumber, CohortYear, EndYear)
 );
 
 -- next
@@ -28,7 +29,7 @@ WITH DistinctEducators AS (
 	SELECT
 		a.AcademicYear
 		,s.CertificateNumber
-		,MAX(s.IsInPSESDFlag) AS IsInPSESDFlag
+		,MAX(s.IsInPSESDFlag) AS CohortInPSESDFlag
 		-- flag is set if educator was 'Beginning' in any district
 		,MAX(CASE WHEN s.CBRTNCode = 'B' THEN 1 ELSE 0 END) as BeginningEducatorFlag
 		-- use MIN() to bias towards 'Person of Color' vs 'White':
@@ -53,13 +54,14 @@ WITH DistinctEducators AS (
 INSERT INTO Fact_PESBEducatorPersistence
 SELECT
 		e.CertificateNumber
-		,e.AcademicYear AS StartYear
+		,e.AcademicYear AS CohortYear
+		,e.CohortInPSESDFlag AS CohortInPSESDFlag
+		,e.BeginningEducatorFlag AS CohortBeginningEducatorFlag
+		,e.PersonOfColorCategory AS CohortPersonOfColorCategory
 		,endyears.AcademicYear AS EndYear
-		,e.IsInPSESDFlag AS IsInPSESDFlag
-		,e.BeginningEducatorFlag AS BeginningEducatorFlag
-		,e.PersonOfColorCategory AS PersonOfColorCategory
 		,endyears.AcademicYear - e.AcademicYear + 1 AS YearCount
 		,0 AS PersistedFlag
+		,0 AS PersistedWithinPSESDFlag
 		,GETDATE() as MetaCreatedAt
 FROM DistinctEducators e
 CROSS JOIN
@@ -81,9 +83,10 @@ DROP TABLE IF EXISTS EducatorContinued;
 
 -- did educator Continue or Transfer in a given year?
 CREATE TABLE EducatorContinued (
-	AcademicYear                  smallint NOT   NULL,
-	CertificateNumber             varchar(500) NOT NULL,
-	ContinuedOrTransferredFlag    smallint NOT   NULL,
+	AcademicYear                          smallint     NOT NULL,
+	CertificateNumber                     varchar(500) NOT NULL,
+	ContinuedOrTransferredFlag            smallint     NOT NULL,
+	ContinuedOrTransferredWithinPSESDFlag smallint     NOT NULL,
 	PRIMARY KEY (AcademicYear, CertificateNumber)
 );
 
@@ -93,7 +96,8 @@ INSERT INTO EducatorContinued
 select
 	s.AcademicYear,
 	s.CertificateNumber,
-	MAX(CASE WHEN s.CBRTNCode IN ('C', 'T') THEN 1 ELSE 0 END) AS ContinuedOrTransferredFlag
+	MAX(CASE WHEN s.CBRTNCode IN ('C', 'T') THEN 1 ELSE 0 END) AS ContinuedOrTransferredFlag,
+	MAX(CASE WHEN s.CBRTNCode IN ('C', 'T') AND s.IsInPSESDFlag = 1 THEN 1 ELSE 0 END) AS ContinuedOrTransferredWithinPSESDFlag
 FROM Dim_Staff s
 JOIN Fact_Assignment a
 	ON s.StaffID = a.StaffID
@@ -111,13 +115,14 @@ DROP TABLE IF EXISTS EducatorContinuedCounts;
 
 -- next
 
--- count how many records there are for continuation between StartYear and endyear, excluding StartYear.
+-- count how many records there are for continuation between CohortYear and endyear, excluding CohortYear.
 CREATE TABLE EducatorContinuedCounts (
-	CertificateNumber           varchar(500) NOT NULL,
-	StartYear                   smallint     NOT NULL,
-	EndYear                     smallint     NOT NULL,
-	ContinuedOrTransferredCount smallint     NOT NULL,
-	PRIMARY KEY (CertificateNumber, StartYear, EndYear)
+	CertificateNumber                      varchar(500) NOT NULL,
+	CohortYear                              smallint     NOT NULL,
+	EndYear                                smallint     NOT NULL,
+	ContinuedOrTransferredCount            smallint     NOT NULL,
+	ContinuedOrTransferredWithinPSESDCount smallint     NOT NULL,
+	PRIMARY KEY (CertificateNumber, CohortYear, EndYear)
 );
 
 -- next
@@ -125,17 +130,18 @@ CREATE TABLE EducatorContinuedCounts (
 INSERT INTO EducatorContinuedCounts
 select
 	p.CertificateNumber,
-	p.StartYear,
+	p.CohortYear,
 	p.EndYear,
-	SUM(ContinuedOrTransferredFlag) AS ContinuedOrTransferredCount
+	SUM(ContinuedOrTransferredFlag) AS ContinuedOrTransferredCount,
+	SUM(ContinuedOrTransferredWithinPSESDFlag) AS ContinuedOrTransferredWithinPSESDCount
 FROM Fact_PESBEducatorPersistence p
 JOIN EducatorContinued ct
 	ON p.CertificateNumber = ct.CertificateNumber
-	AND ct.AcademicYear > p.StartYear
+	AND ct.AcademicYear > p.CohortYear
 	AND ct.AcademicYear <= p.EndYear
 GROUP BY
 	p.CertificateNumber,
-	p.StartYear,
+	p.CohortYear,
 	p.EndYear;
 
 -- next
@@ -147,10 +153,25 @@ WHERE EXISTS (
 	FROM EducatorContinuedCounts c
 	WHERE
 		Fact_PESBEducatorPersistence.CertificateNumber = c.CertificateNumber
-		AND Fact_PESBEducatorPersistence.StartYear = c.StartYear
+		AND Fact_PESBEducatorPersistence.CohortYear = c.CohortYear
 		AND Fact_PESBEducatorPersistence.EndYear = c.EndYear
-		-- subtract 1 to exclude considering start year
+		-- subtract 1 to exclude considering cohort year
 		AND c.ContinuedOrTransferredCount = Fact_PESBEducatorPersistence.YearCount - 1
+);
+
+-- next
+
+UPDATE Fact_PESBEducatorPersistence
+SET PersistedWithinPSESDFlag = 1
+WHERE EXISTS (
+	SELECT 1
+	FROM EducatorContinuedCounts c
+	WHERE
+		Fact_PESBEducatorPersistence.CertificateNumber = c.CertificateNumber
+		AND Fact_PESBEducatorPersistence.CohortYear = c.CohortYear
+		AND Fact_PESBEducatorPersistence.EndYear = c.EndYear
+		-- subtract 1 to exclude considering cohort year
+		AND c.ContinuedOrTransferredWithinPSESDCount = Fact_PESBEducatorPersistence.YearCount - 1
 );
 
 -- next
