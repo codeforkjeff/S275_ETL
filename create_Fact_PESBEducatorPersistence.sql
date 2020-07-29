@@ -34,6 +34,8 @@ WITH DistinctEducators AS (
 		,MAX(CASE WHEN s.CBRTNCode = 'B' THEN 1 ELSE 0 END) as BeginningEducatorFlag
 		-- use MIN() to bias towards 'Person of Color' vs 'White':
 		-- i.e. if they identified anywhere as POC for that year, consider them POC.
+		-- I tried this with MAX and it doesn't make a difference, which means peoples'
+		-- racial identifications are highly  consistent when they work in multiple districts
 		,MIN(PersonOfColorCategory) AS PersonOfColorCategory
 	FROM Fact_Assignment a
 	JOIN Dim_Staff s
