@@ -50,6 +50,7 @@ CREATE TABLE Raw_S275 (
     ,cbrtn varchar(500) NULL
     ,clasflag varchar(500) NULL
     ,certflag varchar(500) NULL
+    ,ceridate varchar(500) NULL
     ,NBcertexpdate varchar(500) NULL
     ,recno varchar(500) NULL
     ,prog varchar(500) NULL
@@ -64,6 +65,7 @@ CREATE TABLE Raw_S275 (
     ,asssal varchar(500) NULL
     ,asshpy varchar(500) NULL
     ,major varchar(500) NULL
+    ,crasdate varchar(500) NULL
     ,yr varchar(500) NULL
 	,FileType varchar(500) NULL
 )

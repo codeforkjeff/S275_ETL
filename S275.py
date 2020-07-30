@@ -77,8 +77,8 @@ all_possible_columns = [
     ,"cbrtn"
     ,"clasflag"
     ,"certflag"
-    # metadata field, probably
-    # ,"ceridate"
+    # metadata field, probably for district-level columns. this is useful for tracking.
+    ,"ceridate"
     # don't know what this is, there's already a camix1
     #,"camix1S"
     ,"NBcertexpdate"
@@ -97,8 +97,8 @@ all_possible_columns = [
     ,"asssal"
     ,"asshpy"
     ,"major"
-    # metadata field, probably
-    # ,"crasdate"
+    # metadata field, probably for assignment-level columns. this is useful for tracking.
+    ,"crasdate"
     ,"yr"
 ]
 
