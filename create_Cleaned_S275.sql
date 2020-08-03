@@ -158,7 +158,15 @@ SELECT
     ,sex as Sex
     ,ethnic as Ethnicity
     ,hispanic as Hispanic
-    ,race as Race
+    -- deduplicate race codes which happens in some years. e.g. 'WW'
+    ,CONCAT(
+        CASE WHEN race LIKE '%A%' THEN 'A' ELSE '' END,
+        CASE WHEN race LIKE '%W%' THEN 'W' ELSE '' END,
+        CASE WHEN race LIKE '%B%' THEN 'B' ELSE '' END,
+        CASE WHEN race LIKE '%H%' THEN 'H' ELSE '' END,
+        CASE WHEN race LIKE '%P%' THEN 'P' ELSE '' END,
+        CASE WHEN race LIKE '%I%' THEN 'I' ELSE '' END
+    ) as Race
     ,hdeg as HighestDegree
     ,CASE
         -- AY 1996 (yr=95) has 2 digit years, so we can safely assume they're in 20th century
