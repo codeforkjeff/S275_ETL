@@ -2,6 +2,9 @@
 -- PESB's persistence measure logic.
 -- This table is rolled up to the AY and person level. Note that this is different from other fact tables
 -- which include District in the grain.
+--
+-- Persistence is defined here as continuously working in each of the academic years of the period examined
+-- (vs comparing the start/end years). We confirmed this on 8/4/2020.
 
 DROP TABLE IF EXISTS Fact_PESBEducatorPersistence;
 
@@ -15,7 +18,7 @@ CREATE TABLE Fact_PESBEducatorPersistence (
 	CohortPersonOfColorCategory varchar(50)  NULL,
 	EndYear                     smallint     NOT   NULL,
 	YearCount                   tinyint      NOT   NULL,
-	PersistedFlag               tinyint      NOT   NULL,
+	PersistedWithinWAFlag               tinyint      NOT   NULL,
 	PersistedWithinPSESDFlag    tinyint      NOT   NULL,
 	MetaCreatedAt               DATETIME,
 	PRIMARY KEY (CertificateNumber, CohortYear, EndYear)
@@ -64,7 +67,7 @@ SELECT
 		-- note that the year count includes the Cohort Year:
 		-- e.g. 2013 AY to 2014 AY would be considered 2 year persistence
 		,endyears.AcademicYear - e.AcademicYear + 1 AS YearCount
-		,0 AS PersistedFlag
+		,0 AS PersistedWithinWAFlag
 		,0 AS PersistedWithinPSESDFlag
 		,GETDATE() as MetaCreatedAt
 FROM DistinctEducators e
@@ -151,7 +154,7 @@ GROUP BY
 -- next
 
 UPDATE Fact_PESBEducatorPersistence
-SET PersistedFlag = 1
+SET PersistedWithinWAFlag = 1
 WHERE EXISTS (
 	SELECT 1
 	FROM EducatorContinuedCounts c
