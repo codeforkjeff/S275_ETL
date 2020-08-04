@@ -61,6 +61,8 @@ SELECT
 		,e.BeginningEducatorFlag AS CohortBeginningEducatorFlag
 		,e.PersonOfColorCategory AS CohortPersonOfColorCategory
 		,endyears.AcademicYear AS EndYear
+		-- note that the year count includes the Cohort Year:
+		-- e.g. 2013 AY to 2014 AY would be considered 2 year persistence
 		,endyears.AcademicYear - e.AcademicYear + 1 AS YearCount
 		,0 AS PersistedFlag
 		,0 AS PersistedWithinPSESDFlag
