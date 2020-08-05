@@ -15,6 +15,7 @@ CREATE TABLE Fact_PESBEducatorPersistence (
 	CohortYear                  smallint     NOT   NULL,
 	CohortInPSESDFlag           tinyint      NOT   NULL,
 	CohortBeginningEducatorFlag tinyint      NOT   NULL,
+	CohortRace                  varchar(50)  NULL,
 	CohortPersonOfColorCategory varchar(50)  NULL,
 	EndYear                     smallint     NOT   NULL,
 	YearCount                   tinyint      NOT   NULL,
@@ -35,6 +36,9 @@ WITH DistinctEducators AS (
 		,MAX(s.IsInPSESDFlag) AS CohortInPSESDFlag
 		-- flag is set if educator was 'Beginning' in any district
 		,MAX(CASE WHEN s.CBRTNCode = 'B' THEN 1 ELSE 0 END) as BeginningEducatorFlag
+		-- MIN() here will bias towards non-White people if they identified differently
+		-- in diff districts in same yr
+		,MIN(RaceEthOSPI) AS Race
 		-- use MIN() to bias towards 'Person of Color' vs 'White':
 		-- i.e. if they identified anywhere as POC for that year, consider them POC.
 		-- I tried this with MAX and it doesn't make a difference, which means peoples'
@@ -62,6 +66,7 @@ SELECT
 		,e.AcademicYear AS CohortYear
 		,e.CohortInPSESDFlag AS CohortInPSESDFlag
 		,e.BeginningEducatorFlag AS CohortBeginningEducatorFlag
+		,e.Race AS CohortRace
 		,e.PersonOfColorCategory AS CohortPersonOfColorCategory
 		,endyears.AcademicYear AS EndYear
 		-- note that the year count includes the Cohort Year:
