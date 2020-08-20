@@ -296,3 +296,94 @@ WHERE
 
     OR (AcademicYear = '2009' and CertificateNumber = '466137G' and TotalFinalSalary = 39200)
 ;
+
+-- next
+
+DROP TABLE IF EXISTS FillInHispanic;
+
+-- next
+
+-- A small number of rows in each year have NULL Hispanic values.
+-- Fill in the values using other years (in the same district) if data is available
+
+CREATE TABLE FillInHispanic (
+    BaseYear SMALLINT,
+    CountyAndDistrictCode VARCHAR(50),
+    CertificateNumber VARCHAR(50),
+    AcademicYear SMALLINT,
+    DiffYears SMALLINT,
+    Hispanic varchar,
+    Rank SMALLINT
+);
+
+-- next
+
+;WITH NullHispanic AS (
+    SELECT DISTINCT
+        AcademicYear,
+        CountyAndDistrictCode,
+        CertificateNumber
+    FROM S275
+    WHERE
+        -- Hispanic field is new in 2011
+        AcademicYear >= 2011
+        AND Hispanic IS NULL
+)
+,WithHispanic AS (
+    -- find non-null Hispanic values for people. only look at the same district.
+    SELECT
+        t1.AcademicYear AS BaseYear,
+        t1.CountyAndDistrictCode,
+        t1.CertificateNumber,
+        t2.AcademicYear,
+        t2.AcademicYear - t1.AcademicYear AS DiffYears,
+        t2.Hispanic
+    FROM NullHispanic t1
+    LEFT JOIN S275 t2
+        ON t2.Hispanic IS NOT NULL
+        AND t1.CountyAndDistrictCode = t2.CountyAndDistrictCode
+        AND t1.CertificateNumber = t2.CertificateNumber
+)
+,Ranked AS (
+    -- select a "best" row to use
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY
+                BaseYear,
+                CountyAndDistrictCode,
+                CertificateNumber
+            -- take closest year (lowest diff), whether earlier or later.
+            -- this results in "shifting sands" where new data can change the flag in previous years
+            ORDER BY ABS(DiffYears)
+        ) AS Rank
+    FROM WithHispanic
+)
+INSERT INTO FillInHispanic
+SELECT *
+FROM Ranked
+WHERE Rank = 1
+ORDER BY
+    CertificateNumber,
+    BaseYear,
+    CountyAndDistrictCode,
+    DiffYears;
+
+-- next
+
+UPDATE S275
+SET Hispanic = (
+    SELECT
+        Hispanic
+    FROM FillInHispanic
+    WHERE
+        Hispanic IS NOT NULL
+        AND S275.AcademicYear = FillInHispanic.BaseYear
+        AND S275.CountyAndDistrictCode = FillInHispanic.CountyAndDistrictCode
+        AND S275.CertificateNumber = FillInHispanic.CertificateNumber
+)
+WHERE
+    -- Hispanic field is new in 2011
+    AcademicYear >= 2011
+    AND Hispanic IS NULL;
+
