@@ -65,6 +65,11 @@ WHERE
 
 -- next
 
+-- PrimaryFlag = pick the assighnment w/ highest FTE for the individual across
+-- all schools where they serve, regardless of whether they were a Principal or Asst Prin.
+-- It is NOT the "primary" Principal at the school (a school can sometimes have more than
+-- one principal)
+
 WITH Ranked AS (
     SELECT
         SchoolPrincipalID
