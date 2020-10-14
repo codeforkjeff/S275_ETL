@@ -1,4 +1,8 @@
 -- we need this table for per-building rolled up fields, can't simply extend Fact_Assignment
+--
+-- grain of this table is StaffID (whose grain is AY, District, CertNumber), Building, PrincipalType.
+-- this rolls up the 2 different DutyRoot codes for Principal and AssistantPrincipal, which are used to distinguish
+-- between primary and secondary schools.
 
 DROP TABLE IF EXISTS Fact_SchoolPrincipal;
 
@@ -9,7 +13,6 @@ CREATE TABLE Fact_SchoolPrincipal (
     StaffID INT NOT NULL,
     AcademicYear SMALLINT NOT NULL,
     Building varchar(500) NULL,
-    DutyRoot varchar(2) NULL,
     PrincipalType VARCHAR(50) NULL,
     PrincipalPercentage NUMERIC(14,4) NULL,
     PrincipalFTEDesignation NUMERIC(14,4) NULL,
@@ -20,11 +23,19 @@ CREATE TABLE Fact_SchoolPrincipal (
 
 -- next
 
+WITH AssignmentsWithPrincipalType AS (
+    SELECT
+        *
+        ,CASE
+            WHEN cast(DutyRoot as integer) IN (21, 23) THEN 'Principal'
+            WHEN cast(DutyRoot as integer) IN (22, 24) THEN 'AssistantPrincipal'
+        END AS PrincipalType
+    FROM Fact_assignment
+)
 INSERT INTO Fact_SchoolPrincipal (
     StaffID,
     AcademicYear,
     Building,
-    DutyRoot,
     PrincipalType,
     PrincipalPercentage,
     PrincipalFTEDesignation,
@@ -36,24 +47,21 @@ select
     a.StaffID
     ,a.AcademicYear
     ,Building
-    ,DutyRoot
-    ,CASE
-        WHEN cast(DutyRoot as integer) IN (21, 23) THEN 'Principal'
-        WHEN cast(DutyRoot as integer) IN (22, 24) THEN 'AssistantPrincipal'
-    END AS PrincipalType
+    ,PrincipalType
     ,COALESCE(SUM(AssignmentPercent), 0) AS PrincipalPercentage
     ,SUM(AssignmentFTEDesignation) AS PrincipalFTEDesignation
     ,SUM(AssignmentSalaryTotal) AS PrincipalSalaryTotal
     ,0 AS PrimaryFlag
     ,GETDATE() as MetaCreatedAt
-from Fact_Assignment a
+from AssignmentsWithPrincipalType a
 JOIN Dim_Staff s ON a.StaffID = s.StaffID
 WHERE IsPrincipalAssignment = 1 OR IsAsstPrincipalAssignment = 1
 GROUP BY
     a.StaffID
     ,a.AcademicYear
     ,Building
-    ,DutyRoot
+    -- is this right? or should we group by rolled up PrincipalType?
+    ,PrincipalType
 ;
 
 -- next

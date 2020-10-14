@@ -88,6 +88,7 @@ SET
 			WHERE
 				p.PrincipalType = 'Principal'
 				AND st.PersonOfColorCategory = 'Person of Color'
+				AND p.PrimaryFlag = 1
 				AND p.AcademicYear = Dim_School.AcademicYear
 				AND st.CountyAndDistrictCode = Dim_School.DistrictCode
 				AND p.Building = Dim_School.SchoolCode
@@ -101,6 +102,7 @@ SET
 			WHERE
 				p.PrincipalType = 'AssistantPrincipal'
 				AND st.PersonOfColorCategory = 'Person of Color'
+				AND p.PrimaryFlag = 1
 				AND p.AcademicYear = Dim_School.AcademicYear
 				AND st.CountyAndDistrictCode = Dim_School.DistrictCode
 				AND p.Building = Dim_School.SchoolCode

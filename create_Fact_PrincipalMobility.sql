@@ -11,7 +11,6 @@ CREATE TABLE BaseSchoolPrincipals (
     CertificateNumber varchar(500) NULL,
     CountyAndDistrictCode varchar(500) NULL,
     Building varchar(500) NULL,
-    DutyRoot varchar(2) NULL,
     PrincipalType varchar(50) NULL
 );
 
@@ -23,7 +22,6 @@ INSERT INTO BaseSchoolPrincipals (
     CertificateNumber,
     CountyAndDistrictCode,
     Building,
-    DutyRoot,
     PrincipalType
 )
 SELECT
@@ -32,7 +30,6 @@ SELECT
     CertificateNumber,
     CountyAndDistrictCode,
     Building,
-    DutyRoot,
     PrincipalType
 FROM Fact_SchoolPrincipal sp
 JOIN Dim_Staff s
@@ -171,7 +168,6 @@ YearBrackets AS (
         -- start fields
         t1.CountyAndDistrictCode AS StartCountyAndDistrictCode,
         t1.Building AS StartBuilding,
-        t1.DutyRoot AS StartDutyRoot,
         t1.PrincipalType AS StartPrincipalType,
         -- end fields, using StaffByHighestFTE
         t2.CountyAndDistrictCode AS EndStaffByHighestFTECountyAndDistrictCode,
@@ -179,7 +175,6 @@ YearBrackets AS (
         t2.DutyRoot AS EndStaffByHighestFTEDutyRoot,
         -- end fields, using principals table
         t3.PrincipalType AS EndPrincipalType,
-        t3.DutyRoot AS EndPrincipalDutyRoot,
         -- avoid counting exiters by checking for join to a StaffByHighestFTE row to ensure they're still employed somehow;
         -- if join didn't match anything in BaseSchoolPrincipals, then person isn't a Principal or AP in endyear
         CASE WHEN t2.CertificateNumber IS NOT NULL AND t3.CertificateNumber IS NULL THEN 1 ELSE 0 END AS NoLongerAnyPrincipal
@@ -209,7 +204,7 @@ YearBrackets AS (
         ,CASE WHEN
             EndStaffByHighestFTEBuilding IS NULL
         THEN 1 ELSE 0 END AS Exited
-        ,CASE WHEN StartDutyRoot = EndPrincipalDutyRoot THEN 1 ELSE 0 END AS SameAssignment
+        ,CASE WHEN StartPrincipalType = EndPrincipalType THEN 1 ELSE 0 END AS SameAssignment
         ,CASE
             WHEN StartPrincipalType = 'AssistantPrincipal' AND EndPrincipalType = 'Principal'
         THEN 1 ELSE 0 END AS AsstToPrincipal
