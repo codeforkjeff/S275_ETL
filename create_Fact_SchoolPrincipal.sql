@@ -18,6 +18,7 @@ CREATE TABLE Fact_SchoolPrincipal (
     PrincipalFTEDesignation NUMERIC(14,4) NULL,
     PrincipalSalaryTotal INT NULL,
     PrimaryFlag TINYINT NULL,
+    PrimaryForSchoolFlag TINYINT NULL,
     MetaCreatedAt DATETIME
 );
 
@@ -41,6 +42,7 @@ INSERT INTO Fact_SchoolPrincipal (
     PrincipalFTEDesignation,
     PrincipalSalaryTotal,
     PrimaryFlag,
+    PrimaryForSchoolFlag,
     MetaCreatedAt
 )
 select
@@ -52,6 +54,7 @@ select
     ,SUM(AssignmentFTEDesignation) AS PrincipalFTEDesignation
     ,SUM(AssignmentSalaryTotal) AS PrincipalSalaryTotal
     ,0 AS PrimaryFlag
+    ,0 AS PrimaryForSchoolFlag
     ,GETDATE() as MetaCreatedAt
 from AssignmentsWithPrincipalType a
 JOIN Dim_Staff s ON a.StaffID = s.StaffID
@@ -97,6 +100,37 @@ WITH Ranked AS (
 )
 UPDATE Fact_SchoolPrincipal
 SET PrimaryFlag = 1
+WHERE EXISTS (
+    SELECT 1
+    FROM Ranked
+    WHERE Ranked.SchoolPrincipalID = Fact_SchoolPrincipal.SchoolPrincipalID
+    AND RN = 1
+);
+
+-- next
+
+-- PrimaryForSchoolFlag = who is the Principal and AP with the highest FTE at each building?
+-- better logic for this flag might be who served the longest during that year,
+-- but we don't have start/end dates for assignments
+
+WITH Ranked AS (
+    SELECT
+        SchoolPrincipalID
+        ,row_number() OVER (
+            PARTITION BY
+                sp.AcademicYear,
+                sp.Building,
+                sp.PrincipalType
+            ORDER BY
+                PrincipalFTEDesignation DESC,
+                PrincipalPercentage DESC,
+                PrincipalSalaryTotal DESC
+        ) AS RN
+    FROM Fact_SchoolPrincipal sp
+    JOIN Dim_Staff s ON sp.StaffID = s.StaffID
+)
+UPDATE Fact_SchoolPrincipal
+SET PrimaryForSchoolFlag = 1
 WHERE EXISTS (
     SELECT 1
     FROM Ranked

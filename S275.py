@@ -273,6 +273,11 @@ def create_school_principal_change():
     execute_sql_file("create_Fact_SchoolPrincipalChange.sql")
 
 
+def create_school_leadership():
+    print("creating school leadership tables")
+    execute_sql_file("create_Fact_SchoolLeadership.sql")
+
+
 def create_pesb_educator_persistence():
     print("creating PESB educator persistence table")
     execute_sql_file("create_Fact_PESBEducatorPersistence.sql")
@@ -295,6 +300,8 @@ def create_derived_tables():
     create_principal_cohort_mobility()
 
     create_school_principal_change()
+
+    create_school_leadership()
 
     create_pesb_educator_persistence()
 
