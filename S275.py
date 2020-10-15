@@ -215,7 +215,8 @@ def create_flat_file(access_db_path, file_type, output_path):
     f.close()
 
 
-def create_dimensional_models():
+def create_base_dimensional_models():
+
     print("creating dimensional models")
 
     execute_sql_file("create_Dim_School.sql")
@@ -278,11 +279,7 @@ def create_pesb_educator_persistence():
     execute_sql_file("create_Fact_PESBEducatorPersistence.sql")
 
 
-def create_derived_tables():
-
-    create_auxiliary_tables()
-
-    create_dimensional_models()
+def create_additional_dimensional_models():
 
     create_teacher_mobility()
 
@@ -298,6 +295,14 @@ def create_derived_tables():
 
     create_pesb_educator_persistence()
 
+
+def create_derived_tables():
+
+    create_auxiliary_tables()
+
+    create_base_dimensional_models()
+
+    create_additional_dimensional_models()
 
 def create_everything():
 
