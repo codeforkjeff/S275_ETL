@@ -3,6 +3,10 @@
 -- grain of this table is StaffID (whose grain is AY, District, CertNumber), Building, PrincipalType.
 -- this rolls up the 2 different DutyRoot codes for Principal and AssistantPrincipal, which are used to distinguish
 -- between primary and secondary schools.
+--
+-- since this table contains every principal/AP at every school they served at, users of this table
+-- will typically want to filter by PrimaryFlag (to get one principal/AP per person/year)
+-- or PrimaryForSchoolFlag (to get one principal/AP per school/year)
 
 DROP TABLE IF EXISTS Fact_SchoolPrincipal;
 
