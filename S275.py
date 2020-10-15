@@ -268,11 +268,6 @@ def create_principal_cohort_mobility():
     execute_sql_file("create_Fact_PrincipalCohortMobility.sql")
 
 
-def create_school_principal_change():
-    print("creating school principal change tables")
-    execute_sql_file("create_Fact_SchoolPrincipalChange.sql")
-
-
 def create_school_leadership():
     print("creating school leadership tables")
     execute_sql_file("create_Fact_SchoolLeadership.sql")
@@ -298,8 +293,6 @@ def create_derived_tables():
     create_principal_mobility()
 
     create_principal_cohort_mobility()
-
-    create_school_principal_change()
 
     create_school_leadership()
 
