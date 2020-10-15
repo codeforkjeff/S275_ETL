@@ -261,6 +261,7 @@ select
 from Counts
 LEFT JOIN Dim_School Sch
 	ON Counts.StartBuilding = Sch.SchoolCode
+	AND Counts.StartCountyAndDistrictCode = Sch.DistrictCode
 	AND Counts.StartYear = Sch.AcademicYear
 WHERE
 	StartYear = 2011
