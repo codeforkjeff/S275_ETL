@@ -179,6 +179,10 @@ FROM Fact_SchoolLeadership;
 
 -- next
 
+CREATE UNIQUE INDEX idx_PrincipalTenure ON PrincipalTenure (SchoolLeadershipID);
+
+-- next
+
 UPDATE Fact_SchoolLeadership
 SET PrincipalTenure = (
 	SELECT
@@ -218,6 +222,10 @@ FROM Fact_SchoolLeadership;
 
 -- next
 
+CREATE UNIQUE INDEX idx_AsstPrincipalTenure ON AsstPrincipalTenure (SchoolLeadershipID);
+
+-- next
+
 UPDATE Fact_SchoolLeadership
 SET AsstPrincipalTenure = (
 	SELECT
@@ -247,7 +255,6 @@ CREATE TABLE TeacherRetentionForLeadership (
 	,CohortBuilding VARCHAR(10)
 	,SubGroup VARCHAR(20)
 	,Stayed INT
-	,Total INT
 );
 
 -- next
@@ -261,7 +268,6 @@ CREATE TABLE TeacherRetentionForLeadership (
 		,CohortBuilding
 		,'All' AS SubGroup
 		,Sum(StayedInSchool) as Stayed
-		,count(*) as Total
 	from Fact_TeacherCohortMobility tcm
 	JOIN Dim_Staff s
 		ON tcm.CohortStaffID = s.StaffID
@@ -279,7 +285,6 @@ CREATE TABLE TeacherRetentionForLeadership (
 		,CohortBuilding
 		,'Person of Color' AS SubGroup
 		,Sum(StayedInSchool) as Stayed
-		,count(*) as Total
 	from Fact_TeacherCohortMobility tcm
 	JOIN Dim_Staff s
 		ON tcm.CohortStaffID = s.StaffID
@@ -297,7 +302,6 @@ INSERT INTO TeacherRetentionForLeadership (
 	,CohortBuilding
 	,SubGroup
 	,Stayed
-	,Total
 )
 select
 	CohortYear
@@ -306,7 +310,6 @@ select
 	,CohortBuilding
 	,SubGroup
 	,Stayed
-	,Total
 from t;
 
 -- next
@@ -325,17 +328,7 @@ CREATE UNIQUE INDEX idx_Teacher_Retention ON TeacherRetentionForLeadership (
 
 UPDATE Fact_SchoolLeadership
 SET
-	TeacherCount = (
-		SELECT Total
-		FROM TeacherRetentionForLeadership
-		WHERE
-			Period = '1 Year' -- doesn't matter which period we use, totals are same
-			AND Subgroup = 'All'
-			AND Fact_SchoolLeadership.AcademicYear = TeacherRetentionForLeadership.CohortYear
-			AND Fact_SchoolLeadership.CountyAndDistrictCode = TeacherRetentionForLeadership.CohortCountyAndDistrictCode
-			AND Fact_SchoolLeadership.Building = TeacherRetentionForLeadership.CohortBuilding
-	)
-	,TeacherRetention1Yr = (
+	TeacherRetention1Yr = (
 		SELECT Stayed
 		FROM TeacherRetentionForLeadership
 		WHERE
@@ -351,16 +344,6 @@ SET
 		WHERE
 			Period = '2 Year'
 			AND Subgroup = 'All'
-			AND Fact_SchoolLeadership.AcademicYear = TeacherRetentionForLeadership.CohortYear
-			AND Fact_SchoolLeadership.CountyAndDistrictCode = TeacherRetentionForLeadership.CohortCountyAndDistrictCode
-			AND Fact_SchoolLeadership.Building = TeacherRetentionForLeadership.CohortBuilding
-	)
-	,TeacherOfColorCount = (
-		SELECT Total
-		FROM TeacherRetentionForLeadership
-		WHERE
-			Period = '1 Year' -- doesn't matter which period we use, totals are same
-			AND Subgroup = 'Person of Color'
 			AND Fact_SchoolLeadership.AcademicYear = TeacherRetentionForLeadership.CohortYear
 			AND Fact_SchoolLeadership.CountyAndDistrictCode = TeacherRetentionForLeadership.CohortCountyAndDistrictCode
 			AND Fact_SchoolLeadership.Building = TeacherRetentionForLeadership.CohortBuilding
@@ -390,3 +373,28 @@ SET
 -- next
 
 DROP TABLE TeacherRetentionForLeadership;
+
+-- next
+
+-- we already calculate TotalTeachers, TeachersOfColor in Dim_School so copy those here for convenience.
+-- we can't roll up totals from Fact_TeacherCohortMobility b/c it won't have the latest year
+
+UPDATE Fact_SchoolLeadership
+SET
+	TeacherCount = (
+		SELECT TotalTeachers
+		FROM Dim_School
+		WHERE
+			Fact_SchoolLeadership.AcademicYear = Dim_School.AcademicYear
+			AND Fact_SchoolLeadership.CountyAndDistrictCode = Dim_School.DistrictCode
+			AND Fact_SchoolLeadership.Building = Dim_School.SchoolCode
+	)
+	,TeacherOfColorCount = (
+		SELECT TeachersOfColor
+		FROM Dim_School
+		WHERE
+			Fact_SchoolLeadership.AcademicYear = Dim_School.AcademicYear
+			AND Fact_SchoolLeadership.CountyAndDistrictCode = Dim_School.DistrictCode
+			AND Fact_SchoolLeadership.Building = Dim_School.SchoolCode
+	)
+;
