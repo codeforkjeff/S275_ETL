@@ -28,7 +28,7 @@ SELECT
     sp.StaffID,
     sp.AcademicYear,
     CertificateNumber,
-    CountyAndDistrictCode,
+    sp.CountyAndDistrictCode,
     Building,
     PrincipalType
 FROM Fact_SchoolPrincipal sp

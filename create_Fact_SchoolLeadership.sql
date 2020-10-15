@@ -43,11 +43,8 @@ CREATE TABLE Fact_SchoolLeadership (
 ;WITH Primaries AS (
 	-- a school can have more than 1 Principal or AP. pick one for each role
 	SELECT
-		sp.*,
-		st.CountyAndDistrictCode
+		sp.*
 	FROM Fact_SchoolPrincipal sp
-	JOIN Dim_Staff st
-		ON sp.StaffID = st.StaffID
 	WHERE
 		PrimaryForSchoolFlag = 1
 )

@@ -12,6 +12,7 @@ CREATE TABLE Fact_SchoolPrincipal (
     SchoolPrincipalID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     StaffID INT NOT NULL,
     AcademicYear SMALLINT NOT NULL,
+    CountyAndDistrictCode varchar(500) NULL,
     Building varchar(500) NULL,
     PrincipalType VARCHAR(50) NULL,
     PrincipalPercentage NUMERIC(14,4) NULL,
@@ -36,6 +37,7 @@ WITH AssignmentsWithPrincipalType AS (
 INSERT INTO Fact_SchoolPrincipal (
     StaffID,
     AcademicYear,
+    CountyAndDistrictCode,
     Building,
     PrincipalType,
     PrincipalPercentage,
@@ -48,6 +50,7 @@ INSERT INTO Fact_SchoolPrincipal (
 select
     a.StaffID
     ,a.AcademicYear
+    ,CountyAndDistrictCode
     ,Building
     ,PrincipalType
     ,COALESCE(SUM(AssignmentPercent), 0) AS PrincipalPercentage
@@ -62,6 +65,7 @@ WHERE IsPrincipalAssignment = 1 OR IsAsstPrincipalAssignment = 1
 GROUP BY
     a.StaffID
     ,a.AcademicYear
+    ,CountyAndDistrictCode
     ,Building
     -- is this right? or should we group by rolled up PrincipalType?
     ,PrincipalType
@@ -119,6 +123,7 @@ WITH Ranked AS (
         ,row_number() OVER (
             PARTITION BY
                 sp.AcademicYear,
+                sp.CountyAndDistrictCode,
                 sp.Building,
                 sp.PrincipalType
             ORDER BY
