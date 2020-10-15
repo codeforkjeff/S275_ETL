@@ -395,3 +395,13 @@ SET
 			AND Fact_SchoolLeadership.Building = Dim_School.SchoolCode
 	)
 ;
+
+-- next
+
+UPDATE Fact_SchoolLeadership
+SET
+	TeacherRetention1YrPct = CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention1Yr AS REAL) / TeacherCount END,
+	TeacherRetention2YrPct = CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention2Yr AS REAL) / TeacherCount END,
+	TeacherOfColorRetention1YrPct = CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention1Yr AS REAL) / TeacherOfColorCount END,
+	TeacherOfColorRetention2YrPct = CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention2Yr AS REAL) / TeacherOfColorCount END
+;
