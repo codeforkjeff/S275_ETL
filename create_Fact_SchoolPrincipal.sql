@@ -2,7 +2,8 @@
 --
 -- grain of this table is StaffID (whose grain is AY, District, CertNumber), Building, PrincipalType.
 -- this rolls up the 2 different DutyRoot codes for Principal and AssistantPrincipal, which are used to distinguish
--- between primary and secondary schools.
+-- between primary and secondary schools. It also rolls up multiple Assignments for the same DutyRoot:
+-- Principals and APs sometimes have separate assignment line items by Grade Level.
 --
 -- since this table contains every principal/AP at every school they served at, users of this table
 -- will typically want to filter by PrimaryFlag (to get one principal/AP per person/year)
@@ -133,7 +134,8 @@ WITH Ranked AS (
             ORDER BY
                 PrincipalFTEDesignation DESC,
                 PrincipalPercentage DESC,
-                PrincipalSalaryTotal DESC
+                PrincipalSalaryTotal DESC,
+                CertYearsOfExperience DESC
         ) AS RN
     FROM Fact_SchoolPrincipal sp
     JOIN Dim_Staff s ON sp.StaffID = s.StaffID
