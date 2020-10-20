@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS TeacherCounts;
 
 CREATE TABLE TeacherCounts (
 	AcademicYear SMALLINT NOT NULL,
+	CountyAndDistrictCode varchar(500) NOT NULL,
     Building varchar(500) NOT NULL,
 	TeachersOfColor INT NULL,
 	TotalTeachers INT NULL,
@@ -16,6 +17,7 @@ CREATE TABLE TeacherCounts (
 INSERT INTO TeacherCounts
 SELECT
 	st.AcademicYear,
+	staff.CountyAndDistrictCode,
 	st.Building,
 	SUM(CASE WHEN staff.PersonOfColorCategory = 'Person of Color' THEN 1 ELSE 0 END) AS TeacherOfColors,
 	COUNT(*) AS TotalTeachers
@@ -24,13 +26,16 @@ JOIN Dim_Staff staff
 	ON st.StaffID = staff.StaffID
 JOIN Dim_School sch
 	ON st.AcademicYear = sch.AcademicYear
+	AND staff.CountyAndDistrictCode = sch.DistrictCode
 	and st.Building = sch.SchoolCode
 WHERE PrimaryFlag = 1
 GROUP BY
 	st.AcademicYear,
+	staff.CountyAndDistrictCode,
 	st.Building
 ORDER BY
 	st.AcademicYear,
+	staff.CountyAndDistrictCode,
 	st.Building
 ;
 
@@ -51,6 +56,7 @@ SET TeachersOfColor = (
 	FROM TeacherCounts
 	WHERE
 		TeacherCounts.AcademicYear = Dim_school.AcademicYear
+		AND TeacherCounts.CountyAndDistrictCode = Dim_school.DistrictCode
 		AND TeacherCounts.Building = Dim_school.SchoolCode
 	),
 	TotalTeachers = (
@@ -59,6 +65,7 @@ SET TeachersOfColor = (
 	FROM TeacherCounts
 	WHERE
 		TeacherCounts.AcademicYear = Dim_school.AcademicYear
+		AND TeacherCounts.CountyAndDistrictCode = Dim_school.DistrictCode
 		AND TeacherCounts.Building = Dim_school.SchoolCode
 )
 ;

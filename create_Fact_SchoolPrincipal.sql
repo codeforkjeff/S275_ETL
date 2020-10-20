@@ -3,6 +3,10 @@
 -- grain of this table is StaffID (whose grain is AY, District, CertNumber), Building, PrincipalType.
 -- this rolls up the 2 different DutyRoot codes for Principal and AssistantPrincipal, which are used to distinguish
 -- between primary and secondary schools.
+--
+-- since this table contains every principal/AP at every school they served at, users of this table
+-- will typically want to filter by PrimaryFlag (to get one principal/AP per person/year)
+-- or PrimaryForSchoolFlag (to get one principal/AP per school/year)
 
 DROP TABLE IF EXISTS Fact_SchoolPrincipal;
 
@@ -12,12 +16,14 @@ CREATE TABLE Fact_SchoolPrincipal (
     SchoolPrincipalID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     StaffID INT NOT NULL,
     AcademicYear SMALLINT NOT NULL,
+    CountyAndDistrictCode varchar(500) NULL,
     Building varchar(500) NULL,
     PrincipalType VARCHAR(50) NULL,
     PrincipalPercentage NUMERIC(14,4) NULL,
     PrincipalFTEDesignation NUMERIC(14,4) NULL,
     PrincipalSalaryTotal INT NULL,
     PrimaryFlag TINYINT NULL,
+    PrimaryForSchoolFlag TINYINT NULL,
     MetaCreatedAt DATETIME
 );
 
@@ -35,23 +41,27 @@ WITH AssignmentsWithPrincipalType AS (
 INSERT INTO Fact_SchoolPrincipal (
     StaffID,
     AcademicYear,
+    CountyAndDistrictCode,
     Building,
     PrincipalType,
     PrincipalPercentage,
     PrincipalFTEDesignation,
     PrincipalSalaryTotal,
     PrimaryFlag,
+    PrimaryForSchoolFlag,
     MetaCreatedAt
 )
 select
     a.StaffID
     ,a.AcademicYear
+    ,CountyAndDistrictCode
     ,Building
     ,PrincipalType
     ,COALESCE(SUM(AssignmentPercent), 0) AS PrincipalPercentage
     ,SUM(AssignmentFTEDesignation) AS PrincipalFTEDesignation
     ,SUM(AssignmentSalaryTotal) AS PrincipalSalaryTotal
     ,0 AS PrimaryFlag
+    ,0 AS PrimaryForSchoolFlag
     ,GETDATE() as MetaCreatedAt
 from AssignmentsWithPrincipalType a
 JOIN Dim_Staff s ON a.StaffID = s.StaffID
@@ -59,6 +69,7 @@ WHERE IsPrincipalAssignment = 1 OR IsAsstPrincipalAssignment = 1
 GROUP BY
     a.StaffID
     ,a.AcademicYear
+    ,CountyAndDistrictCode
     ,Building
     -- is this right? or should we group by rolled up PrincipalType?
     ,PrincipalType
@@ -97,6 +108,38 @@ WITH Ranked AS (
 )
 UPDATE Fact_SchoolPrincipal
 SET PrimaryFlag = 1
+WHERE EXISTS (
+    SELECT 1
+    FROM Ranked
+    WHERE Ranked.SchoolPrincipalID = Fact_SchoolPrincipal.SchoolPrincipalID
+    AND RN = 1
+);
+
+-- next
+
+-- PrimaryForSchoolFlag = who is the Principal and AP with the highest FTE at each building?
+-- better logic for this flag might be who served the longest during that year,
+-- but we don't have start/end dates for assignments
+
+WITH Ranked AS (
+    SELECT
+        SchoolPrincipalID
+        ,row_number() OVER (
+            PARTITION BY
+                sp.AcademicYear,
+                sp.CountyAndDistrictCode,
+                sp.Building,
+                sp.PrincipalType
+            ORDER BY
+                PrincipalFTEDesignation DESC,
+                PrincipalPercentage DESC,
+                PrincipalSalaryTotal DESC
+        ) AS RN
+    FROM Fact_SchoolPrincipal sp
+    JOIN Dim_Staff s ON sp.StaffID = s.StaffID
+)
+UPDATE Fact_SchoolPrincipal
+SET PrimaryForSchoolFlag = 1
 WHERE EXISTS (
     SELECT 1
     FROM Ranked
