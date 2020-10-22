@@ -30,11 +30,19 @@ CREATE TABLE Fact_SchoolLeadership (
 	,TeacherRetention1YrPct NUMERIC(10,2)
 	,TeacherRetention2Yr INT
 	,TeacherRetention2YrPct NUMERIC(10,2)
+	,TeacherRetention3Yr INT
+	,TeacherRetention3YrPct NUMERIC(10,2)
+	,TeacherRetention4Yr INT
+	,TeacherRetention4YrPct NUMERIC(10,2)
 	,TeacherOfColorCount INT
 	,TeacherOfColorRetention1Yr INT
 	,TeacherOfColorRetention1YrPct NUMERIC(10,2)
 	,TeacherOfColorRetention2Yr INT
 	,TeacherOfColorRetention2YrPct NUMERIC(10,2)
+	,TeacherOfColorRetention3Yr INT
+	,TeacherOfColorRetention3YrPct NUMERIC(10,2)
+	,TeacherOfColorRetention4Yr INT
+	,TeacherOfColorRetention4YrPct NUMERIC(10,2)
 	,MetaCreatedAt DATETIME
 );
 
@@ -247,7 +255,7 @@ DROP TABLE IF EXISTS TeacherRetentionForLeadership;
 -- there's another TeacherRetention elsewhere in pipeline, so use more distinctive name
 CREATE TABLE TeacherRetentionForLeadership (
 	CohortYear SMALLINT
-	,Period VARCHAR(10)
+	,Period SMALLINT
 	,CohortCountyAndDistrictCode VARCHAR(10)
 	,CohortBuilding VARCHAR(10)
 	,SubGroup VARCHAR(20)
@@ -260,7 +268,7 @@ CREATE TABLE TeacherRetentionForLeadership (
 
 	select
 		CohortYear
-		,cast(EndYear - CohortYear as varchar) + ' Year' as Period -- sqlite_concat
+		,EndYear - CohortYear as Period
 		,CohortCountyAndDistrictCode
 		,CohortBuilding
 		,'All' AS SubGroup
@@ -269,7 +277,7 @@ CREATE TABLE TeacherRetentionForLeadership (
 	JOIN Dim_Staff s
 		ON tcm.CohortStaffID = s.StaffID
 	where
-		EndYear - CohortYear <= 2
+		EndYear - CohortYear <= 4
 	GROUP BY
 		CohortYear, EndYear, CohortCountyAndDistrictCode, CohortBuilding
 
@@ -277,7 +285,7 @@ CREATE TABLE TeacherRetentionForLeadership (
 
 	select
 		CohortYear
-		,cast(EndYear - CohortYear as varchar) + ' Year' as Period -- sqlite_concat
+		,EndYear - CohortYear as Period
 		,CohortCountyAndDistrictCode
 		,CohortBuilding
 		,'Person of Color' AS SubGroup
@@ -286,7 +294,7 @@ CREATE TABLE TeacherRetentionForLeadership (
 	JOIN Dim_Staff s
 		ON tcm.CohortStaffID = s.StaffID
 	where
-		EndYear - CohortYear <= 2
+		EndYear - CohortYear <= 4
 		AND PersonOfColorCategory = 'Person of Color'
 	GROUP BY
 		CohortYear, EndYear, CohortCountyAndDistrictCode, CohortBuilding
@@ -329,7 +337,7 @@ SET
 		SELECT Stayed
 		FROM TeacherRetentionForLeadership
 		WHERE
-			Period = '1 Year'
+			Period = 1
 			AND Subgroup = 'All'
 			AND Fact_SchoolLeadership.AcademicYear = TeacherRetentionForLeadership.CohortYear
 			AND Fact_SchoolLeadership.CountyAndDistrictCode = TeacherRetentionForLeadership.CohortCountyAndDistrictCode
@@ -339,7 +347,27 @@ SET
 		SELECT Stayed
 		FROM TeacherRetentionForLeadership
 		WHERE
-			Period = '2 Year'
+			Period = 2
+			AND Subgroup = 'All'
+			AND Fact_SchoolLeadership.AcademicYear = TeacherRetentionForLeadership.CohortYear
+			AND Fact_SchoolLeadership.CountyAndDistrictCode = TeacherRetentionForLeadership.CohortCountyAndDistrictCode
+			AND Fact_SchoolLeadership.Building = TeacherRetentionForLeadership.CohortBuilding
+	)
+	,TeacherRetention3Yr = (
+		SELECT Stayed
+		FROM TeacherRetentionForLeadership
+		WHERE
+			Period = 3
+			AND Subgroup = 'All'
+			AND Fact_SchoolLeadership.AcademicYear = TeacherRetentionForLeadership.CohortYear
+			AND Fact_SchoolLeadership.CountyAndDistrictCode = TeacherRetentionForLeadership.CohortCountyAndDistrictCode
+			AND Fact_SchoolLeadership.Building = TeacherRetentionForLeadership.CohortBuilding
+	)
+	,TeacherRetention4Yr = (
+		SELECT Stayed
+		FROM TeacherRetentionForLeadership
+		WHERE
+			Period = 4
 			AND Subgroup = 'All'
 			AND Fact_SchoolLeadership.AcademicYear = TeacherRetentionForLeadership.CohortYear
 			AND Fact_SchoolLeadership.CountyAndDistrictCode = TeacherRetentionForLeadership.CohortCountyAndDistrictCode
@@ -349,7 +377,7 @@ SET
 		SELECT Stayed
 		FROM TeacherRetentionForLeadership
 		WHERE
-			Period = '1 Year'
+			Period = 1
 			AND Subgroup = 'Person of Color'
 			AND Fact_SchoolLeadership.AcademicYear = TeacherRetentionForLeadership.CohortYear
 			AND Fact_SchoolLeadership.CountyAndDistrictCode = TeacherRetentionForLeadership.CohortCountyAndDistrictCode
@@ -359,7 +387,27 @@ SET
 		SELECT Stayed
 		FROM TeacherRetentionForLeadership
 		WHERE
-			Period = '2 Year'
+			Period = 2
+			AND Subgroup = 'Person of Color'
+			AND Fact_SchoolLeadership.AcademicYear = TeacherRetentionForLeadership.CohortYear
+			AND Fact_SchoolLeadership.CountyAndDistrictCode = TeacherRetentionForLeadership.CohortCountyAndDistrictCode
+			AND Fact_SchoolLeadership.Building = TeacherRetentionForLeadership.CohortBuilding
+	)
+	,TeacherOfColorRetention3Yr = (
+		SELECT Stayed
+		FROM TeacherRetentionForLeadership
+		WHERE
+			Period = 3
+			AND Subgroup = 'Person of Color'
+			AND Fact_SchoolLeadership.AcademicYear = TeacherRetentionForLeadership.CohortYear
+			AND Fact_SchoolLeadership.CountyAndDistrictCode = TeacherRetentionForLeadership.CohortCountyAndDistrictCode
+			AND Fact_SchoolLeadership.Building = TeacherRetentionForLeadership.CohortBuilding
+	)
+	,TeacherOfColorRetention4Yr = (
+		SELECT Stayed
+		FROM TeacherRetentionForLeadership
+		WHERE
+			Period = 4
 			AND Subgroup = 'Person of Color'
 			AND Fact_SchoolLeadership.AcademicYear = TeacherRetentionForLeadership.CohortYear
 			AND Fact_SchoolLeadership.CountyAndDistrictCode = TeacherRetentionForLeadership.CohortCountyAndDistrictCode
@@ -402,6 +450,10 @@ UPDATE Fact_SchoolLeadership
 SET
 	TeacherRetention1YrPct = CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention1Yr AS REAL) / TeacherCount END,
 	TeacherRetention2YrPct = CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention2Yr AS REAL) / TeacherCount END,
+	TeacherRetention3YrPct = CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention3Yr AS REAL) / TeacherCount END,
+	TeacherRetention4YrPct = CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention4Yr AS REAL) / TeacherCount END,
 	TeacherOfColorRetention1YrPct = CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention1Yr AS REAL) / TeacherOfColorCount END,
-	TeacherOfColorRetention2YrPct = CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention2Yr AS REAL) / TeacherOfColorCount END
+	TeacherOfColorRetention2YrPct = CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention2Yr AS REAL) / TeacherOfColorCount END,
+	TeacherOfColorRetention3YrPct = CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention3Yr AS REAL) / TeacherOfColorCount END,
+	TeacherOfColorRetention4YrPct = CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention4Yr AS REAL) / TeacherOfColorCount END
 ;
