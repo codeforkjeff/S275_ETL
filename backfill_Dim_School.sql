@@ -1,10 +1,12 @@
 
 WITH MissingSchoolsBase as (
-	SELECT AcademicYear, Building
-	FROM Fact_Assignment
+	SELECT a.AcademicYear, s.CountyAndDistrictCode, a.Building
+	FROM Fact_Assignment a
+	JOIN Dim_Staff s
+		ON a.StaffID = s.StaffID
 	WHERE Building is not null
 	EXCEPT
-	SELECT DISTINCT AcademicYear, SchoolCode
+	SELECT DISTINCT AcademicYear, DistrictCode, SchoolCode
 	FROM Dim_School
 	WHERE SchoolCode is not null
 )
@@ -16,22 +18,44 @@ WITH MissingSchoolsBase as (
 		,m.AcademicYear - s.AcademicYear AS YearDiff
 		,ROW_NUMBER() OVER (
 			PARTITION BY
-			m.AcademicYear, m.Building
+			m.AcademicYear, m.CountyAndDistrictCode, m.Building
 			ORDER BY
 				-- prioritize closest year (smallest difference), and then the earlier year if both earlier and later years exist
 				ABS(m.AcademicYear - s.AcademicYear), s.AcademicYear ASC
 		) AS Rank
 	FROM MissingSchoolsBase m
 	LEFT JOIN Dim_School s
-		ON m.Building = s.SchoolCode
+		ON m.CountyAndDistrictCode = s.DistrictCode
+		AND m.Building = s.SchoolCode
 ),
 MissingSchools AS (
 	SELECT
 		AcademicYear,
+		CountyAndDistrictCode,
 		Building,
 		ExistingYearInDimSchool AS ClosestYearThatExists
 	FROM MissingSchoolsCombos
 	WHERE Rank = 1
+),
+DistrictNames as (
+	SELECT
+		AcademicYear,
+		DistrictCode,
+		DistrictName,
+		ROW_NUMBER() OVER (
+			PARTITION BY
+				DistrictCode
+			ORDER BY
+				AcademicYear DESC
+		) AS RN
+	FROM Dim_School
+),
+MostRecentDistrictNames AS (
+	SELECT
+		DistrictCode,
+		DistrictName
+	FROM DistrictNames
+	WHERE RN = 1
 )
 INSERT INTO Dim_School
 (
@@ -54,8 +78,8 @@ INSERT INTO Dim_School
 )
 SELECT
 	missing.AcademicYear
-	,COALESCE(s.DistrictCode, 'UNKNOWN') AS DistrictCode
-	,COALESCE(s.DistrictName, 'UNKNOWN') AS DistrictName
+	,missing.CountyAndDistrictCode AS DistrictCode
+	,COALESCE(s.DistrictName, mrdn.DistrictName, 'UNKNOWN') AS DistrictName
 	,missing.Building AS SchoolCode
 	,COALESCE(s.SchoolName, 'UNKNOWN') AS SchoolName
 	,s.GradeLevelStart
@@ -71,6 +95,9 @@ SELECT
 	,GETDATE() AS MetaCreatedAt
 FROM MissingSchools missing
 LEFT JOIN Dim_School s
-	ON missing.Building = s.SchoolCode
+	ON missing.CountyAndDistrictCode = s.DistrictCode
+	AND missing.Building = s.SchoolCode
 	AND missing.ClosestYearThatExists = s.AcademicYear
+LEFT JOIN MostRecentDistrictNames mrdn
+	ON missing.CountyAndDistrictCode = mrdn.DistrictCode
 ;

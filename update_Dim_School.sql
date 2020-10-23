@@ -9,7 +9,7 @@ CREATE TABLE TeacherCounts (
     Building varchar(500) NOT NULL,
 	TeachersOfColor INT NULL,
 	TotalTeachers INT NULL,
-	PRIMARY KEY (AcademicYear, Building)
+	PRIMARY KEY (AcademicYear, CountyAndDistrictCode, Building)
 );
 
 -- next

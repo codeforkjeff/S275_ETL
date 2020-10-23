@@ -234,10 +234,12 @@ YearBrackets AS (
         THEN 1 ELSE 0 END AS MovedInRoleChange
     FROM TransitionsWithMovedInBase t
     LEFT JOIN Dim_School s1
-        ON t.StartBuilding = s1.SchoolCode
+        ON t.StartCountyAndDistrictCode = s1.DistrictCode
+        AND t.StartBuilding = s1.SchoolCode
         AND t.StartYear = s1.AcademicYear
     LEFT JOIN Dim_School s2
-        ON t.EndBuilding = s2.SchoolCode
+        ON t.EndCountyAndDistrictCode = s2.DistrictCode
+        AND t.EndBuilding = s2.SchoolCode
         AND t.EndYear = s2.AcademicYear
 )
 INSERT INTO Fact_TeacherMobility (
@@ -312,6 +314,7 @@ SET MovedOutOfRMR = CASE
             FROM Dim_School
             WHERE
                 Fact_TeacherMobility.StartYear = AcademicYear
+                AND Fact_TeacherMobility.StartCountyAndDistrictCode = DistrictCode
                 AND Fact_TeacherMobility.StartBuilding = SchoolCode
             AND RMRFlag = 1
             )
@@ -320,6 +323,7 @@ SET MovedOutOfRMR = CASE
             FROM Dim_School
             WHERE
                 Fact_TeacherMobility.EndYear = AcademicYear
+                AND Fact_TeacherMobility.EndCountyAndDistrictCode = DistrictCode
                 AND Fact_TeacherMobility.EndBuilding = SchoolCode
             AND RMRFlag = 1
             )
