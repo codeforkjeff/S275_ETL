@@ -14,7 +14,7 @@ CREATE TABLE Fact_SchoolLeadership (
 	,CountyAndDistrictCode VARCHAR(5)
 	,Building VARCHAR(10)
 	,PrincipalCertificateNumber VARCHAR(20)
-	,PrincipalStaffID INT NOT NULL
+	,PrincipalStaffID INT
 	,PrevPrincipalStaffID INT
 	,AsstPrincipalCertificateNumber VARCHAR(20)
 	,AsstPrincipalStaffID INT
@@ -57,22 +57,38 @@ CREATE TABLE Fact_SchoolLeadership (
 		PrimaryForSchoolFlag = 1
 )
 ,Leadership AS (
-	-- should ideally be a full join, to capture yrs where a school has an Asst Prin but not a Principal.
-	-- there don't appear to be any such cases, but there could be in future data.
-	-- however, sqlite doesn't support full joins.
+	-- this union and group by captures yrs where a school has an Asst Prin but not a Principal.
 	SELECT
-		p.AcademicYear
-		,p.CountyAndDistrictCode
-		,p.Building
-		,p.StaffID AS PrincipalStaffID
-		,ap.StaffID AS AsstPrincipalStaffID
-	FROM Primaries p
-	LEFT JOIN Primaries ap
-		ON ap.PrincipalType = 'AssistantPrincipal'
-		AND p.AcademicYear = ap.AcademicYear
-		AND p.CountyAndDistrictCode = ap.CountyAndDistrictCode
-		AND p.Building = ap.Building
-	WHERE p.PrincipalType = 'Principal'
+		AcademicYear
+		,CountyAndDistrictCode
+		,Building
+		,MAX(PrincipalStaffID) AS PrincipalStaffID
+		,MAX(AsstPrincipalStaffID) AS AsstPrincipalStaffID
+	FROM (
+		SELECT
+			p.AcademicYear
+			,p.CountyAndDistrictCode
+			,p.Building
+			,p.StaffID AS PrincipalStaffID
+			,NULL AS AsstPrincipalStaffID
+		FROM Primaries p
+		WHERE p.PrincipalType = 'Principal'
+
+		UNION ALL
+
+		SELECT
+			ap.AcademicYear
+			,ap.CountyAndDistrictCode
+			,ap.Building
+			,NULL AS PrincipalStaffID
+			,ap.StaffID AS AsstPrincipalStaffID
+		FROM Primaries ap
+		WHERE ap.PrincipalType = 'AssistantPrincipal'
+	) T
+	GROUP BY
+		AcademicYear
+		,CountyAndDistrictCode
+		,Building
 )
 ,LeadershipWithPrevious AS (
 	select
