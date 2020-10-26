@@ -273,6 +273,7 @@ def create_school_leadership():
     print("creating school leadership tables")
     execute_sql_file("create_Fact_SchoolLeadership.sql")
 
+    populate_school_leadership_fields()
 
 def create_pesb_educator_persistence():
     print("creating PESB educator persistence table")
@@ -521,3 +522,248 @@ def populate_distance():
     conn.commit()
 
 
+LeadershipFields = collections.namedtuple('LeadershipFields', [
+    'key',
+    'principal_rows',
+    'asstprincipal_rows',
+    'all_principal_cert_list',
+    'any_principal_poc',
+    'all_asstprincipal_cert_list',
+    'any_asstprincipal_poc',
+    'broad_leadership_change_flag',
+    'broad_leadership_gained_principal_poc_flag',
+    'broad_leadership_gained_asstprin_poc_flag',
+    'broad_leadership_gained_poc_flag',
+    'broad_leadership_lost_principal_poc_flag',
+    'broad_leadership_lost_asstprin_poc_flag',
+    'broad_leadership_lost_poc_flag'
+    ])
+
+
+def populate_school_leadership_fields():
+    """
+    we do this in Python because our version of SQL Server doesn't support STRING_AGG() function
+    (sqlite does have group_concat())
+    """
+
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    print("Populating school leadership fields")
+
+    cursor.execute("""
+        select
+            sp.AcademicYear,
+            sp.CountyAndDistrictCode,
+            sp.Building,
+            sp.PrincipalType,
+            s.CertificateNumber,
+            s.PersonOfColorCategory
+        from Fact_SchoolPrincipal sp
+        join Dim_Staff s
+            ON sp.StaffID = s.StaffID
+        order by
+            sp.AcademicYear,
+            sp.CountyAndDistrictCode,
+            sp.Building,
+            sp.PrincipalType
+    """)
+
+    raw_rows = cursor.fetchall()
+
+    ####
+
+    key_fn = lambda row: "_".join([str(row['AcademicYear']), str(row['CountyAndDistrictCode']), str(row['Building']), str(row['CertificateNumber'])])
+
+    ####
+
+    rows = []
+
+    for raw_row in raw_rows:
+        row = {}
+        (row['AcademicYear'], row['CountyAndDistrictCode'], row['Building'], row['PrincipalType'], row['CertificateNumber'], row['PersonOfColorCategory']) = raw_row
+        rows.append(row)
+
+    key_fn = lambda row: "_".join([str(row['AcademicYear']), str(row['CountyAndDistrictCode']), str(row['Building'])])
+
+    def group_and_sort(rows):
+        i = itertools.groupby(rows, key=key_fn)
+        results = {}
+        for (key, values) in i:
+            # realize iterator as a list so we can use 'values' multiple times
+            values = list(values)
+
+            principal_rows = []
+            asstprincipal_rows = []
+            all_principal_cert_list = ""
+            any_principal_poc = 0
+            all_asstprincipal_cert_list =""
+            any_asstprincipal_poc = 0
+
+            for (principal_type, p_values) in itertools.groupby(values, key=lambda row: row['PrincipalType']):
+                p_values = list(p_values)
+                certs = ",".join(sorted([v['CertificateNumber'] for v in p_values if v['CertificateNumber'] and len(v['CertificateNumber']) > 0]))
+                poc = int(any(map(lambda v: v['PersonOfColorCategory'] == 'Person of Color', p_values)))
+                if principal_type == 'Principal':
+                    principal_rows = p_values
+                    all_principal_cert_list = certs
+                    any_principal_poc = poc
+                elif principal_type == 'AssistantPrincipal':
+                    asstprincipal_rows = p_values
+                    all_asstprincipal_cert_list = certs
+                    any_asstprincipal_poc = poc
+                else:
+                    raise "Error"
+
+            results[key] = LeadershipFields(
+                key=key,
+                principal_rows=principal_rows,
+                asstprincipal_rows=asstprincipal_rows,
+                all_principal_cert_list=all_principal_cert_list,
+                any_principal_poc=any_principal_poc,
+                all_asstprincipal_cert_list=all_asstprincipal_cert_list,
+                any_asstprincipal_poc=any_asstprincipal_poc,
+                broad_leadership_change_flag=0,
+                broad_leadership_gained_principal_poc_flag=0,
+                broad_leadership_gained_asstprin_poc_flag=0,
+                broad_leadership_gained_poc_flag=0,
+                broad_leadership_lost_principal_poc_flag=0,
+                broad_leadership_lost_asstprin_poc_flag=0,
+                broad_leadership_lost_poc_flag=0
+            )
+        return results
+
+    grouped = group_and_sort(rows)
+
+    final = {}
+
+    for (key, leadership) in grouped.items():
+        pieces = key.split("_")
+
+        all_principal_cert_list = leadership.all_principal_cert_list.split(",")
+        all_asstprincipal_cert_list = leadership.all_asstprincipal_cert_list.split(",")
+
+        # previous yr
+        pieces[0] = str(int(pieces[0]) - 1)
+        new_key = "_".join(pieces)
+
+        new_leadership = leadership
+
+        prev_leadership = grouped.get(new_key)
+
+        if prev_leadership:
+            prev_all_principal_cert_list = prev_leadership.all_principal_cert_list.split(",")
+            prev_all_asstprincipal_cert_list = prev_leadership.all_asstprincipal_cert_list.split(",")
+
+            prin_gained = set(all_principal_cert_list) - set(prev_all_principal_cert_list)
+            prin_gained_poc = any([(r['PersonOfColorCategory'] == 'Person of Color') for r in leadership.principal_rows if r['CertificateNumber'] in prin_gained])
+
+            prin_lost = set(prev_all_principal_cert_list) - set(all_principal_cert_list)
+            prin_lost_poc = any([(r['PersonOfColorCategory'] == 'Person of Color') for r in prev_leadership.principal_rows if r['CertificateNumber'] in prin_lost])
+
+            ap_gained = set(all_asstprincipal_cert_list) - set(prev_all_asstprincipal_cert_list)
+            ap_gained_poc = any([(r['PersonOfColorCategory'] == 'Person of Color') for r in leadership.asstprincipal_rows if r['CertificateNumber'] in ap_gained])
+
+            ap_lost = set(prev_all_asstprincipal_cert_list) - set(all_asstprincipal_cert_list)
+            ap_lost_poc = any([(r['PersonOfColorCategory'] == 'Person of Color') for r in prev_leadership.asstprincipal_rows if r['CertificateNumber'] in ap_lost])
+
+            new_leadership = new_leadership._replace(
+                broad_leadership_change_flag=int(
+                    leadership.all_principal_cert_list != prev_leadership.all_principal_cert_list or \
+                    leadership.all_asstprincipal_cert_list != prev_leadership.all_asstprincipal_cert_list),
+                broad_leadership_gained_principal_poc_flag=int(prin_gained_poc),
+                broad_leadership_gained_asstprin_poc_flag=int(ap_gained_poc),
+                broad_leadership_gained_poc_flag=int(prin_gained_poc or ap_gained_poc),
+                broad_leadership_lost_principal_poc_flag=int(prin_lost_poc),
+                broad_leadership_lost_asstprin_poc_flag=int(ap_lost_poc),
+                broad_leadership_lost_poc_flag=int(prin_lost_poc or ap_lost_poc)
+            )
+
+        final[key] = new_leadership
+
+
+    with codecs.open("fact_schoolleadership_fields.tmp", "w", 'utf-8') as f:
+            header = "\t".join([
+                "AcademicYear",
+                "CountyAndDistrictCode",
+                "Building",
+                "AllPrincipalCertList",
+                "AnyPrincipalPOC",
+                "AllAsstPrinCertList",
+                "AnyAsstPrinPOC",
+                "BroadLeadershipChangeFlag",
+                "BroadLeadershipGainedPrincipalPOCFlag",
+                "BroadLeadershipGainedAsstPrinPOCFlag",
+                "BroadLeadershipGainedPOCFlag",
+                "BroadLeadershipLostPrincipalPOCFlag",
+                "BroadLeadershipLostAsstPrinPOCFlag",
+                "BroadLeadershipLostPOCFlag"
+            ])
+
+            f.write(header)
+            f.write(LINE_TERMINATOR)
+            for row in final.values():
+                pieces = row.key.split("_")
+                f.write(pieces[0])
+                f.write("\t")
+                f.write(pieces[1])
+                f.write("\t")
+                f.write(pieces[2])
+                f.write("\t")
+                f.write(str(row.all_principal_cert_list))
+                f.write("\t")
+                f.write(str(row.any_principal_poc))
+                f.write("\t")
+                f.write(str(row.all_asstprincipal_cert_list))
+                f.write("\t")
+                f.write(str(row.any_asstprincipal_poc))
+                f.write("\t")
+                f.write(str(row.broad_leadership_change_flag))
+                f.write("\t")
+                f.write(str(row.broad_leadership_gained_principal_poc_flag))
+                f.write("\t")
+                f.write(str(row.broad_leadership_gained_asstprin_poc_flag))
+                f.write("\t")
+                f.write(str(row.broad_leadership_gained_poc_flag))
+                f.write("\t")
+                f.write(str(row.broad_leadership_lost_principal_poc_flag))
+                f.write("\t")
+                f.write(str(row.broad_leadership_lost_asstprin_poc_flag))
+                f.write("\t")
+                f.write(str(row.broad_leadership_lost_poc_flag))
+                f.write(LINE_TERMINATOR)
+
+    print("Inserting %d entries in Fact_SchoolLeadership_Fields" % (len(grouped)))
+
+    cursor.execute("DROP TABLE IF EXISTS Fact_SchoolLeadership_Fields;")
+
+    cursor.execute("""
+        CREATE TABLE Fact_SchoolLeadership_Fields (
+            AcademicYear SMALLINT
+            ,CountyAndDistrictCode VARCHAR(10)
+            ,Building VARCHAR(10)
+            ,AllPrincipalCertList VARCHAR(1000)
+            ,AnyPrincipalPOC TINYINT
+            ,AllAsstPrinCertList VARCHAR(1000)
+            ,AnyAsstPrinPOC TINYINT
+            ,BroadLeadershipChangeFlag TINYINT
+            ,BroadLeadershipGainedPrincipalPOCFlag TINYINT
+            ,BroadLeadershipGainedAsstPrinPOCFlag TINYINT
+            ,BroadLeadershipGainedPOCFlag TINYINT
+            ,BroadLeadershipLostPrincipalPOCFlag TINYINT
+            ,BroadLeadershipLostAsstPrinPOCFlag TINYINT
+            ,BroadLeadershipLostPOCFlag TINYINT
+        )
+    """)
+
+    conn.commit()
+
+    load_into_database([('fact_schoolleadership_fields.tmp', 'Fact_SchoolLeadership_Fields')])
+
+    cursor.execute("CREATE UNIQUE INDEX idx_Fact_SchoolLeadership_Fields ON Fact_SchoolLeadership_Fields(AcademicYear, CountyAndDistrictCode, Building);")
+
+    conn.commit()
+
+    os.remove("fact_schoolleadership_fields.tmp")
+
+    execute_sql_file("populate_Fact_SchoolLeadership_Fields.sql")

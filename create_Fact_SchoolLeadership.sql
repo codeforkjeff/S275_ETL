@@ -13,6 +13,7 @@ CREATE TABLE Fact_SchoolLeadership (
 	,AcademicYear SMALLINT
 	,CountyAndDistrictCode VARCHAR(5)
 	,Building VARCHAR(10)
+	-- these Principal and AP fields take the "primary" person if there is more than 1 in that role
 	,PrincipalCertificateNumber VARCHAR(20)
 	,PrincipalStaffID INT
 	,PrevPrincipalStaffID INT
@@ -25,6 +26,19 @@ CREATE TABLE Fact_SchoolLeadership (
 	,PromotionFlag TINYINT
 	,PrincipalTenure TINYINT
 	,AsstPrincipalTenure TINYINT
+	-- 'broad' leadership fields = considers ALL principals and asst principals at the school
+	,AllPrincipalCertList VARCHAR(1000)
+	,AnyPrincipalPOC TINYINT
+	,AllAsstPrinCertList VARCHAR(1000)
+	,AnyAsstPrinPOC TINYINT
+	,BroadLeadershipChangeFlag TINYINT
+	,BroadLeadershipGainedPrincipalPOCFlag TINYINT
+	,BroadLeadershipGainedAsstPrinPOCFlag TINYINT
+	,BroadLeadershipGainedPOCFlag TINYINT
+	,BroadLeadershipLostPrincipalPOCFlag TINYINT
+	,BroadLeadershipLostAsstPrinPOCFlag TINYINT
+	,BroadLeadershipLostPOCFlag TINYINT
+	--
 	,TeacherCount INT
 	,TeacherRetention1Yr INT
 	,TeacherRetention1YrPct NUMERIC(10,2)
