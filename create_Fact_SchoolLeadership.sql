@@ -28,10 +28,17 @@ CREATE TABLE Fact_SchoolLeadership (
 	,AsstPrincipalTenure TINYINT
 	-- 'broad' leadership fields = considers ALL principals and asst principals at the school
 	,AllPrincipalCertList VARCHAR(1000)
-	,AnyPrincipalPOC TINYINT
 	,AllAsstPrinCertList VARCHAR(1000)
+	,AnyPrincipalPOC TINYINT
 	,AnyAsstPrinPOC TINYINT
-	,BroadLeadershipChangeFlag TINYINT
+    ,BroadLeadershipAnyPOCFlag TINYINT
+    -- change flags
+    ,BroadLeadershipChangeFlag TINYINT
+    ,BroadLeadershipAnyPOCStayedFlag TINYINT
+    ,BroadLeadershipStayedNoPOCFlag TINYINT
+    ,BroadLeadershipChangeAnyPOCToNoneFlag TINYINT
+    ,BroadLeadershipChangeNoPOCToAnyFlag TINYINT
+    -- gain/loss flags
 	,BroadLeadershipGainedPrincipalPOCFlag TINYINT
 	,BroadLeadershipGainedAsstPrinPOCFlag TINYINT
 	,BroadLeadershipGainedPOCFlag TINYINT

@@ -527,10 +527,15 @@ LeadershipFields = collections.namedtuple('LeadershipFields', [
     'principal_rows',
     'asstprincipal_rows',
     'all_principal_cert_list',
-    'any_principal_poc',
     'all_asstprincipal_cert_list',
+    'any_principal_poc',
     'any_asstprincipal_poc',
+    'broad_leadership_any_poc_flag',
     'broad_leadership_change_flag',
+    'broad_leadership_any_poc_stayed_flag',
+    'broad_leadership_stayed_no_poc_flag',
+    'broad_leadership_change_any_poc_to_none_flag',
+    'broad_leadership_change_no_poc_to_any_flag',
     'broad_leadership_gained_principal_poc_flag',
     'broad_leadership_gained_asstprin_poc_flag',
     'broad_leadership_gained_poc_flag',
@@ -602,28 +607,36 @@ def populate_school_leadership_fields():
 
             for (principal_type, p_values) in itertools.groupby(values, key=lambda row: row['PrincipalType']):
                 p_values = list(p_values)
-                certs = ",".join(sorted([v['CertificateNumber'] for v in p_values if v['CertificateNumber'] and len(v['CertificateNumber']) > 0]))
+                certs = sorted([v['CertificateNumber'] for v in p_values if v['CertificateNumber'] and len(v['CertificateNumber']) > 0])
+                certs_str = ",".join(certs)
                 poc = int(any(map(lambda v: v['PersonOfColorCategory'] == 'Person of Color', p_values)))
                 if principal_type == 'Principal':
                     principal_rows = p_values
-                    all_principal_cert_list = certs
+                    all_principal_cert_list = certs_str
                     any_principal_poc = poc
                 elif principal_type == 'AssistantPrincipal':
                     asstprincipal_rows = p_values
-                    all_asstprincipal_cert_list = certs
+                    all_asstprincipal_cert_list = certs_str
                     any_asstprincipal_poc = poc
                 else:
                     raise "Error"
+
+            broad_leadership_any_poc_flag = 1 if any_principal_poc+any_asstprincipal_poc > 0 else 0
 
             results[key] = LeadershipFields(
                 key=key,
                 principal_rows=principal_rows,
                 asstprincipal_rows=asstprincipal_rows,
                 all_principal_cert_list=all_principal_cert_list,
-                any_principal_poc=any_principal_poc,
                 all_asstprincipal_cert_list=all_asstprincipal_cert_list,
+                any_principal_poc=any_principal_poc,
                 any_asstprincipal_poc=any_asstprincipal_poc,
+                broad_leadership_any_poc_flag=broad_leadership_any_poc_flag,
                 broad_leadership_change_flag=0,
+                broad_leadership_any_poc_stayed_flag=0,
+                broad_leadership_stayed_no_poc_flag=0,
+                broad_leadership_change_any_poc_to_none_flag=0,
+                broad_leadership_change_no_poc_to_any_flag=0,
                 broad_leadership_gained_principal_poc_flag=0,
                 broad_leadership_gained_asstprin_poc_flag=0,
                 broad_leadership_gained_poc_flag=0,
@@ -671,6 +684,14 @@ def populate_school_leadership_fields():
                 broad_leadership_change_flag=int(
                     leadership.all_principal_cert_list != prev_leadership.all_principal_cert_list or \
                     leadership.all_asstprincipal_cert_list != prev_leadership.all_asstprincipal_cert_list),
+                broad_leadership_any_poc_stayed_flag= \
+                    1 if prev_leadership.broad_leadership_any_poc_flag==1 and leadership.broad_leadership_any_poc_flag==1 else 0,
+                broad_leadership_stayed_no_poc_flag = \
+                    1 if prev_leadership.broad_leadership_any_poc_flag==0 and leadership.broad_leadership_any_poc_flag==0 else 0,
+                broad_leadership_change_any_poc_to_none_flag= \
+                    1 if prev_leadership.broad_leadership_any_poc_flag==1 and leadership.broad_leadership_any_poc_flag==0 else 0,
+                broad_leadership_change_no_poc_to_any_flag= \
+                    1 if prev_leadership.broad_leadership_any_poc_flag==0 and leadership.broad_leadership_any_poc_flag==1 else 0,
                 broad_leadership_gained_principal_poc_flag=int(prin_gained_poc),
                 broad_leadership_gained_asstprin_poc_flag=int(ap_gained_poc),
                 broad_leadership_gained_poc_flag=int(prin_gained_poc or ap_gained_poc),
@@ -688,10 +709,15 @@ def populate_school_leadership_fields():
                 "CountyAndDistrictCode",
                 "Building",
                 "AllPrincipalCertList",
-                "AnyPrincipalPOC",
                 "AllAsstPrinCertList",
+                "AnyPrincipalPOC",
                 "AnyAsstPrinPOC",
+                "BroadLeadershipAnyPOCFlag",
                 "BroadLeadershipChangeFlag",
+                "BroadLeadershipAnyPOCStayedFlag",
+                "BroadLeadershipStayedNoPOCFlag",
+                "BroadLeadershipChangeAnyPOCToNoneFlag",
+                "BroadLeadershipChangeNoPOCToAnyFlag",
                 "BroadLeadershipGainedPrincipalPOCFlag",
                 "BroadLeadershipGainedAsstPrinPOCFlag",
                 "BroadLeadershipGainedPOCFlag",
@@ -712,13 +738,23 @@ def populate_school_leadership_fields():
                 f.write("\t")
                 f.write(str(row.all_principal_cert_list))
                 f.write("\t")
-                f.write(str(row.any_principal_poc))
-                f.write("\t")
                 f.write(str(row.all_asstprincipal_cert_list))
+                f.write("\t")
+                f.write(str(row.any_principal_poc))
                 f.write("\t")
                 f.write(str(row.any_asstprincipal_poc))
                 f.write("\t")
+                f.write(str(row.broad_leadership_any_poc_flag))
+                f.write("\t")
                 f.write(str(row.broad_leadership_change_flag))
+                f.write("\t")
+                f.write(str(row.broad_leadership_any_poc_stayed_flag))
+                f.write("\t")
+                f.write(str(row.broad_leadership_stayed_no_poc_flag))
+                f.write("\t")
+                f.write(str(row.broad_leadership_change_any_poc_to_none_flag))
+                f.write("\t")
+                f.write(str(row.broad_leadership_change_no_poc_to_any_flag))
                 f.write("\t")
                 f.write(str(row.broad_leadership_gained_principal_poc_flag))
                 f.write("\t")
@@ -743,10 +779,15 @@ def populate_school_leadership_fields():
             ,CountyAndDistrictCode VARCHAR(10)
             ,Building VARCHAR(10)
             ,AllPrincipalCertList VARCHAR(1000)
-            ,AnyPrincipalPOC TINYINT
             ,AllAsstPrinCertList VARCHAR(1000)
+            ,AnyPrincipalPOC TINYINT
             ,AnyAsstPrinPOC TINYINT
+            ,BroadLeadershipAnyPOCFlag TINYINT
             ,BroadLeadershipChangeFlag TINYINT
+            ,BroadLeadershipAnyPOCStayedFlag TINYINT
+            ,BroadLeadershipStayedNoPOCFlag TINYINT
+            ,BroadLeadershipChangeAnyPOCToNoneFlag TINYINT
+            ,BroadLeadershipChangeNoPOCToAnyFlag TINYINT
             ,BroadLeadershipGainedPrincipalPOCFlag TINYINT
             ,BroadLeadershipGainedAsstPrinPOCFlag TINYINT
             ,BroadLeadershipGainedPOCFlag TINYINT

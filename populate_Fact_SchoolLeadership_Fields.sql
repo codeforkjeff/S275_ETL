@@ -9,16 +9,16 @@ SET
 			AND Fact_SchoolLeadership.CountyAndDistrictCode = f.CountyAndDistrictCode
 			AND Fact_SchoolLeadership.Building = f.Building
 	)
-	,AnyPrincipalPOC = (
-		SELECT AnyPrincipalPOC
+	,AllAsstPrinCertList = (
+		SELECT AllAsstPrinCertList
 		FROM Fact_SchoolLeadership_Fields f
 		WHERE
 			Fact_SchoolLeadership.AcademicYear = f.AcademicYear
 			AND Fact_SchoolLeadership.CountyAndDistrictCode = f.CountyAndDistrictCode
 			AND Fact_SchoolLeadership.Building = f.Building
 	)
-	,AllAsstPrinCertList = (
-		SELECT AllAsstPrinCertList
+	,AnyPrincipalPOC = (
+		SELECT AnyPrincipalPOC
 		FROM Fact_SchoolLeadership_Fields f
 		WHERE
 			Fact_SchoolLeadership.AcademicYear = f.AcademicYear
@@ -33,8 +33,48 @@ SET
 			AND Fact_SchoolLeadership.CountyAndDistrictCode = f.CountyAndDistrictCode
 			AND Fact_SchoolLeadership.Building = f.Building
 	)
+	,BroadLeadershipAnyPOCFlag = (
+		SELECT BroadLeadershipAnyPOCFlag
+		FROM Fact_SchoolLeadership_Fields f
+		WHERE
+			Fact_SchoolLeadership.AcademicYear = f.AcademicYear
+			AND Fact_SchoolLeadership.CountyAndDistrictCode = f.CountyAndDistrictCode
+			AND Fact_SchoolLeadership.Building = f.Building
+	)
 	,BroadLeadershipChangeFlag = (
 		SELECT BroadLeadershipChangeFlag
+		FROM Fact_SchoolLeadership_Fields f
+		WHERE
+			Fact_SchoolLeadership.AcademicYear = f.AcademicYear
+			AND Fact_SchoolLeadership.CountyAndDistrictCode = f.CountyAndDistrictCode
+			AND Fact_SchoolLeadership.Building = f.Building
+	)
+	,BroadLeadershipAnyPOCStayedFlag = (
+		SELECT BroadLeadershipAnyPOCStayedFlag
+		FROM Fact_SchoolLeadership_Fields f
+		WHERE
+			Fact_SchoolLeadership.AcademicYear = f.AcademicYear
+			AND Fact_SchoolLeadership.CountyAndDistrictCode = f.CountyAndDistrictCode
+			AND Fact_SchoolLeadership.Building = f.Building
+	)
+	,BroadLeadershipStayedNoPOCFlag = (
+		SELECT BroadLeadershipStayedNoPOCFlag
+		FROM Fact_SchoolLeadership_Fields f
+		WHERE
+			Fact_SchoolLeadership.AcademicYear = f.AcademicYear
+			AND Fact_SchoolLeadership.CountyAndDistrictCode = f.CountyAndDistrictCode
+			AND Fact_SchoolLeadership.Building = f.Building
+	)
+	,BroadLeadershipChangeAnyPOCToNoneFlag = (
+		SELECT BroadLeadershipChangeAnyPOCToNoneFlag
+		FROM Fact_SchoolLeadership_Fields f
+		WHERE
+			Fact_SchoolLeadership.AcademicYear = f.AcademicYear
+			AND Fact_SchoolLeadership.CountyAndDistrictCode = f.CountyAndDistrictCode
+			AND Fact_SchoolLeadership.Building = f.Building
+	)
+	,BroadLeadershipChangeNoPOCToAnyFlag = (
+		SELECT BroadLeadershipChangeNoPOCToAnyFlag
 		FROM Fact_SchoolLeadership_Fields f
 		WHERE
 			Fact_SchoolLeadership.AcademicYear = f.AcademicYear
