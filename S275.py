@@ -215,32 +215,6 @@ def create_flat_file(access_db_path, file_type, output_path):
     f.close()
 
 
-def create_base_dimensional_models():
-
-    print("creating dimensional models")
-
-    execute_sql_file("create_Dim_School.sql")
-    load_into_database([('input/Dim_School_Base.txt', 'Dim_School_Base')])
-
-    if os.path.exists(dim_school_fields):
-        load_into_database([(dim_school_fields, 'Dim_School_Fields')])
-    else:
-        print(f"{dim_school_fields} not found, skipping processing for that file")
-
-    execute_sql_file("populate_Dim_School_Fields.sql")
-
-    execute_sql_file("create_Dim_Staff_and_Fact_Assignment.sql")
-
-    execute_sql_file("backfill_Dim_School.sql")
-
-    execute_sql_file("create_Fact_SchoolTeacher.sql")
-
-    execute_sql_file("create_Fact_SchoolPrincipal.sql")
-
-    # populate DimSchool w/ teacher counts
-    execute_sql_file("update_Dim_School.sql")
-
-
 def create_teacher_mobility():
     print("creating teacher mobility tables (single teacher per year)")
     execute_sql_file("create_Fact_TeacherMobility.sql")
@@ -297,19 +271,63 @@ def create_additional_dimensional_models():
     create_pesb_educator_persistence()
 
 
-def create_derived_tables():
+# main entry point for loading all source tables
+def load():
 
-    create_auxiliary_tables()
+    ## raw_s275
 
-    create_base_dimensional_models()
+    load_raw_s275()
 
-    create_additional_dimensional_models()
+    # TODO: handle duty codes and Dim_School_Base as seeds
 
-def create_everything():
+    # DutyCodes
 
-    create_base_S275()
+    execute_sql_file("create_duty_codes.sql")
+    load_into_database([('input/duty_codes.txt', 'duty_codes')])
 
-    create_derived_tables()
+    # Dim_School_Base
+
+    execute_sql_file("create_raw_school_base.sql")   
+    load_into_database([('input/raw_school_base.txt', 'raw_school_base')])
+
+    # Dim_School_Fields
+
+    # Created by running this in RMP database:
+    # there's 53 rows with duplicate schoolcodes b/c of bad data quality;
+    # we arbitrarily order by districtcode to de-dupe these
+    #
+    # WITH T AS (
+    #     SELECT
+    #         *
+    #         ,ROW_NUMBER() OVER (PARTITION BY SchoolCode, AcademicYear
+    #             ORDER BY DistrictCode) AS Ranked
+    #     FROM Dim.School
+    # )
+    # SELECT
+    #     T.AcademicYear
+    #     ,T.DistrictCode
+    #     ,T.DistrictName
+    #     ,T.SchoolCode
+    #     ,T.SchoolName
+    #     ,GradeLevelStart
+    #     ,GradeLevelEnd
+    #     ,GradeLevelSortOrderStart 
+    #     ,GradeLevelSortOrderEnd
+    #     ,SchoolType
+    #     ,Lat
+    #     ,Long
+    #     ,NCESLocaleCode
+    #     ,NCESLocale
+    #     ,dRoadMapRegionFlag
+    # S275.dbo.Dim_School
+    # FROM T
+    # WHERE Ranked = 1;
+
+    execute_sql_file("create_raw_school_fields.sql")
+    if os.path.exists(dim_school_fields):
+        load_into_database([(dim_school_fields, 'raw_school_fields')])
+    else:
+        print(f"{dim_school_fields} not found, skipping processing for that file")
 
 
 def execute_sql_file(path):
@@ -376,12 +394,7 @@ def load_into_database(entries):
                     conn.commit()
 
 
-def create_auxiliary_tables():
-    execute_sql_file("create_dutycodes.sql")
-    load_into_database([('input/DutyCodes.txt', 'DutyCodes')])
-
-
-def create_base_S275():
+def load_raw_s275():
     output_files = []
     for entry in source_files:
         path = entry[0]
@@ -396,9 +409,8 @@ def create_base_S275():
 
         output_files.append(output_file)
 
-    execute_sql_file("create_Raw_S275.sql")
-    load_into_database([(output_file, 'Raw_S275') for output_file in output_files])
-    execute_sql_file("create_Cleaned_S275.sql")
+    execute_sql_file("create_raw_s275.sql")
+    load_into_database([(output_file, 'raw_S275') for output_file in output_files])
 
 
 def export_query(sql, output_path):

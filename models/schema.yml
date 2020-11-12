@@ -1,0 +1,12 @@
+
+version: 2
+
+sources:
+  - name: sources
+    description: raw source data
+    schema: main
+    tables:
+      - name: duty_codes
+      - name: raw_school_base
+      - name: raw_school_fields
+      - name: raw_s275

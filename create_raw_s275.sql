@@ -1,9 +1,9 @@
 
-DROP TABLE IF EXISTS Raw_S275;
+DROP TABLE IF EXISTS raw_S275;
 
 -- next
 
-CREATE TABLE Raw_S275 (
+CREATE TABLE raw_S275 (
     SchoolYear varchar(500) NULL
     ,area varchar(500) NULL
     ,cou varchar(500) NULL

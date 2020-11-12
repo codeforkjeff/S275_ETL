@@ -1,8 +1,8 @@
-DROP TABLE IF EXISTS DutyCodes;
+DROP TABLE IF EXISTS duty_codes;
 
 -- next
 
-CREATE TABLE DutyCodes (
+CREATE TABLE duty_codes (
 	DutyRoot VARCHAR(2),
 	DutySuffix VARCHAR(1),
 	Description VARCHAR(100)
@@ -10,7 +10,7 @@ CREATE TABLE DutyCodes (
 
 -- next
 
-CREATE INDEX idx_DutyCodes ON DutyCodes (
+CREATE INDEX idx_duty_codes ON duty_codes (
 	DutyRoot,
 	DutySuffix,
 	Description
