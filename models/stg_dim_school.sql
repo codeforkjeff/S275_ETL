@@ -2,12 +2,12 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_dim_school",
-            "DROP INDEX IF EXISTS idx_dim_school2"
+            "DROP INDEX IF EXISTS idx_stg_dim_school",
+            "DROP INDEX IF EXISTS idx_stg_dim_school2"
         ]
         ,"post-hook": [
             """
-            CREATE UNIQUE INDEX idx_dim_school ON dim_school (
+            CREATE UNIQUE INDEX idx_stg_dim_school ON stg_dim_school (
                 AcademicYear,
                 DistrictCode,
                 DistrictName,
@@ -17,7 +17,7 @@
             )
             """,
             """
-            CREATE INDEX idx_dim_school2 ON dim_school (
+            CREATE INDEX idx_stg_dim_school2 ON stg_dim_school (
                 AcademicYear,
                 SchoolCode,
                 SchoolName,
