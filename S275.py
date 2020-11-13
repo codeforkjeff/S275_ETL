@@ -226,22 +226,12 @@ def create_school_leadership():
 
     populate_school_leadership_fields()
 
-def create_pesb_educator_persistence():
-    print("creating PESB educator persistence table")
-    execute_sql_file("create_Fact_PESBEducatorPersistence.sql")
-
 
 def create_additional_dimensional_models():
 
     create_teacher_mobility_aggregations()
 
-    create_principal_mobility()
-
-    create_principal_cohort_mobility()
-
     create_school_leadership()
-
-    create_pesb_educator_persistence()
 
 
 # main entry point for loading all source tables
