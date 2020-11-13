@@ -215,11 +215,6 @@ def create_flat_file(access_db_path, file_type, output_path):
     f.close()
 
 
-def create_teacher_mobility_aggregations():
-    print("creating teacher mobility aggregations")
-    execute_sql_file("create_teacher_mobility_aggregations.sql")
-
-
 def create_school_leadership():
     print("creating school leadership tables")
     execute_sql_file("create_Fact_SchoolLeadership.sql")
@@ -228,8 +223,6 @@ def create_school_leadership():
 
 
 def create_additional_dimensional_models():
-
-    create_teacher_mobility_aggregations()
 
     create_school_leadership()
 
