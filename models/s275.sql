@@ -134,6 +134,7 @@ FROM {{ source('sources', 'raw_s275') }}
         CASE
             WHEN AcademicYear <= 2000
             THEN CAST((CAST(CertYearsOfExperience as real) / 10) as varchar)
+            ELSE CertYearsOfExperience
         END AS CertYearsOfExperience,
         StaffMixFactor,
         StaffMixFactor1,
@@ -146,10 +147,12 @@ FROM {{ source('sources', 'raw_s275') }}
         CASE
             WHEN AcademicYear <= 2000
             THEN CAST((CAST(CertificatedFTE as real) / 1000) as varchar)
+            ELSE CertificatedFTE
         END AS CertificatedFTE,
         CASE
             WHEN AcademicYear <= 2000
             THEN CAST((CAST(ClassifiedFTE as real) / 1000) as varchar)
+            ELSE ClassifiedFTE
         END AS ClassifiedFTE,
         CertificatedBase,
         ClassifiedBase,
@@ -172,15 +175,18 @@ FROM {{ source('sources', 'raw_s275') }}
         CASE
             WHEN AcademicYear <= 2000
             THEN CAST((CAST(AssignmentPercent as real) / 10) as varchar)
+            ELSE AssignmentPercent
         END AS AssignmentPercent,
         CASE
             WHEN AcademicYear <= 2000
             THEN CAST((CAST(AssignmentFTEDesignation as real) / 1000) as varchar)
+            ELSE AssignmentFTEDesignation
         END AS AssignmentFTEDesignation,
         AssignmentSalaryTotal,
         CASE
             WHEN AcademicYear <= 2000
             THEN CAST((CAST(AssignmentHoursPerYear as real) / 100) as varchar)
+            ELSE AssignmentHoursPerYear
         END AS AssignmentHoursPerYear,
         Major,
         TwoDigitYear,
