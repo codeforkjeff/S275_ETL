@@ -273,6 +273,11 @@ def load():
     else:
         print(f"{dim_school_fields} not found, skipping processing for that file")
 
+    ## create stubs for these tables
+    create_ext_teachermobility_distance_table()
+
+    create_ext_school_leadership_broad_table()
+
 
 def execute_sql_file(path):
     """ files should default to using SQL Server dialect; we do some translation here """
@@ -416,7 +421,8 @@ def grouper(iterable, n, fillvalue=None):
     return itertools.zip_longest(*args, fillvalue=fillvalue)
 
 
-def create_ext_teachermobility_distance():
+def create_ext_teachermobility_distance_table():
+
     conn = get_db_conn()
     cursor = conn.cursor()
 
@@ -428,6 +434,14 @@ def create_ext_teachermobility_distance():
 
     cursor.execute("CREATE INDEX idx_ext_teachermobility_distance ON ext_teachermobility_distance (TeacherMobilityID, Distance)");
     conn.commit()
+
+
+def create_ext_teachermobility_distance():
+
+    create_ext_teachermobility_distance_table()
+
+    conn = get_db_conn()
+    cursor = conn.cursor()
 
     print("Querying stg_TeacherMobility")
 
@@ -468,6 +482,42 @@ def create_ext_teachermobility_distance():
     load_into_database([('distances.tmp', 'ext_teachermobility_distance')])
 
     os.remove("distances.tmp")
+
+
+def create_ext_school_leadership_broad_table():
+
+    print("Creating ext_school_leadership_broad_table")
+
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    cursor.execute("DROP TABLE IF EXISTS ext_schoolleadership_broad;")
+
+    cursor.execute("""
+        CREATE TABLE ext_schoolleadership_broad (
+            AcademicYear SMALLINT
+            ,CountyAndDistrictCode VARCHAR(10)
+            ,Building VARCHAR(10)
+            ,AllPrincipalCertList VARCHAR(1000)
+            ,AllAsstPrinCertList VARCHAR(1000)
+            ,AnyPrincipalPOC TINYINT
+            ,AnyAsstPrinPOC TINYINT
+            ,BroadLeadershipAnyPOCFlag TINYINT
+            ,BroadLeadershipChangeFlag TINYINT
+            ,BroadLeadershipAnyPOCStayedFlag TINYINT
+            ,BroadLeadershipStayedNoPOCFlag TINYINT
+            ,BroadLeadershipChangeAnyPOCToNoneFlag TINYINT
+            ,BroadLeadershipChangeNoPOCToAnyFlag TINYINT
+            ,BroadLeadershipGainedPrincipalPOCFlag TINYINT
+            ,BroadLeadershipGainedAsstPrinPOCFlag TINYINT
+            ,BroadLeadershipGainedPOCFlag TINYINT
+            ,BroadLeadershipLostPrincipalPOCFlag TINYINT
+            ,BroadLeadershipLostAsstPrinPOCFlag TINYINT
+            ,BroadLeadershipLostPOCFlag TINYINT
+        )
+    """)
+
+    conn.commit()
 
 
 LeadershipFields = collections.namedtuple('LeadershipFields', [
@@ -719,33 +769,7 @@ def create_ext_school_leadership_broad():
 
     print("Inserting %d entries in ext_schoolleadership_broad" % (len(grouped)))
 
-    cursor.execute("DROP TABLE IF EXISTS ext_schoolleadership_broad;")
-
-    cursor.execute("""
-        CREATE TABLE ext_schoolleadership_broad (
-            AcademicYear SMALLINT
-            ,CountyAndDistrictCode VARCHAR(10)
-            ,Building VARCHAR(10)
-            ,AllPrincipalCertList VARCHAR(1000)
-            ,AllAsstPrinCertList VARCHAR(1000)
-            ,AnyPrincipalPOC TINYINT
-            ,AnyAsstPrinPOC TINYINT
-            ,BroadLeadershipAnyPOCFlag TINYINT
-            ,BroadLeadershipChangeFlag TINYINT
-            ,BroadLeadershipAnyPOCStayedFlag TINYINT
-            ,BroadLeadershipStayedNoPOCFlag TINYINT
-            ,BroadLeadershipChangeAnyPOCToNoneFlag TINYINT
-            ,BroadLeadershipChangeNoPOCToAnyFlag TINYINT
-            ,BroadLeadershipGainedPrincipalPOCFlag TINYINT
-            ,BroadLeadershipGainedAsstPrinPOCFlag TINYINT
-            ,BroadLeadershipGainedPOCFlag TINYINT
-            ,BroadLeadershipLostPrincipalPOCFlag TINYINT
-            ,BroadLeadershipLostAsstPrinPOCFlag TINYINT
-            ,BroadLeadershipLostPOCFlag TINYINT
-        )
-    """)
-
-    conn.commit()
+    create_ext_school_leadership_broad_table()
 
     load_into_database([('ext_schoolleadership_broad.tmp', 'ext_schoolleadership_broad')])
 

@@ -10,6 +10,9 @@ sources:
       - name: raw_school_base
       - name: raw_school_fields
       - name: raw_s275
-      # 'externally'-created tables mid-DAG
+  - name: ext
+    description: data created outside SQL and the DAG, but is part of the DAG
+    schema: main
+    tables:
       - name: ext_teachermobility_distance
       - name: ext_schoolleadership_broad

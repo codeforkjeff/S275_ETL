@@ -6,7 +6,7 @@ This is a perpetual work in progress!
 
 # Features
 
-- Does ETL and data cleaning of the [S275 Microsoft Access files from OSPI](https://www.k12.wa.us/safs-database-files) into a single table in a SQL database.
+- Does ETL (ELT, really) and data cleaning of the [S275 Microsoft Access files from OSPI](https://www.k12.wa.us/safs-database-files) into a single table in a SQL database.
   Files for 1996 - 2019 are currently supported; however, not all of these years are currently available for download on the website.
 - Creates dimensional models for flexible reporting
 - Generates models for teacher/principal demographics, retention/mobility, and cohort analysis
@@ -67,10 +67,10 @@ gpg -c -a -o S275_settings.py.gpg --cipher-algo AES256 S275_settings.py
 
 # Creating the Data
 
-To generate everything:
+Run this script:
 
 ```sh
-python -c "import S275; S275.create_everything();"
+.\elt.ps1
 ```
 
 See the section "Development Notes" below for details on what this does.
@@ -155,25 +155,12 @@ the flag fields describe the transitions between CohortYear and EndYear.
 
 # Development Notes
 
-The `create_everything()` function is composed of calls to two fuctions:
-- `create_base_S275()` - this creates a cleaned `S275` table with inconsistent
-values normalized, bad data removed, etc. The structure is the same as the table
-found in the Access databases provided by OSPI except that the columns have been
-renamed to be more verbose/meaningful.
-- `create_derived_tables()` - this uses the cleaned `S275` table to create all
-derivative tables
+This repo uses the open source tool [dbt](http://getdbt.com) to manage the transforms.
+See its documentation for how to use that tool, including how to generate
+a flow diagram for a bird's-eye view of the entire data pipeline.
 
-You can trace through what these functions do in the `S275.py` file
-in order to understand the complete set of steps for producing the resulting tables.
-
-If you are changing the SQL files and Python code, you can probably re-run
-`create_derived_tables()` instead of everything, to save some time. You could further
-selectively re-run only parts of that function to save time, if you feel confident
-about the dependencies. For details, see the code in `S275.py`.
-
-.sql files should be written in SQL Server dialect where standard SQL isn't possible;
-see the `execute_sql_file()` in `S275.py` for the code that translates SQL to the
-dialect for sqlite.
+In a nutshell, you can see definitions for each table in the `models/` directory,
+and trace backwards from there.
 
 # Credits
 
