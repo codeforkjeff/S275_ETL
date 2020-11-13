@@ -220,17 +220,6 @@ def create_teacher_mobility_aggregations():
     execute_sql_file("create_teacher_mobility_aggregations.sql")
 
 
-def create_principal_mobility():
-    print("creating principal mobility tables")
-    execute_sql_file("create_Fact_PrincipalMobility.sql")
-
-
-def create_principal_cohort_mobility():
-    print("creating principal cohort mobility tables")
-    execute_sql_file("create_Fact_PrincipalCohort.sql")
-    execute_sql_file("create_Fact_PrincipalCohortMobility.sql")
-
-
 def create_school_leadership():
     print("creating school leadership tables")
     execute_sql_file("create_Fact_SchoolLeadership.sql")
