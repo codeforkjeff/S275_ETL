@@ -62,7 +62,7 @@ SELECT
 	,MovedIn
 	,MovedOut
 	,Exited
-	,GETDATE() as MetaCreatedAt
+	,{{ getdate_fn() }} as MetaCreatedAt
 FROM Agg
 LEFT JOIN DistrictCodes StartDistrict
 	ON StartDistrict.DistrictCode = StartDistrictCode
