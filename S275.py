@@ -215,18 +215,6 @@ def create_flat_file(access_db_path, file_type, output_path):
     f.close()
 
 
-def create_school_leadership():
-    print("creating school leadership tables")
-    execute_sql_file("create_Fact_SchoolLeadership.sql")
-
-    populate_school_leadership_fields()
-
-
-def create_additional_dimensional_models():
-
-    create_school_leadership()
-
-
 # main entry point for loading all source tables
 def load():
 
