@@ -2,30 +2,12 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_stg_dim_school",
-            "DROP INDEX IF EXISTS idx_stg_dim_school2"
+            "{{ drop_index(1) }}",
+            "{{ drop_index(2) }}",
         ]
         ,"post-hook": [
-            """
-            CREATE UNIQUE INDEX idx_stg_dim_school ON stg_dim_school (
-                AcademicYear,
-                DistrictCode,
-                DistrictName,
-                SchoolCode,
-                SchoolName,
-                RMRFlag
-            )
-            """,
-            """
-            CREATE INDEX idx_stg_dim_school2 ON stg_dim_school (
-                AcademicYear,
-                SchoolCode,
-                SchoolName,
-                DistrictCode,
-                DistrictName,
-                RMRFlag
-            )
-            """
+            "{{ create_index(1, ['AcademicYear', 'DistrictCode', 'DistrictName', 'SchoolCode', 'SchoolName', 'RMRFlag']) }}",
+            "{{ create_index(2, ['AcademicYear', 'SchoolCode', 'SchoolName', 'DistrictCode', 'DistrictName', 'RMRFlag']) }}",
         ]
     })
 }}

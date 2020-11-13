@@ -2,14 +2,10 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_dim_school"
+            "{{ drop_index(1) }}"
         ]
         ,"post-hook": [
-            """
-            CREATE INDEX idx_dim_school ON dim_school (
-                AcademicYear, DistrictCode, SchoolCode
-            )
-            """
+            "{{ create_index(1, ['AcademicYear', 'DistrictCode', 'SchoolCode']) }}"
         ]
     })
 }}

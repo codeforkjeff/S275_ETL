@@ -2,16 +2,10 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_stg_principalsofcolor"
+            "{{ drop_index(1) }}"
         ]
         ,"post-hook": [
-            """
-            CREATE UNIQUE INDEX idx_stg_principalsofcolor ON stg_principalsofcolor (
-				AcademicYear,
-				CountyAndDistrictCode,
-				Building
-            )
-            """
+            "{{ create_index(1, ['AcademicYear', 'CountyAndDistrictCode', 'Building'], unique=True) }}"
         ]
     })
 }}

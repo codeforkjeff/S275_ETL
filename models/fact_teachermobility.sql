@@ -7,20 +7,12 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_fact_teachermobility",
-            "DROP INDEX IF EXISTS idx_fact_teachermobility2"
+            "{{ drop_index(1) }}",
+            "{{ drop_index(2) }}"
         ]
         ,"post-hook": [
-            """
-            CREATE INDEX idx_fact_teachermobility ON fact_teachermobility (
-                StartStaffID, EndStaffID
-            )
-            """,
-            """
-            CREATE INDEX idx_fact_teachermobility2 ON fact_teachermobility (
-                StartYear, StartCountyAndDistrictCode, StartBuilding
-            )
-            """
+            "{{ create_index(1, ['StartStaffID', 'EndStaffID']) }}",
+            "{{ create_index(2, ['StartYear', 'StartCountyAndDistrictCode', 'StartBuilding']) }}",
         ]
     })
 }}

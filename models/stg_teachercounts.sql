@@ -2,13 +2,10 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_stg_teachercounts"
+            "{{ drop_index(1) }}"
         ]
         ,"post-hook": [
-            """
-            CREATE UNIQUE INDEX idx_stg_teachercounts ON stg_teachercounts
-			(AcademicYear, CountyAndDistrictCode, Building)
-            """
+            "{{ create_index(1, ['AcademicYear', 'CountyAndDistrictCode', 'Building'], unique=True) }}"
         ]
     })
 }}

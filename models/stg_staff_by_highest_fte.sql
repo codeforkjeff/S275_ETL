@@ -28,8 +28,8 @@ WITH T AS (
             AssignmentPercent DESC,
             AssignmentSalaryTotal DESC
         ) as RN
-    FROM Fact_assignment t
-    JOIN Dim_Staff s
+    FROM {{ ref('fact_assignment') }} t
+    JOIN {{ ref('dim_staff') }} s
         ON t.StaffID = s.StaffID
 )
 SELECT

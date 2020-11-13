@@ -2,16 +2,10 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_stg_first_year_in_district"
+            "{{ drop_index(1) }}"
         ]
         ,"post-hook": [
-            """
-			CREATE INDEX idx_stg_first_year_in_district ON stg_first_year_in_district (
-			    CertificateNumber,
-			    CountyAndDistrictCode,
-			    FirstYear
-			)
-            """
+            "{{ create_index(1, ['CertificateNumber', 'CountyAndDistrictCode', 'FirstYear']) }}"
         ]
     })
 }}

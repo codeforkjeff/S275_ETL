@@ -2,15 +2,10 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_stg_first_year_in_wa"
+            "{{ drop_index(1) }}"
         ]
         ,"post-hook": [
-            """
-			CREATE INDEX idx_stg_first_year_in_wa ON stg_first_year_in_wa (
-			    CertificateNumber,
-			    FirstYear
-			)
-            """
+            "{{ create_index(1, ['CertificateNumber', 'FirstYear']) }}"
         ]
     })
 }}

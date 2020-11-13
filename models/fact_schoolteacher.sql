@@ -2,20 +2,12 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_fact_schoolteacher",
-            "DROP INDEX IF EXISTS idx_fact_schoolteacher2"
+            "{{ drop_index(1) }}",
+            "{{ drop_index(2) }}"
         ]
         ,"post-hook": [
-            """
-            CREATE INDEX idx_fact_schoolteacher ON fact_schoolteacher (
-                StaffID, AcademicYear
-            )
-            """,
-            """
-            CREATE INDEX idx_fact_schoolteacher2 ON fact_schoolteacher (
-                AcademicYear, StaffID
-            )
-            """
+            "{{ create_index(1, ['StaffID', 'AcademicYear']) }}",
+            "{{ create_index(2, ['AcademicYear', 'StaffID']) }}",
         ]
     })
 }}

@@ -8,23 +8,10 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_stg_dim_staff_coalesced"
+            "{{ drop_index(1) }}"
         ]
         ,"post-hook": [
-            """
-            CREATE UNIQUE INDEX idx_stg_dim_staff_coalesced ON stg_dim_staff_coalesced (
-                AcademicYear,
-                Area,
-                CountyAndDistrictCode,
-                LastNameC,
-                FirstNameC,
-                MiddleNameC,
-                CertificateNumberC,
-                BirthdateC
-                -- TODO: add staffid to make this a covering index
-                -- StaffID
-            )
-            """
+            "{{ create_index(1, ['AcademicYear', 'Area', 'CountyAndDistrictCode', 'LastNameC', 'FirstNameC', 'MiddleNameC', 'CertificateNumberC', 'BirthdateC', 'StaffID'], unique=True) }}"
         ]
     })
 }}

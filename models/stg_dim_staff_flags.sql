@@ -2,14 +2,10 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_stg_dim_staff_flags"
+            "{{ drop_index(1) }}"
         ]
         ,"post-hook": [
-            """
-            CREATE UNIQUE INDEX idx_stg_dim_staff_flags ON stg_dim_staff_flags (
-                StaffID
-            )
-            """
+            "{{ create_index(1, ['StaffID'], unique=True) }}"
         ]
     })
 }}

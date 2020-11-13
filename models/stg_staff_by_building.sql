@@ -2,15 +2,10 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_staff_by_building"
+            "{{ drop_index(1) }}"
         ]
         ,"post-hook": [
-            """
-            CREATE INDEX idx_staff_by_building ON stg_staff_by_building (
-                CertificateNumber
-                ,AcademicYear
-            )
-            """
+            "{{ create_index(1, ['CertificateNumber', 'AcademicYear']) }}"
         ]
     })
 }}

@@ -2,14 +2,10 @@
 {{
     config({
         "pre-hook": [
-            "DROP INDEX IF EXISTS idx_stg_teachercohortmobility_base"
+            "{{ drop_index(1) }}"
         ]
         ,"post-hook": [
-            """
-            CREATE UNIQUE INDEX idx_stg_teachercohortmobility_base ON stg_teachercohortmobility_base (
-                CohortYear, EndYear, CertificateNumber
-            )
-            """
+            "{{ create_index(1, ['CohortYear', 'EndYear', 'CertificateNumber'], unique=True) }}"
         ]
     })
 }}
