@@ -416,20 +416,20 @@ def grouper(iterable, n, fillvalue=None):
     return itertools.zip_longest(*args, fillvalue=fillvalue)
 
 
-def populate_distance():
+def create_ext_teachermobility_distance():
     conn = get_db_conn()
     cursor = conn.cursor()
 
-    print("Populating distance")
+    print("Creating ext_teachermobility_distance")
 
-    cursor.execute("DROP TABLE IF EXISTS Distances;")
+    cursor.execute("DROP TABLE IF EXISTS ext_teachermobility_distance;")
 
-    cursor.execute("CREATE TABLE Distances (TeacherMobilityID int, Distance real)")
+    cursor.execute("CREATE TABLE ext_teachermobility_distance (TeacherMobilityID int, Distance real)")
 
-    cursor.execute("CREATE INDEX idx_Distances ON Distances (TeacherMobilityID, Distance)");
+    cursor.execute("CREATE INDEX idx_ext_teachermobility_distance ON ext_teachermobility_distance (TeacherMobilityID, Distance)");
     conn.commit()
 
-    print("Querying Fact_TeacherMobility")
+    print("Querying stg_TeacherMobility")
 
     cursor.execute("""
         SELECT
@@ -438,7 +438,7 @@ def populate_distance():
             ,s1.Long AS LongStart
             ,s2.Lat AS LatEnd
             ,s2.Long AS LongEnd
-        FROM Fact_TeacherMobility m
+        FROM stg_TeacherMobility m
         LEFT JOIN Dim_School s1 ON m.StartCountyAndDistrictCode = s1.DistrictCode AND m.StartBuilding = s1.SchoolCode AND m.StartYear = s1.AcademicYear 
         LEFT JOIN Dim_School s2 ON m.EndCountyAndDistrictCode = s2.DistrictCode AND m.EndBuilding = s2.SchoolCode AND m.EndYear = s2.AcademicYear
     """)
@@ -463,19 +463,11 @@ def populate_distance():
             f.write(str(row[1]))
             f.write(LINE_TERMINATOR)
 
-    print("Inserting %d entries in Distances" % (len(rows_to_insert)))
+    print("Inserting %d entries in ext_teachermobility_distance" % (len(rows_to_insert)))
 
-    load_into_database([('distances.tmp', 'Distances')])
+    load_into_database([('distances.tmp', 'ext_teachermobility_distance')])
 
     os.remove("distances.tmp")
-
-    print("Updating Fact_TeacherMobility with distance values")
-
-    cursor.execute("UPDATE Fact_TeacherMobility SET Distance = (Select Distance FROM Distances WHERE TeacherMobilityID = Fact_TeacherMobility.TeacherMobilityID)")
-    conn.commit()
-
-    cursor.execute("DROP TABLE Distances")
-    conn.commit()
 
 
 LeadershipFields = collections.namedtuple('LeadershipFields', [

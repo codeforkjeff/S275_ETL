@@ -2,10 +2,12 @@
 {{
     config({
         "pre-hook": [
-            "{{ drop_index(1) }}"
+            "{{ drop_index(1) }}",
+            "{{ drop_index(2) }}"
         ]
         ,"post-hook": [
-            "{{ create_index(1, ['AcademicYear', 'CertificateNumber', 'CountyAndDistrictCode', 'Building']) }}"
+            "{{ create_index(1, ['AcademicYear', 'CertificateNumber'], unique=True) }}",
+            "{{ create_index(2, ['AcademicYear', 'CertificateNumber', 'CountyAndDistrictCode', 'Building']) }}"
         ]
     })
 }}
