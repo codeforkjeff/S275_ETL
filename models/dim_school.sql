@@ -1,4 +1,19 @@
 
+{{
+    config({
+        "pre-hook": [
+            "DROP INDEX IF EXISTS idx_dim_school"
+        ]
+        ,"post-hook": [
+            """
+            CREATE INDEX idx_dim_school ON dim_school (
+                AcademicYear, DistrictCode, SchoolCode
+            )
+            """
+        ]
+    })
+}}
+
 SELECT
 	base.AcademicYear,
 	base.DistrictCode,

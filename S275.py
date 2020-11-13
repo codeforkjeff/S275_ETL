@@ -215,18 +215,6 @@ def create_flat_file(access_db_path, file_type, output_path):
     f.close()
 
 
-def create_teacher_mobility():
-    print("creating teacher mobility tables (single teacher per year)")
-    execute_sql_file("create_Fact_TeacherMobility.sql")
-    populate_distance()
-
-
-def create_teacher_cohort_mobility():
-    print("creating teacher cohort mobility tables")
-    execute_sql_file("create_Fact_TeacherCohort.sql")
-    execute_sql_file("create_Fact_TeacherCohortMobility.sql")
-
-
 def create_teacher_mobility_aggregations():
     print("creating teacher mobility aggregations")
     execute_sql_file("create_teacher_mobility_aggregations.sql")
@@ -255,10 +243,6 @@ def create_pesb_educator_persistence():
 
 
 def create_additional_dimensional_models():
-
-    create_teacher_mobility()
-
-    create_teacher_cohort_mobility()
 
     create_teacher_mobility_aggregations()
 
