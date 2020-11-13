@@ -79,5 +79,5 @@ SELECT
     MetaCreatedAt
 FROM Filtered f
 LEFT JOIN Ranked r
-    WHERE r.RN = 1
+    ON r.RN = 1
     AND r.SchoolTeacherID = f.SchoolTeacherID
