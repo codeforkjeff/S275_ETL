@@ -113,7 +113,7 @@ Stage1 AS (
 ,Stage2 AS (
     SELECT
         *,
-        CASE WHEN IsTeacherFlag = 1 AND CertYearsOfExperience < 2.0 THEN 1 ELSE 0 END
+        CASE WHEN IsTeacherFlag = 1 AND CAST(CertYearsOfExperience AS REAL) < 2.0 THEN 1 ELSE 0 END
         AS IsNoviceTeacherFlag
     FROM Stage1
 )
