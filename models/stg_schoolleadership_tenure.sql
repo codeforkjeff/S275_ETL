@@ -17,4 +17,4 @@ SELECT
 	-- goes elsewhere for 2015, returns in 2016. The row for 2016 will have Tenure = 2)
 	,row_number() over (partition by CountyAndDistrictCode, Building, PrincipalCertificateNumber ORDER BY AcademicYear) AS PrincipalTenure
 	,row_number() over (partition by CountyAndDistrictCode, Building, AsstPrincipalCertificateNumber ORDER BY AcademicYear) AS AsstPrincipalTenure
-FROM {{ ref('stg_schoolleadership') }}
+FROM {{ ref('stg_schoolleadership_single') }}

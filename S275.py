@@ -501,7 +501,7 @@ LeadershipFields = collections.namedtuple('LeadershipFields', [
     ])
 
 
-def populate_school_leadership_fields():
+def create_ext_school_leadership_broad():
     """
     we do this in Python because our version of SQL Server doesn't support STRING_AGG() function
     (sqlite does have group_concat())
@@ -659,7 +659,7 @@ def populate_school_leadership_fields():
         final[key] = new_leadership
 
 
-    with codecs.open("fact_schoolleadership_fields.tmp", "w", 'utf-8') as f:
+    with codecs.open("ext_schoolleadership_broad.tmp", "w", 'utf-8') as f:
             header = "\t".join([
                 "AcademicYear",
                 "CountyAndDistrictCode",
@@ -725,12 +725,12 @@ def populate_school_leadership_fields():
                 f.write(str(row.broad_leadership_lost_poc_flag))
                 f.write(LINE_TERMINATOR)
 
-    print("Inserting %d entries in Fact_SchoolLeadership_Fields" % (len(grouped)))
+    print("Inserting %d entries in ext_schoolleadership_broad" % (len(grouped)))
 
-    cursor.execute("DROP TABLE IF EXISTS Fact_SchoolLeadership_Fields;")
+    cursor.execute("DROP TABLE IF EXISTS ext_schoolleadership_broad;")
 
     cursor.execute("""
-        CREATE TABLE Fact_SchoolLeadership_Fields (
+        CREATE TABLE ext_schoolleadership_broad (
             AcademicYear SMALLINT
             ,CountyAndDistrictCode VARCHAR(10)
             ,Building VARCHAR(10)
@@ -755,12 +755,10 @@ def populate_school_leadership_fields():
 
     conn.commit()
 
-    load_into_database([('fact_schoolleadership_fields.tmp', 'Fact_SchoolLeadership_Fields')])
+    load_into_database([('ext_schoolleadership_broad.tmp', 'ext_schoolleadership_broad')])
 
-    cursor.execute("CREATE UNIQUE INDEX idx_Fact_SchoolLeadership_Fields ON Fact_SchoolLeadership_Fields(AcademicYear, CountyAndDistrictCode, Building);")
+    cursor.execute("CREATE UNIQUE INDEX idx_ext_schoolleadership_broad ON ext_schoolleadership_broad(AcademicYear, CountyAndDistrictCode, Building);")
 
     conn.commit()
 
-    os.remove("fact_schoolleadership_fields.tmp")
-
-    execute_sql_file("populate_Fact_SchoolLeadership_Fields.sql")
+    os.remove("ext_schoolleadership_broad.tmp")

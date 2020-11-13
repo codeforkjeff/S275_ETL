@@ -10,107 +10,130 @@
     })
 }}
 
-WITH Primaries AS (
-    -- a school can have more than 1 Principal or AP. pick one for each role
+WITH t AS (
     SELECT
-        sp.*
-    FROM {{ ref('fact_schoolprincipal') }} sp
-    WHERE
-        PrimaryForSchoolFlag = 1
-)
-,Leadership AS (
-    -- this union and group by captures yrs where a school has an Asst Prin but not a Principal.
-    SELECT
-        AcademicYear
+        base.SchoolLeadershipID
+        ,AcademicYear
         ,CountyAndDistrictCode
         ,Building
-        ,MAX(PrincipalStaffID) AS PrincipalStaffID
-        ,MAX(AsstPrincipalStaffID) AS AsstPrincipalStaffID
-    FROM (
-        SELECT
-            p.AcademicYear
-            ,p.CountyAndDistrictCode
-            ,p.Building
-            ,p.StaffID AS PrincipalStaffID
-            ,NULL AS AsstPrincipalStaffID
-        FROM Primaries p
-        WHERE p.PrincipalType = 'Principal'
-
-        UNION ALL
-
-        SELECT
-            ap.AcademicYear
-            ,ap.CountyAndDistrictCode
-            ,ap.Building
-            ,NULL AS PrincipalStaffID
-            ,ap.StaffID AS AsstPrincipalStaffID
-        FROM Primaries ap
-        WHERE ap.PrincipalType = 'AssistantPrincipal'
-    ) T
-    GROUP BY
-        AcademicYear
-        ,CountyAndDistrictCode
-        ,Building
-)
-,LeadershipWithPrevious AS (
-    select
-        curr.AcademicYear
-        ,curr.CountyAndDistrictCode
-        ,curr.Building
-        ,curr.PrincipalStaffID
-        ,prev.PrincipalStaffID AS PrevPrincipalStaffID
-        ,curr.AsstPrincipalStaffID
-        ,prev.AsstPrincipalStaffID AS PrevAsstPrincipalStaffID
-    from leadership curr
-    left join leadership prev
-        ON curr.AcademicYear = prev.AcademicYear + 1
-        AND curr.CountyAndDistrictCode = prev.CountyAndDistrictCode
-        and curr.Building = prev.Building
-),
-Base AS (
-    select
-        le.AcademicYear
-        ,le.CountyAndDistrictCode
-        ,le.Building
-        ,s_prin.CertificateNumber AS PrincipalCertificateNumber
-        ,le.PrincipalStaffID
-        ,le.PrevPrincipalStaffID
-        ,s_asstprin.CertificateNumber AS AsstPrincipalCertificateNumber
-        ,le.AsstPrincipalStaffID
-        ,le.PrevAsstPrincipalStaffID
-        ,CASE
-            WHEN s_prinprev.CertificateNumber IS NOT NULL
-            THEN
-                CASE WHEN s_prin.CertificateNumber = s_prinprev.CertificateNumber THEN 1 ELSE 0 END
-            ELSE
-                NULL
-        END AS SamePrincipalFlag
-        ,CASE
-            WHEN s_asstprinprev.CertificateNumber IS NOT NULL
-            THEN
-                CASE WHEN s_asstprin.CertificateNumber = s_asstprinprev.CertificateNumber THEN 1 ELSE 0 END
-            ELSE
-                NULL
-        END AS SameAsstPrincipalFlag
-        ,CASE WHEN s_prin.CertificateNumber = s_asstprinprev.CertificateNumber THEN 1 ELSE 0 END AS PromotionFlag
-    from LeadershipWithPrevious le
-    left join {{ ref('dim_staff') }} s_prin
-        ON le.PrincipalStaffID = s_prin.StaffID
-    left join {{ ref('dim_staff') }} s_prinprev
-        ON le.PrevPrincipalStaffID = s_prinprev.StaffID
-    left join {{ ref('dim_staff') }} s_asstprin
-        ON le.AsstPrincipalStaffID = s_asstprin.StaffID
-    left join {{ ref('dim_staff') }} s_asstprinprev
-        ON le.PrevAsstPrincipalStaffID = s_asstprinprev.StaffID
+        ,PrincipalCertificateNumber
+        ,PrincipalStaffID
+        ,PrevPrincipalStaffID
+        ,AsstPrincipalCertificateNumber
+        ,AsstPrincipalStaffID
+        ,PrevAsstPrincipalStaffID
+        ,SamePrincipalFlag
+        ,SameAsstPrincipalFlag
+        ,LeadershipChangeFlag
+        ,PromotionFlag
+        ,ten.PrincipalTenure
+        ,ten.AsstPrincipalTenure
+        ,(
+            SELECT TotalTeachers
+            FROM {{ ref('dim_school') }} ds
+            WHERE
+                base.AcademicYear = ds.AcademicYear
+                AND base.CountyAndDistrictCode = ds.DistrictCode
+                AND base.Building = ds.SchoolCode
+        ) AS TeacherCount
+        ,(
+            SELECT TeachersOfColor
+            FROM {{ ref('dim_school') }} ds
+            WHERE
+                base.AcademicYear = ds.AcademicYear
+                AND base.CountyAndDistrictCode = ds.DistrictCode
+                AND base.Building = ds.SchoolCode
+        ) AS TeacherOfColorCount
+        ,(
+            SELECT Stayed
+            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
+            WHERE
+                Period = 1
+                AND Subgroup = 'All'
+                AND base.AcademicYear = tr.CohortYear
+                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
+                AND base.Building = tr.CohortBuilding
+        ) AS TeacherRetention1Yr
+        ,(
+            SELECT Stayed
+            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
+            WHERE
+                Period = 2
+                AND Subgroup = 'All'
+                AND base.AcademicYear = tr.CohortYear
+                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
+                AND base.Building = tr.CohortBuilding
+        ) AS TeacherRetention2Yr
+        ,(
+            SELECT Stayed
+            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
+            WHERE
+                Period = 3
+                AND Subgroup = 'All'
+                AND base.AcademicYear = tr.CohortYear
+                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
+                AND base.Building = tr.CohortBuilding
+        ) AS TeacherRetention3Yr
+        ,(
+            SELECT Stayed
+            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
+            WHERE
+                Period = 4
+                AND Subgroup = 'All'
+                AND base.AcademicYear = tr.CohortYear
+                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
+                AND base.Building = tr.CohortBuilding
+        ) AS TeacherRetention4Yr
+        ,(
+            SELECT Stayed
+            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
+            WHERE
+                Period = 1
+                AND Subgroup = 'Person of Color'
+                AND base.AcademicYear = tr.CohortYear
+                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
+                AND base.Building = tr.CohortBuilding
+        ) AS TeacherOfColorRetention1Yr
+        ,(
+            SELECT Stayed
+            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
+            WHERE
+                Period = 2
+                AND Subgroup = 'Person of Color'
+                AND base.AcademicYear = tr.CohortYear
+                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
+                AND base.Building = tr.CohortBuilding
+        ) AS TeacherOfColorRetention2Yr
+        ,(
+            SELECT Stayed
+            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
+            WHERE
+                Period = 3
+                AND Subgroup = 'Person of Color'
+                AND base.AcademicYear = tr.CohortYear
+                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
+                AND base.Building = tr.CohortBuilding
+        ) AS TeacherOfColorRetention3Yr
+        ,(
+            SELECT Stayed
+            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
+            WHERE
+                Period = 4
+                AND Subgroup = 'Person of Color'
+                AND base.AcademicYear = tr.CohortYear
+                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
+                AND base.Building = tr.CohortBuilding
+        ) AS TeacherOfColorRetention4Yr
+    FROM {{ ref('stg_schoolleadership_single') }} base
+    LEFT JOIN {{ ref('stg_schoolleadership_tenure') }} ten
+        ON base.SchoolLeadershipID = ten.SchoolLeadershipID
 )
 SELECT
-    {% call concat() %}
-    CAST(AcademicYear AS VARCHAR(4)) + CAST(CountyAndDistrictCode AS VARCHAR(10)) + CAST(Building AS VARCHAR(10))
-    {% endcall %}
-    AS SchoolLeadershipID
+    SchoolLeadershipID
     ,AcademicYear
     ,CountyAndDistrictCode
     ,Building
+    --
     ,PrincipalCertificateNumber
     ,PrincipalStaffID
     ,PrevPrincipalStaffID
@@ -119,6 +142,47 @@ SELECT
     ,PrevAsstPrincipalStaffID
     ,SamePrincipalFlag
     ,SameAsstPrincipalFlag
-    ,CASE WHEN SamePrincipalFlag = 0 OR SameAsstPrincipalFlag = 0 THEN 1 ELSE 0 END AS LeadershipChangeFlag
+    ,LeadershipChangeFlag
     ,PromotionFlag
-FROM Base
+    ,PrincipalTenure
+    ,AsstPrincipalTenure
+    --
+    -- ,AllPrincipalCertList
+    -- ,AllAsstPrinCertList
+    -- ,AnyPrincipalPOC
+    -- ,AnyAsstPrinPOC
+    -- ,BroadLeadershipAnyPOCFlag
+    -- --
+    -- ,BroadLeadershipChangeFlag
+    -- ,BroadLeadershipAnyPOCStayedFlag
+    -- ,BroadLeadershipStayedNoPOCFlag
+    -- ,BroadLeadershipChangeAnyPOCToNoneFlag
+    -- ,BroadLeadershipChangeNoPOCToAnyFlag
+    -- --
+    -- ,BroadLeadershipGainedPrincipalPOCFlag
+    -- ,BroadLeadershipGainedAsstPrinPOCFlag
+    -- ,BroadLeadershipGainedPOCFlag
+    -- ,BroadLeadershipLostPrincipalPOCFlag
+    -- ,BroadLeadershipLostAsstPrinPOCFlag
+    -- ,BroadLeadershipLostPOCFlag
+    --
+    ,TeacherCount
+    ,TeacherRetention1Yr
+    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention1Yr AS REAL) / TeacherCount END AS TeacherRetention1YrPct
+    ,TeacherRetention2Yr
+    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention2Yr AS REAL) / TeacherCount END AS TeacherRetention2YrPct
+    ,TeacherRetention3Yr
+    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention3Yr AS REAL) / TeacherCount END AS TeacherRetention3YrPct
+    ,TeacherRetention4Yr
+    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention4Yr AS REAL) / TeacherCount END AS TeacherRetention4YrPct
+    ,TeacherOfColorCount
+    ,TeacherOfColorRetention1Yr
+    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention1Yr AS REAL) / TeacherOfColorCount END AS TeacherOfColorRetention1YrPct
+    ,TeacherOfColorRetention2Yr
+    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention2Yr AS REAL) / TeacherOfColorCount END AS TeacherOfColorRetention2YrPct
+    ,TeacherOfColorRetention3Yr
+    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention3Yr AS REAL) / TeacherOfColorCount END AS TeacherOfColorRetention3YrPct
+    ,TeacherOfColorRetention4Yr
+    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention4Yr AS REAL) / TeacherOfColorCount END AS TeacherOfColorRetention4YrPct
+    ,{{ getdate_fn() }} AS MetaCreatedAt
+FROM t
