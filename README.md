@@ -45,6 +45,44 @@ Using Microsoft SQL Server is optional.
 python OSPI_data_downloader.py
 ```
 
+- Edit your `~/.dbt/profiles.yml` file (or create one) with one of these entries:
+
+For SQLite:
+
+```
+S275:
+
+  outputs:
+
+    dev:
+      type: sqlite
+      threads: 1
+      database: "database"
+      schema: "main"
+      schemas_and_paths: "main=C:/Users/jchiu/S275_ETL/output/S275.sqlite"
+      schema_directory: "C:/Users/jchiu/S275_ETL/output"
+
+  target: dev
+```
+
+For SQL Server:
+
+```
+S275:
+
+  outputs:
+
+    dev:
+      type: sqlserver
+      driver: 'SQL Server Native Client 11.0'
+      host: localhost\
+      database: S275
+      schema: dbo
+      windows_login: True
+
+  target: dev
+```
+
 - Copy the `S275_settings_sample.py` file to `S275_settings.py` and edit the paths and variables to suit
   your environment. By default, the code does all data processing using the embedded sqlite3
   database that comes with Python but you can change this to use SQL Server instead.
