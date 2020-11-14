@@ -53,7 +53,7 @@ SELECT
     ,0 AS MovedOutDistrict
     ,1 AS Exited
     ,{{ getdate_fn() }} as MetaCreatedAt
-FROM {{ ref('stg_principalcohortmobility_base') }} pc
+FROM {{ ref('fact_principalcohort') }} pc
 CROSS JOIN
 (
 	SELECT DISTINCT
