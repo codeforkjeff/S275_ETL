@@ -140,7 +140,7 @@ PrincipalsLookup AS (
 SELECT
     -- since StaffID can be none if they exited, we include EndYear in composite key to ensure uniqueness
     {% call concat() %}
-    CAST(StartStaffID AS VARCHAR(500)) + COALESCE(EndStaffID, 'NONE') + CAST(EndYear as VARCHAR(4))
+    CAST(StartStaffID AS VARCHAR(500)) + CAST(COALESCE(EndStaffID, 'NONE') AS VARCHAR(500)) + CAST(EndYear as VARCHAR(4))
     {% endcall %}
     AS TeacherMobilityID
     ,StartStaffID

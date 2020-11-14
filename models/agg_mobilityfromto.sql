@@ -68,8 +68,3 @@ LEFT JOIN DistrictCodes StartDistrict
 	ON StartDistrict.DistrictCode = StartDistrictCode
 LEFT JOIN DistrictCodes EndDistrict
 	ON EndDistrict.DistrictCode = EndDistrictCode
-ORDER BY
-	StartYear
-	,EndYear
-	,StartDistrictCode
-	,EndDistrictCode

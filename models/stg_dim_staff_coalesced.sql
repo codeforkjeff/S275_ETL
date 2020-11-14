@@ -73,13 +73,13 @@ WITH T AS (
 )
 SELECT
     {% call concat() %}
-    COALESCE(AcademicYear, '') + 
-    COALESCE(CountyAndDistrictCode, '') + 
-    COALESCE(LastNameC, '') + 
-    COALESCE(FirstNameC, '') + 
-    COALESCE(MiddleNameC, '') + 
-    COALESCE(CertificateNumberC, '') + 
-    COALESCE(BirthdateC, '')
+    CAST(COALESCE(AcademicYear, '') AS VARCHAR(100)) + 
+    CAST(COALESCE(CountyAndDistrictCode, '') AS VARCHAR(100)) + 
+    CAST(COALESCE(LastNameC, '') AS VARCHAR(100)) + 
+    CAST(COALESCE(FirstNameC, '') AS VARCHAR(100)) + 
+    CAST(COALESCE(MiddleNameC, '') AS VARCHAR(100)) + 
+    CAST(COALESCE(CertificateNumberC, '') AS VARCHAR(100)) + 
+    CAST(COALESCE(BirthdateC, '') AS VARCHAR(100))
     {% endcall %}
     AS StaffID
     ,*

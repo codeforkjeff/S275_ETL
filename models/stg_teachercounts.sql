@@ -28,7 +28,3 @@ GROUP BY
 	st.AcademicYear,
 	staff.CountyAndDistrictCode,
 	st.Building
-ORDER BY
-	st.AcademicYear,
-	staff.CountyAndDistrictCode,
-	st.Building

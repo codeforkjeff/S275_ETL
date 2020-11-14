@@ -4,7 +4,8 @@ version: 2
 sources:
   - name: sources
     description: raw source data
-    schema: main
+    # by default, schema is set to name of source. we use schema from our target (defined in profiles.yml)
+    schema: "{{ target.schema }}"
     tables:
       - name: duty_codes
       - name: raw_school_base
@@ -12,7 +13,8 @@ sources:
       - name: raw_s275
   - name: ext
     description: data created outside SQL and the DAG, but is part of the DAG
-    schema: main
+    # by default, schema is set to name of source. we use schema from our target (defined in profiles.yml)
+    schema: "{{ target.schema }}"
     tables:
       - name: ext_teachermobility_distance
       - name: ext_schoolleadership_broad
