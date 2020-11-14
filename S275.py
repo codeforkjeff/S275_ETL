@@ -430,7 +430,7 @@ def create_ext_teachermobility_distance_table():
 
     cursor.execute("DROP TABLE IF EXISTS ext_teachermobility_distance;")
 
-    cursor.execute("CREATE TABLE ext_teachermobility_distance (TeacherMobilityID int, Distance real)")
+    cursor.execute("CREATE TABLE ext_teachermobility_distance (TeacherMobilityID varchar(500), Distance real)")
 
     cursor.execute("CREATE INDEX idx_ext_teachermobility_distance ON ext_teachermobility_distance (TeacherMobilityID, Distance)");
     conn.commit()
