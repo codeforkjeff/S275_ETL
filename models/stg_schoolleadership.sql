@@ -13,9 +13,9 @@
 WITH t AS (
     SELECT
         base.SchoolLeadershipID
-        ,AcademicYear
-        ,CountyAndDistrictCode
-        ,Building
+        ,base.AcademicYear
+        ,base.CountyAndDistrictCode
+        ,base.Building
         ,PrincipalCertificateNumber
         ,PrincipalStaffID
         ,PrevPrincipalStaffID
@@ -28,105 +28,27 @@ WITH t AS (
         ,PromotionFlag
         ,ten.PrincipalTenure
         ,ten.AsstPrincipalTenure
-        ,(
-            SELECT TotalTeachers
-            FROM {{ ref('dim_school') }} ds
-            WHERE
-                base.AcademicYear = ds.AcademicYear
-                AND base.CountyAndDistrictCode = ds.DistrictCode
-                AND base.Building = ds.SchoolCode
-        ) AS TeacherCount
-        ,(
-            SELECT TeachersOfColor
-            FROM {{ ref('dim_school') }} ds
-            WHERE
-                base.AcademicYear = ds.AcademicYear
-                AND base.CountyAndDistrictCode = ds.DistrictCode
-                AND base.Building = ds.SchoolCode
-        ) AS TeacherOfColorCount
-        ,(
-            SELECT Stayed
-            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
-            WHERE
-                Period = 1
-                AND Subgroup = 'All'
-                AND base.AcademicYear = tr.CohortYear
-                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
-                AND base.Building = tr.CohortBuilding
-        ) AS TeacherRetention1Yr
-        ,(
-            SELECT Stayed
-            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
-            WHERE
-                Period = 2
-                AND Subgroup = 'All'
-                AND base.AcademicYear = tr.CohortYear
-                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
-                AND base.Building = tr.CohortBuilding
-        ) AS TeacherRetention2Yr
-        ,(
-            SELECT Stayed
-            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
-            WHERE
-                Period = 3
-                AND Subgroup = 'All'
-                AND base.AcademicYear = tr.CohortYear
-                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
-                AND base.Building = tr.CohortBuilding
-        ) AS TeacherRetention3Yr
-        ,(
-            SELECT Stayed
-            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
-            WHERE
-                Period = 4
-                AND Subgroup = 'All'
-                AND base.AcademicYear = tr.CohortYear
-                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
-                AND base.Building = tr.CohortBuilding
-        ) AS TeacherRetention4Yr
-        ,(
-            SELECT Stayed
-            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
-            WHERE
-                Period = 1
-                AND Subgroup = 'Person of Color'
-                AND base.AcademicYear = tr.CohortYear
-                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
-                AND base.Building = tr.CohortBuilding
-        ) AS TeacherOfColorRetention1Yr
-        ,(
-            SELECT Stayed
-            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
-            WHERE
-                Period = 2
-                AND Subgroup = 'Person of Color'
-                AND base.AcademicYear = tr.CohortYear
-                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
-                AND base.Building = tr.CohortBuilding
-        ) AS TeacherOfColorRetention2Yr
-        ,(
-            SELECT Stayed
-            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
-            WHERE
-                Period = 3
-                AND Subgroup = 'Person of Color'
-                AND base.AcademicYear = tr.CohortYear
-                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
-                AND base.Building = tr.CohortBuilding
-        ) AS TeacherOfColorRetention3Yr
-        ,(
-            SELECT Stayed
-            FROM {{ ref('stg_schoolleadership_teacherretention') }} tr
-            WHERE
-                Period = 4
-                AND Subgroup = 'Person of Color'
-                AND base.AcademicYear = tr.CohortYear
-                AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
-                AND base.Building = tr.CohortBuilding
-        ) AS TeacherOfColorRetention4Yr
+        ,ds.TotalTeachers AS TeacherCount
+        ,ds.TeachersOfColor AS TeacherOfColorCount
+        ,tr.TeacherRetention1Yr
+        ,tr.TeacherRetention2Yr
+        ,tr.TeacherRetention3Yr
+        ,tr.TeacherRetention4Yr
+        ,tr.TeacherOfColorRetention1Yr
+        ,tr.TeacherOfColorRetention2Yr
+        ,tr.TeacherOfColorRetention3Yr
+        ,tr.TeacherOfColorRetention4Yr
     FROM {{ ref('stg_schoolleadership_single') }} base
     LEFT JOIN {{ ref('stg_schoolleadership_tenure') }} ten
         ON base.SchoolLeadershipID = ten.SchoolLeadershipID
+    LEFT JOIN {{ ref('dim_school') }} ds
+        ON base.AcademicYear = ds.AcademicYear
+        AND base.CountyAndDistrictCode = ds.DistrictCode
+        AND base.Building = ds.SchoolCode
+    LEFT JOIN {{ ref('stg_schoolleadership_teacherretention') }} tr
+        ON base.AcademicYear = tr.CohortYear
+        AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
+        AND base.Building = tr.CohortBuilding
 )
 SELECT
     SchoolLeadershipID

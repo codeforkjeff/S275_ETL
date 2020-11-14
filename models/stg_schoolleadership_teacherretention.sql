@@ -5,7 +5,7 @@
             "{{ drop_index(1) }}"
         ]
         ,"post-hook": [
-            "{{ create_index(1, ['CohortYear', 'Period', 'CohortCountyAndDistrictCode', 'CohortBuilding', 'SubGroup'], unique=True) }}"
+            "{{ create_index(1, ['CohortYear', 'CohortCountyAndDistrictCode', 'CohortBuilding'], unique=True) }}"
         ]
     })
 }}
@@ -46,11 +46,36 @@ WITH t AS (
 		CohortYear, EndYear, CohortCountyAndDistrictCode, CohortBuilding
 
 )
-select
+,Wide AS (
+	-- distribute fields across
+	select
+		CohortYear
+		,CohortCountyAndDistrictCode
+		,CohortBuilding
+		,CASE WHEN SubGroup = 'All' And Period = 1 THEN Stayed END AS TeacherRetention1Yr
+		,CASE WHEN SubGroup = 'All' And Period = 2 THEN Stayed END AS TeacherRetention2Yr
+		,CASE WHEN SubGroup = 'All' And Period = 3 THEN Stayed END AS TeacherRetention3Yr
+		,CASE WHEN SubGroup = 'All' And Period = 4 THEN Stayed END AS TeacherRetention4Yr
+		,CASE WHEN SubGroup = 'Person of Color' And Period = 1 THEN Stayed END AS TeacherOfColorRetention1Yr
+		,CASE WHEN SubGroup = 'Person of Color' And Period = 2 THEN Stayed END AS TeacherOfColorRetention2Yr
+		,CASE WHEN SubGroup = 'Person of Color' And Period = 3 THEN Stayed END AS TeacherOfColorRetention3Yr
+		,CASE WHEN SubGroup = 'Person of Color' And Period = 4 THEN Stayed END AS TeacherOfColorRetention4Yr
+	from t
+)
+SELECT
 	CohortYear
-	,Period
 	,CohortCountyAndDistrictCode
 	,CohortBuilding
-	,SubGroup
-	,Stayed
-from t
+	,MAX(TeacherRetention1Yr) AS TeacherRetention1Yr
+	,MAX(TeacherRetention2Yr) AS TeacherRetention2Yr
+	,MAX(TeacherRetention3Yr) AS TeacherRetention3Yr
+	,MAX(TeacherRetention4Yr) AS TeacherRetention4Yr
+	,MAX(TeacherOfColorRetention1Yr) AS TeacherOfColorRetention1Yr
+	,MAX(TeacherOfColorRetention2Yr) AS TeacherOfColorRetention2Yr
+	,MAX(TeacherOfColorRetention3Yr) AS TeacherOfColorRetention3Yr
+	,MAX(TeacherOfColorRetention4Yr) AS TeacherOfColorRetention4Yr
+FROM Wide
+GROUP BY
+	CohortYear
+	,CohortCountyAndDistrictCode
+	,CohortBuilding
