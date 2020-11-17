@@ -38,7 +38,7 @@ Using Microsoft SQL Server is optional.
 - Download and unzip the S275 files for the desired years from [the OSPI website](https://www.k12.wa.us/safs-database-files).
   The unzipped files are Access databases (have an `.accdb` extension). Put these files
   in the `input/` directory. (Alternatively, you can set the path where the script looks for these files,
-  using settings in the next step.)
+  using settings file in the step below.)
 
   Instead of doing this step manually, you can run this script to do it for you:
 
