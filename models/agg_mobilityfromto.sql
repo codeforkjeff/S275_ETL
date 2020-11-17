@@ -4,7 +4,7 @@ DistrictCodes AS (
 	SELECT
 		DistrictCode,
 		max(DistrictName) as DistrictName
-	FROM {{ ref('dim_school') }}
+	FROM {{ ref('Dim_School') }}
 	GROUP BY DistrictCode
 )
 ,Base AS (
@@ -30,8 +30,8 @@ DistrictCodes AS (
 		MovedOut,
 		Exited
 
-	FROM {{ ref('fact_teachermobility') }} m
-	JOIN {{ ref('dim_staff') }} staff
+	FROM {{ ref('Fact_TeacherMobility') }} m
+	JOIN {{ ref('Dim_Staff') }} staff
 		ON m.StartStaffID = staff.StaffID
 )
 ,Agg AS (

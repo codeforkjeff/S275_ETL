@@ -19,8 +19,8 @@ WITH t AS (
 		,CohortBuilding
 		,'All' AS SubGroup
 		,Sum(StayedInSchool) as Stayed
-	from {{ ref('fact_teachercohortmobility') }} tcm
-	JOIN {{ ref('dim_staff') }} s
+	from {{ ref('Fact_TeacherCohortMobility') }} tcm
+	JOIN {{ ref('Dim_Staff') }} s
 		ON tcm.CohortStaffID = s.StaffID
 	where
 		EndYear - CohortYear <= 4
@@ -36,8 +36,8 @@ WITH t AS (
 		,CohortBuilding
 		,'Person of Color' AS SubGroup
 		,Sum(StayedInSchool) as Stayed
-	from {{ ref('fact_teachercohortmobility') }} tcm
-	JOIN {{ ref('dim_staff') }} s
+	from {{ ref('Fact_TeacherCohortMobility') }} tcm
+	JOIN {{ ref('Dim_Staff') }} s
 		ON tcm.CohortStaffID = s.StaffID
 	where
 		EndYear - CohortYear <= 4

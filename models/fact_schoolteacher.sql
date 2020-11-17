@@ -1,3 +1,4 @@
+t
 
 {{
     config({
@@ -22,8 +23,8 @@ WITH TeachingRollups AS (
         ,SUM(AssignmentFTEDesignation) AS TeachingFTEDesignation
         ,SUM(AssignmentSalaryTotal) AS TeachingSalaryTotal
         ,{{ getdate_fn() }} as MetaCreatedAt
-    from {{ ref('fact_assignment') }} a
-    JOIN {{ ref('dim_staff') }} s ON a.StaffID = s.StaffID
+    from {{ ref('Fact_Assignment') }} a
+    JOIN {{ ref('Dim_Staff') }} s ON a.StaffID = s.StaffID
     WHERE IsTeachingAssignment = 1
     GROUP BY
         a.StaffID
@@ -36,7 +37,7 @@ WITH TeachingRollups AS (
     WHERE NOT (
         EXISTS (
             SELECT 1
-            FROM {{ ref('dim_staff') }} s
+            FROM {{ ref('Dim_Staff') }} s
             WHERE s.StaffID = TeachingRollups.StaffID
             AND (CertificateNumber IS NULL OR CertificateNumber = '')
         )
@@ -58,7 +59,7 @@ WITH TeachingRollups AS (
                 TeachingSalaryTotal DESC
         ) AS RN
     FROM Filtered st
-    JOIN {{ ref('dim_staff') }} s ON st.StaffID = s.StaffID
+    JOIN {{ ref('Dim_Staff') }} s ON st.StaffID = s.StaffID
 )
 SELECT
     StaffID,

@@ -17,7 +17,7 @@ SELECT
     ,StartCountyAndDistrictCode AS CohortCountyAndDistrictCode
     ,StartBuilding AS CohortBuilding
     ,{{ getdate_fn() }} as MetaCreatedAt
-FROM {{ ref('fact_teachermobility') }}
+FROM {{ ref('Fact_TeacherMobility') }}
 WHERE
 	DiffYears = 1
 	-- handful of rows where Building is null from raw file. no idea what these mean.

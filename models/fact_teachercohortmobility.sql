@@ -56,12 +56,12 @@ SELECT
         ,0 AS MovedOutDistrict
         ,1 AS Exited
         ,{{ getdate_fn() }} as MetaCreatedAt
-FROM {{ ref('fact_teachercohort') }} tc
+FROM {{ ref('Fact_TeacherCohort') }} tc
 CROSS JOIN
 (
     SELECT DISTINCT
         AcademicYear
-    FROM {{ ref('dim_staff') }}
+    FROM {{ ref('Dim_Staff') }}
 ) AS y
 WHERE
     y.AcademicYear > tc.CohortYear

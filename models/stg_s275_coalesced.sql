@@ -7,4 +7,4 @@ SELECT
     COALESCE(MiddleName, '') AS MiddleNameC,
     COALESCE(CertificateNumber, '') AS CertificateNumberC,
     COALESCE(Birthdate, '') AS BirthdateC
-FROM {{ ref('s275') }}
+FROM {{ ref('S275') }}

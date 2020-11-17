@@ -18,7 +18,7 @@ SELECT
     ,StartBuilding AS CohortBuilding
     ,StartPrincipalType AS CohortPrincipalType
     ,{{ getdate_fn() }} as MetaCreatedAt
-FROM {{ ref('fact_principalmobility') }}
+FROM {{ ref('Fact_PrincipalMobility') }}
 WHERE
 	DiffYears = 1
 	-- handful of rows where Building is null from raw file. no idea what these mean.

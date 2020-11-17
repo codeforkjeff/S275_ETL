@@ -28,11 +28,11 @@ SELECT
         ,CASE WHEN pc.CohortCountyAndDistrictCode <> h.CountyAndDistrictCode  THEN 1 ELSE 0 END AS MovedOutDistrict
         ,0 AS Exited
         ,{{ getdate_fn() }} as MetaCreatedAt
-FROM {{ ref('fact_principalcohort') }} pc
+FROM {{ ref('Fact_PrincipalCohort') }} pc
 -- join to a wide set of staff/yr/highest duty root
 JOIN {{ ref('stg_staff_by_highest_fte') }} h
 	ON pc.CertificateNumber = h.CertificateNumber
-LEFT JOIN {{ ref('fact_principalcohort') }} endpc
+LEFT JOIN {{ ref('Fact_PrincipalCohort') }} endpc
     ON pc.CertificateNumber = endpc.CertificateNumber
     AND h.AcademicYear = endpc.CohortYear
 WHERE

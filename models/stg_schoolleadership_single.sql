@@ -17,7 +17,7 @@ WITH Primaries AS (
     -- a school can have more than 1 Principal or AP. pick one for each role
     SELECT
         sp.*
-    FROM {{ ref('fact_schoolprincipal') }} sp
+    FROM {{ ref('Fact_SchoolPrincipal') }} sp
     WHERE
         PrimaryForSchoolFlag = 1
 )
@@ -97,13 +97,13 @@ Base AS (
         END AS SameAsstPrincipalFlag
         ,CASE WHEN s_prin.CertificateNumber = s_asstprinprev.CertificateNumber THEN 1 ELSE 0 END AS PromotionFlag
     from LeadershipWithPrevious le
-    left join {{ ref('dim_staff') }} s_prin
+    left join {{ ref('Dim_Staff') }} s_prin
         ON le.PrincipalStaffID = s_prin.StaffID
-    left join {{ ref('dim_staff') }} s_prinprev
+    left join {{ ref('Dim_Staff') }} s_prinprev
         ON le.PrevPrincipalStaffID = s_prinprev.StaffID
-    left join {{ ref('dim_staff') }} s_asstprin
+    left join {{ ref('Dim_Staff') }} s_asstprin
         ON le.AsstPrincipalStaffID = s_asstprin.StaffID
-    left join {{ ref('dim_staff') }} s_asstprinprev
+    left join {{ ref('Dim_Staff') }} s_asstprinprev
         ON le.PrevAsstPrincipalStaffID = s_asstprinprev.StaffID
 )
 SELECT

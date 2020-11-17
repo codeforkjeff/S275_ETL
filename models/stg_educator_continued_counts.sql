@@ -16,8 +16,8 @@ WITH EducatorContinued AS (
 		s.CertificateNumber,
 		MAX(CASE WHEN s.CBRTNCode IN ('C', 'T') THEN 1 ELSE 0 END) AS ContinuedOrTransferredFlag,
 		MAX(CASE WHEN s.CBRTNCode IN ('C', 'T') AND s.IsInPSESDFlag = 1 THEN 1 ELSE 0 END) AS ContinuedOrTransferredWithinPSESDFlag
-	FROM {{ ref('dim_staff') }}  s
-	JOIN {{ ref('fact_assignment') }} a
+	FROM {{ ref('Dim_Staff') }}  s
+	JOIN {{ ref('Fact_Assignment') }} a
 		ON s.StaffID = a.StaffID
 	WHERE
 		a.IsPESBEducatorAssignment = 1

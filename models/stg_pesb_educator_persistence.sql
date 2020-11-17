@@ -27,8 +27,8 @@ WITH DistinctEducators AS (
 		-- I tried this with MAX and it doesn't make a difference, which means peoples'
 		-- racial identifications are highly  consistent when they work in multiple districts
 		,MIN(PersonOfColorCategory) AS PersonOfColorCategory
-	FROM {{ ref('fact_assignment') }} a
-	JOIN {{ ref('dim_staff') }} s
+	FROM {{ ref('Fact_Assignment') }} a
+	JOIN {{ ref('Dim_Staff') }} s
 		ON a.StaffID = s.StaffID
 	WHERE
 		a.IsPESBEducatorAssignment = 1
@@ -60,7 +60,7 @@ CROSS JOIN
 	(
 		SELECT DISTINCT
 			AcademicYear
-		FROM {{ ref('dim_staff') }}
+		FROM {{ ref('Dim_Staff') }}
 	) AS endyears
 WHERE
 	-- limit to 2010 so table isn't enormous

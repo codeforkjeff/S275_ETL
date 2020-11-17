@@ -16,10 +16,10 @@ SELECT
 	st.Building,
 	SUM(CASE WHEN staff.PersonOfColorCategory = 'Person of Color' THEN 1 ELSE 0 END) AS TeachersOfColor,
 	COUNT(*) AS TotalTeachers
-FROM {{ ref('fact_schoolteacher') }} st
-JOIN {{ ref('dim_staff') }} staff
+FROM {{ ref('Fact_SchoolTeacher') }} st
+JOIN {{ ref('Dim_Staff') }} staff
 	ON st.StaffID = staff.StaffID
-JOIN {{ ref('dim_school_backfilled') }} sch
+JOIN {{ ref('Dim_School_Backfilled') }} sch
 	ON st.AcademicYear = sch.AcademicYear
 	AND staff.CountyAndDistrictCode = sch.DistrictCode
 	and st.Building = sch.SchoolCode

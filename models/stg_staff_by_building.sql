@@ -35,8 +35,8 @@ WITH T AS (
             SUM(AssignmentPercent) DESC,
             SUM(AssignmentSalaryTotal) DESC
         ) as RN
-    FROM {{ ref('fact_assignment') }} t
-    JOIN {{ ref('dim_staff') }} s
+    FROM {{ ref('Fact_Assignment') }} t
+    JOIN {{ ref('Dim_Staff') }} s
         ON t.StaffID = s.StaffID
     GROUP BY
         t.StaffID

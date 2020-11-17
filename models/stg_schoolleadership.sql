@@ -41,7 +41,7 @@ WITH t AS (
     FROM {{ ref('stg_schoolleadership_single') }} base
     LEFT JOIN {{ ref('stg_schoolleadership_tenure') }} ten
         ON base.SchoolLeadershipID = ten.SchoolLeadershipID
-    LEFT JOIN {{ ref('dim_school') }} ds
+    LEFT JOIN {{ ref('Dim_School') }} ds
         ON base.AcademicYear = ds.AcademicYear
         AND base.CountyAndDistrictCode = ds.DistrictCode
         AND base.Building = ds.SchoolCode

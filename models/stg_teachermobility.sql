@@ -22,7 +22,7 @@ PrincipalsLookup AS (
     SELECT DISTINCT
         PrincipalType
         ,StaffID
-    FROM {{ ref('fact_schoolprincipal') }}
+    FROM {{ ref('Fact_SchoolPrincipal') }}
 )
 ,YearBrackets AS (
     SELECT DISTINCT
@@ -90,11 +90,11 @@ PrincipalsLookup AS (
             AND EndTeacherFlag = 0
         THEN 1 ELSE 0 END AS MovedInRoleChange
     FROM TransitionsWithMovedInBase t
-    LEFT JOIN {{ ref('dim_school') }} s1
+    LEFT JOIN {{ ref('Dim_School') }} s1
         ON t.StartCountyAndDistrictCode = s1.DistrictCode
         AND t.StartBuilding = s1.SchoolCode
         AND t.StartYear = s1.AcademicYear
-    LEFT JOIN {{ ref('dim_school') }} s2
+    LEFT JOIN {{ ref('Dim_School') }} s2
         ON t.EndCountyAndDistrictCode = s2.DistrictCode
         AND t.EndBuilding = s2.SchoolCode
         AND t.EndYear = s2.AcademicYear
@@ -188,7 +188,7 @@ SELECT
         WHEN MovedOut = 1
             AND EXISTS (
                 SELECT 1
-                FROM {{ ref('dim_school') }}
+                FROM {{ ref('Dim_School') }}
                 WHERE
                     TransitionsFinal.StartYear = AcademicYear
                     AND TransitionsFinal.StartCountyAndDistrictCode = DistrictCode
@@ -197,7 +197,7 @@ SELECT
                 )
             AND NOT EXISTS (
                 SELECT 1
-                FROM {{ ref('dim_school') }}
+                FROM {{ ref('Dim_School') }}
                 WHERE
                     TransitionsFinal.EndYear = AcademicYear
                     AND TransitionsFinal.EndCountyAndDistrictCode = DistrictCode

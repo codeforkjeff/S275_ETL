@@ -28,7 +28,7 @@ SELECT
         ,CASE WHEN CohortCountyAndDistrictCode <> a.CountyAndDistrictCode THEN 1 ELSE 0 END AS MovedOutDistrict
         ,0 AS Exited 
         ,{{ getdate_fn() }} as MetaCreatedAt
-FROM {{ ref('fact_teachercohort') }} tc
+FROM {{ ref('Fact_TeacherCohort') }} tc
 JOIN {{ ref('stg_staff_by_building') }} a
 	ON tc.CertificateNumber = a.CertificateNumber
 WHERE

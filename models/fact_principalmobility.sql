@@ -106,7 +106,7 @@ SELECT
     WHEN MovedOut = 1
         AND EXISTS (
             SELECT 1
-            FROM {{ ref('dim_school') }}
+            FROM {{ ref('Dim_School') }}
             WHERE
                 Transitions.StartYear = AcademicYear
                 AND Transitions.StartBuilding = SchoolCode
@@ -114,7 +114,7 @@ SELECT
             )
         AND NOT EXISTS (
             SELECT 1
-            FROM {{ ref('dim_school') }}
+            FROM {{ ref('Dim_School') }}
             WHERE
                 Transitions.EndYear = AcademicYear
                 AND Transitions.EndStaffByHighestFTEBuilding = SchoolCode

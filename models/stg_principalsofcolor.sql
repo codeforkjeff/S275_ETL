@@ -16,8 +16,8 @@ SELECT
 	p.Building,
 	MAX(CASE WHEN p.PrincipalType = 'Principal' THEN 1 ELSE 0 END) AS PrincipalOfColorFlag,
 	MAX(CASE WHEN p.PrincipalType = 'AssistantPrincipal' THEN 1 ELSE 0 END) AS AsstPrincipalOfColorFlag
-FROM {{ ref('fact_schoolprincipal') }} p
-JOIN {{ ref('dim_staff') }} st
+FROM {{ ref('Fact_SchoolPrincipal') }} p
+JOIN {{ ref('Dim_Staff') }} st
 	ON p.StaffID = st.StaffID
 WHERE
 	st.PersonOfColorCategory = 'Person of Color'

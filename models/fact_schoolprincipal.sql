@@ -16,7 +16,7 @@ WITH AssignmentsWithPrincipalType AS (
             WHEN cast(DutyRoot as integer) IN (21, 23) THEN 'Principal'
             WHEN cast(DutyRoot as integer) IN (22, 24) THEN 'AssistantPrincipal'
         END AS PrincipalType
-    FROM {{ ref('fact_assignment') }}
+    FROM {{ ref('Fact_Assignment') }}
 )
 ,Rolledup AS (
     select
@@ -31,7 +31,7 @@ WITH AssignmentsWithPrincipalType AS (
         ,0 AS PrimaryFlag
         ,0 AS PrimaryForSchoolFlag
     from AssignmentsWithPrincipalType a
-    JOIN {{ ref('dim_staff') }} s ON a.StaffID = s.StaffID
+    JOIN {{ ref('Dim_Staff') }} s ON a.StaffID = s.StaffID
     WHERE IsPrincipalAssignment = 1 OR IsAsstPrincipalAssignment = 1
     GROUP BY
         a.StaffID
@@ -72,7 +72,7 @@ WITH AssignmentsWithPrincipalType AS (
                 PrincipalSalaryTotal DESC
         ) AS RN
     FROM Filtered sp
-    JOIN {{ ref('dim_staff') }} s ON sp.StaffID = s.StaffID
+    JOIN {{ ref('Dim_Staff') }} s ON sp.StaffID = s.StaffID
 )
 ,T_PrimaryForSchoolFlag AS (
 
@@ -95,7 +95,7 @@ WITH AssignmentsWithPrincipalType AS (
                 CertYearsOfExperience DESC
         ) AS RN
     FROM Filtered sp
-    JOIN {{ ref('dim_staff') }}  s ON sp.StaffID = s.StaffID
+    JOIN {{ ref('Dim_Staff') }}  s ON sp.StaffID = s.StaffID
 )
 SELECT
     base.SchoolPrincipalID,

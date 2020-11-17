@@ -19,7 +19,7 @@ SELECT
     sp.CountyAndDistrictCode,
     Building,
     PrincipalType
-FROM {{ ref('fact_schoolprincipal') }} sp
-JOIN {{ ref('dim_staff') }} s
+FROM {{ ref('Fact_SchoolPrincipal') }} sp
+JOIN {{ ref('Dim_Staff') }} s
     ON sp.StaffID = s.StaffID
     WHERE PrimaryFlag = 1

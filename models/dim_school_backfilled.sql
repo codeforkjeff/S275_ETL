@@ -1,8 +1,8 @@
 
 WITH MissingSchoolsBase as (
 	SELECT a.AcademicYear, s.CountyAndDistrictCode, a.Building
-	FROM {{ ref('fact_assignment') }} a
-	JOIN {{ ref('dim_staff') }} s
+	FROM {{ ref('Fact_Assignment') }} a
+	JOIN {{ ref('Dim_Staff') }} s
 		ON a.StaffID = s.StaffID
 	WHERE Building is not null
 	EXCEPT

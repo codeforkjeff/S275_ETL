@@ -20,7 +20,7 @@ SELECT
     ,CertificateNumber
     ,s.CountyAndDistrictCode
     ,Building
-FROM {{ ref('fact_schoolteacher') }} t
-JOIN {{ ref('dim_staff') }} s
+FROM {{ ref('Fact_SchoolTeacher') }} t
+JOIN {{ ref('Dim_Staff') }} s
     ON t.StaffID = s.StaffID
 WHERE PrimaryFlag = 1

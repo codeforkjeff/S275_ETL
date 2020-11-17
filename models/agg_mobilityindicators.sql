@@ -61,10 +61,10 @@ LongTable AS (
 			WHEN ind.Indicator = 'MovedOut' THEN MovedOut
 			WHEN ind.Indicator = 'Exited' THEN Exited
 		END AS Met
-	FROM {{ ref('fact_teachermobility') }}  m
-	JOIN {{ ref('dim_staff') }} staff
+	FROM {{ ref('Fact_TeacherMobility') }}  m
+	JOIN {{ ref('Dim_Staff') }} staff
 		ON m.StartStaffID = staff.StaffID
-	JOIN {{ ref('dim_school') }} s
+	JOIN {{ ref('Dim_School') }} s
 		ON m.StartBuilding = s.SchoolCode
 		and s.AcademicYear = 2018
 	CROSS JOIN {{ ref('subgroupcategories') }} cat
