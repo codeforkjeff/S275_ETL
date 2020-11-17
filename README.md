@@ -97,7 +97,7 @@ Run this script:
 .\elt.ps1
 ```
 
-See the section "Development Notes" below for details on what this does.
+See the contents of that script and the section "Development Notes" below for more details.
 
 # Working with the Data
 
