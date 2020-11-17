@@ -15,6 +15,7 @@ import re
 import sqlalchemy
 import sqlite3
 import sys
+import yaml
 
 try:
     from S275_settings import *
@@ -105,6 +106,8 @@ all_possible_columns = [
 #### End Parameters
 
 global_conn = None
+
+database_target = None
 
 def transform_raw_row(row):
     new_row = []
@@ -286,7 +289,7 @@ def execute_sql_file(path):
     str = open(path).read()
     statements = str.split("-- next")
     for statement in statements:
-        if db_type == "sqlite":
+        if database_target['type'] == "sqlite":
             statement = statement.replace("LEN(", "LENGTH(")
             statement = statement.replace("SUBSTRING(", "SUBSTR(")
             statement = statement.replace("INT IDENTITY(1,1) NOT NULL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
@@ -309,7 +312,7 @@ def load_into_database(entries):
     """ entries should be a tuple of (path, tablename) """
 
     for (output_file, table_name) in entries:
-        if db_type == 'SQL Server':
+        if database_target['type'] == 'sqlserver':
             os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (table_name, output_file, db_sqlserver_host, db_sqlserver_database))
         else:
             # read in the flat files and load into sqlite
@@ -396,13 +399,49 @@ def export_table(table, output_path):
 
 def get_db_conn():
     global global_conn
+    global database_target
+
     if global_conn is None:
-        if db_type == "SQL Server":
+        this_module_path = os.path.abspath(__file__)
+        dbt_project_path = os.path.join(os.path.dirname(this_module_path), "dbt_project.yml")
+
+        profile_name = ''
+        if os.path.exists(dbt_project_path):
+            profiles = yaml.load(open(dbt_project_path).read(), Loader=yaml.Loader)
+            profile_name = profiles['profile']
+        else:
+            raise Exception(f"{dbt_project_path} doesn't exist, can't get db connection params")
+
+        profiles_path = os.path.expanduser("~/.dbt/profiles.yml")
+
+        database_target = None
+        if os.path.exists(profiles_path):
+            profiles = yaml.load(open(profiles_path).read(), Loader=yaml.Loader)
+            database_target = profiles[profile_name]['outputs']['dev']
+        else:
+            raise Exception(f"{profiles_path} doesn't exist, can't get db connection params")
+
+        if database_target['type'] == "sqlserver":
+            db_pyodbc_connection_string = "Driver={SQL Server Native Client 11.0};Server=%s;Database=%s;Trusted_Connection=yes" % \
+            (database_target['host'], database_target['database'])
+
+            print(db_pyodbc_connection_string)
+
             global_conn = pyodbc.connect(db_pyodbc_connection_string)
-        elif db_type == "sqlite":
+        elif database_target['type'] == "sqlite":
+            schema_defs = database_target['schemas_and_paths'].split(";")
+
+            db_sqlite_path = None
+
+            for schema_def in schema_defs:
+                schema_name, sqlite_path = schema_def.split("=")
+                if schema_name == 'main':
+                    db_sqlite_path = sqlite_path
+
             global_conn = sqlite3.connect(db_sqlite_path)
         else:
-            raise "Unrecognized db_type: %s" % (db_type,)
+            raise "Unrecognized type: %s" % (database_target['type'],)
+
     return global_conn
 
 

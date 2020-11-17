@@ -33,6 +33,8 @@ Using Microsoft SQL Server is optional.
 
 - Install required Python packages by running: `pip install -r requirements.txt`
 
+- If you're using SQL Server, run `pip install dbt-sqlserver`
+
 - Download and unzip the S275 files for the desired years from [the OSPI website](https://www.k12.wa.us/safs-database-files).
   The unzipped files are Access databases (have an `.accdb` extension). Put these files
   in the `input/` directory. (Alternatively, you can set the path where the script looks for these files,
@@ -84,24 +86,8 @@ S275:
 ```
 
 - Copy the `S275_settings_sample.py` file to `S275_settings.py` and edit the paths and variables to suit
-  your environment. By default, the code does all data processing using the embedded sqlite3
-  database that comes with Python but you can change this to use SQL Server instead.
-
-  For CCER production environment, you can use the encrypted settings file,
-  `S275_settings.py.gpg` There's nothing really secret in there but we encrypt it anyway. Look in
-  you-know-where for the passphrase.
-
-  To decrypt it:
-
-```sh
-gpg -d -o S275_settings.py S275_settings.py.gpg
-```
-
-  If you update it, encrypt it back to the .gpg file to commit to the repo:
-
-```sh
-gpg -c -a -o S275_settings.py.gpg --cipher-algo AES256 S275_settings.py
-```
+  your environment. In the CCER production environment, copy `S275_settings_prod.py` to
+  `S275_settings.py`.
 
 # Creating the Data
 
