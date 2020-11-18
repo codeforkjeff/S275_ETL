@@ -29,7 +29,7 @@ SELECT
         ,0 AS Exited 
         ,{{ getdate_fn() }} as MetaCreatedAt
 FROM {{ ref('Fact_TeacherCohort') }} tc
-JOIN {{ ref('stg_staff_by_building') }} a
+JOIN {{ ref('Stg_Staff_By_Building') }} a
 	ON tc.CertificateNumber = a.CertificateNumber
 WHERE
 	a.AcademicYear > tc.CohortYear

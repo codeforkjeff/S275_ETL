@@ -45,8 +45,8 @@ SELECT
         ELSE 0
     END AS IsPESBEducatorAssignment,
     {{ getdate_fn() }} as MetaCreatedAt
-from {{ ref('stg_s275_coalesced') }} S275
-JOIN {{ ref('stg_dim_staff_coalesced') }} d ON
+from {{ ref('Stg_S275_Coalesced') }} S275
+JOIN {{ ref('Stg_Dim_Staff_Coalesced') }} d ON
     d.AcademicYear = S275.AcademicYear
     AND d.Area = S275.Area
     AND d.CountyAndDistrictCode = S275.CountyAndDistrictCode

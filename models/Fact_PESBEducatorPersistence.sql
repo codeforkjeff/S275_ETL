@@ -29,14 +29,14 @@ SELECT
     CASE WHEN c.CertificateNumber IS NOT NULL THEN 1 ELSE 0 END AS PersistedWithinWAFlag,
     CASE WHEN c2.CertificateNumber IS NOT NULL THEN 1 ELSE 0 END AS PersistedWithinPSESDFlag,
     {{ getdate_fn() }} as MetaCreatedAt
-FROM {{ ref('stg_pesb_educator_persistence') }} p
-LEFT JOIN {{ ref('stg_educator_continued_counts')}} c
+FROM {{ ref('Stg_PESB_Educator_Persistence') }} p
+LEFT JOIN {{ ref('Stg_Educator_Continued_Counts')}} c
     ON p.CertificateNumber = c.CertificateNumber
     AND p.CohortYear = c.CohortYear
     AND p.EndYear = c.EndYear
     -- subtract 1 to exclude considering cohort year
     AND c.ContinuedOrTransferredCount = p.YearCount - 1
-LEFT JOIN {{ ref('stg_educator_continued_counts')}} c2
+LEFT JOIN {{ ref('Stg_Educator_Continued_Counts')}} c2
     ON p.CertificateNumber = c2.CertificateNumber
     AND p.CohortYear = c2.CohortYear
     AND p.EndYear = c2.EndYear

@@ -28,17 +28,17 @@ PrincipalsLookup AS (
     SELECT DISTINCT
         AcademicYear AS StartYear,
         AcademicYear + 1 AS EndYear
-    FROM {{ ref('stg_base_schoolteachers') }} y1
+    FROM {{ ref('Stg_Base_SchoolTeachers') }} y1
     WHERE EXISTS (
-        SELECT 1 FROM {{ ref('stg_base_schoolteachers') }} WHERE AcademicYear = y1.AcademicYear + 1
+        SELECT 1 FROM {{ ref('Stg_Base_SchoolTeachers') }} WHERE AcademicYear = y1.AcademicYear + 1
     )
     UNION ALL
     SELECT DISTINCT
         AcademicYear AS StartYear,
         AcademicYear + 4 AS EndYear
-    FROM {{ ref('stg_base_schoolteachers') }} y2
+    FROM {{ ref('Stg_Base_SchoolTeachers') }} y2
     WHERE EXISTS (
-        SELECT 1 FROM {{ ref('stg_base_schoolteachers') }} WHERE AcademicYear = y2.AcademicYear + 4
+        SELECT 1 FROM {{ ref('Stg_Base_SchoolTeachers') }} WHERE AcademicYear = y2.AcademicYear + 4
     )
 )
 ,TransitionsBase AS (
@@ -56,10 +56,10 @@ PrincipalsLookup AS (
         t2.CountyAndDistrictCode AS EndCountyAndDistrictCode,
         t2.Building AS EndBuilding,
         t2.TeacherFlag AS EndTeacherFlag
-    FROM {{ ref('stg_base_schoolteachers') }} t1
+    FROM {{ ref('Stg_Base_SchoolTeachers') }} t1
     JOIN YearBrackets y
         ON t1.AcademicYear = y.StartYear
-    LEFT JOIN {{ ref('stg_staff_by_building') }} t2
+    LEFT JOIN {{ ref('Stg_Staff_By_Building') }} t2
         ON t1.CertificateNumber = t2.CertificateNumber
         AND y.EndYear = t2.AcademicYear
 )

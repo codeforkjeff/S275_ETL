@@ -32,7 +32,7 @@ select
 	p.EndYear,
 	SUM(ContinuedOrTransferredFlag) AS ContinuedOrTransferredCount,
 	SUM(ContinuedOrTransferredWithinPSESDFlag) AS ContinuedOrTransferredWithinPSESDCount
-FROM {{ ref('stg_pesb_educator_persistence') }} p
+FROM {{ ref('Stg_PESB_Educator_Persistence') }} p
 JOIN EducatorContinued ct
 	ON p.CertificateNumber = ct.CertificateNumber
 	AND ct.AcademicYear > p.CohortYear

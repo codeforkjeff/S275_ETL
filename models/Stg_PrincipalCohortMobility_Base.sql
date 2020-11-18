@@ -30,7 +30,7 @@ SELECT
         ,{{ getdate_fn() }} as MetaCreatedAt
 FROM {{ ref('Fact_PrincipalCohort') }} pc
 -- join to a wide set of staff/yr/highest duty root
-JOIN {{ ref('stg_staff_by_highest_fte') }} h
+JOIN {{ ref('Stg_Staff_By_Highest_FTE') }} h
 	ON pc.CertificateNumber = h.CertificateNumber
 LEFT JOIN {{ ref('Fact_PrincipalCohort') }} endpc
     ON pc.CertificateNumber = endpc.CertificateNumber

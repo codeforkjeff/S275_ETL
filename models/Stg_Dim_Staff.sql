@@ -70,4 +70,4 @@ SELECT
     CertifiedFlag,
     NationalBoardCertExpirationDate,
     {{ getdate_fn() }} as MetaCreatedAt
-FROM {{ ref('stg_dim_staff_coalesced') }}
+FROM {{ ref('Stg_Dim_Staff_Coalesced') }}

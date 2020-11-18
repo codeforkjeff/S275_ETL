@@ -15,7 +15,7 @@ select
     max(IsTeachingAssignment) as IsTeacherFlag,
     max(IsPrincipalAssignment) as IsPrincipalFlag,
     max(IsAsstPrincipalAssignment) as IsAsstPrincipalFlag
-FROM {{ ref('stg_dim_staff') }} s
+FROM {{ ref('Stg_Dim_Staff') }} s
 JOIN {{ ref('Fact_Assignment') }} a
     ON s.StaffID = a.StaffID
 group by s.StaffID

@@ -63,12 +63,12 @@ SELECT
 	COALESCE(PrincipalOfColorFlag, 0) AS PrincipalOfColorFlag,
 	COALESCE(AsstPrincipalOfColorFlag, 0) AS AsstPrincipalOfColorFlag,
 	{{ getdate_fn() }} AS MetaCreatedAt
-FROM {{ ref('stg_school_backfilled') }} base
-LEFT JOIN {{ ref('stg_teachercounts') }} tc
+FROM {{ ref('Stg_School_Backfilled') }} base
+LEFT JOIN {{ ref('Stg_TeacherCounts') }} tc
 	ON tc.AcademicYear = base.AcademicYear
 	AND tc.CountyAndDistrictCode = base.DistrictCode
 	AND tc.Building = base.SchoolCode
-LEFT JOIN {{ ref('stg_principalsofcolor') }} pc
+LEFT JOIN {{ ref('Stg_PrincipalsOfColor') }} pc
 	ON pc.AcademicYear = base.AcademicYear
 	AND pc.CountyAndDistrictCode = base.DistrictCode
 	AND pc.Building = base.SchoolCode

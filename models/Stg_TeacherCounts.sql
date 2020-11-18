@@ -19,7 +19,7 @@ SELECT
 FROM {{ ref('Fact_SchoolTeacher') }} st
 JOIN {{ ref('Dim_Staff') }} staff
 	ON st.StaffID = staff.StaffID
-JOIN {{ ref('stg_school_backfilled') }} sch
+JOIN {{ ref('Stg_School_Backfilled') }} sch
 	ON st.AcademicYear = sch.AcademicYear
 	AND staff.CountyAndDistrictCode = sch.DistrictCode
 	and st.Building = sch.SchoolCode

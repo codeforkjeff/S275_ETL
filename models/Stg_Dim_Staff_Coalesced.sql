@@ -69,7 +69,7 @@ WITH T AS (
         CertifiedFlag,
         NationalBoardCertExpirationDate,
         FileType
-    FROM {{ ref('stg_s275_coalesced') }}
+    FROM {{ ref('Stg_S275_Coalesced') }}
 )
 SELECT
     {% call hash() %}

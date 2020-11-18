@@ -38,14 +38,14 @@ WITH t AS (
         ,tr.TeacherOfColorRetention2Yr
         ,tr.TeacherOfColorRetention3Yr
         ,tr.TeacherOfColorRetention4Yr
-    FROM {{ ref('stg_schoolleadership_single') }} base
-    LEFT JOIN {{ ref('stg_schoolleadership_tenure') }} ten
+    FROM {{ ref('Stg_SchoolLeadership_Single') }} base
+    LEFT JOIN {{ ref('Stg_SchoolLeadership_Tenure') }} ten
         ON base.SchoolLeadershipID = ten.SchoolLeadershipID
     LEFT JOIN {{ ref('Dim_School') }} ds
         ON base.AcademicYear = ds.AcademicYear
         AND base.CountyAndDistrictCode = ds.DistrictCode
         AND base.Building = ds.SchoolCode
-    LEFT JOIN {{ ref('stg_schoolleadership_teacherretention') }} tr
+    LEFT JOIN {{ ref('Stg_SchoolLeadership_TeacherRetention') }} tr
         ON base.AcademicYear = tr.CohortYear
         AND base.CountyAndDistrictCode = tr.CohortCountyAndDistrictCode
         AND base.Building = tr.CohortBuilding

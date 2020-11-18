@@ -17,17 +17,17 @@ YearBrackets AS (
     SELECT DISTINCT
         AcademicYear AS StartYear,
         AcademicYear + 1 AS EndYear
-    FROM {{ ref('stg_base_school_principals') }} y1
+    FROM {{ ref('Stg_Base_School_Principals') }} y1
     WHERE EXISTS (
-        SELECT 1 FROM {{ ref('stg_base_school_principals') }} WHERE AcademicYear = y1.AcademicYear + 1
+        SELECT 1 FROM {{ ref('Stg_Base_School_Principals') }} WHERE AcademicYear = y1.AcademicYear + 1
     )
     UNION ALL
     SELECT DISTINCT
         AcademicYear AS StartYear,
         AcademicYear + 4 AS EndYear
-    FROM {{ ref('stg_base_school_principals') }} y2
+    FROM {{ ref('Stg_Base_School_Principals') }} y2
     WHERE EXISTS (
-        SELECT 1 FROM {{ ref('stg_base_school_principals') }} WHERE AcademicYear = y2.AcademicYear + 4
+        SELECT 1 FROM {{ ref('Stg_Base_School_Principals') }} WHERE AcademicYear = y2.AcademicYear + 4
     )
 )
 ,TransitionsBase AS (
@@ -51,15 +51,15 @@ YearBrackets AS (
         -- avoid counting exiters by checking for join to a StaffByHighestFTE row to ensure they're still employed somehow;
         -- if join didn't match anything in BaseSchoolPrincipals, then person isn't a Principal or AP in endyear
         CASE WHEN t2.CertificateNumber IS NOT NULL AND t3.CertificateNumber IS NULL THEN 1 ELSE 0 END AS NoLongerAnyPrincipal
-    FROM {{ ref('stg_base_school_principals') }} t1
+    FROM {{ ref('Stg_Base_School_Principals') }} t1
     JOIN YearBrackets y
         ON t1.AcademicYear = y.StartYear
     -- join to a wide set of staff/yr/highest duty root
-    LEFT JOIN {{ ref('stg_staff_by_highest_fte') }} t2
+    LEFT JOIN {{ ref('Stg_Staff_By_Highest_FTE') }} t2
         ON t1.CertificateNumber = t2.CertificateNumber
         AND y.EndYear = t2.AcademicYear
     -- join to a set of principals
-    LEFT JOIN {{ ref('stg_base_school_principals') }} t3
+    LEFT JOIN {{ ref('Stg_Base_School_Principals') }} t3
         ON t1.CertificateNumber = t3.CertificateNumber
         AND y.EndYear = t3.AcademicYear
 )

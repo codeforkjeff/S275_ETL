@@ -7,7 +7,7 @@ WITH MissingSchoolsBase as (
 	WHERE Building is not null
 	EXCEPT
 	SELECT DISTINCT AcademicYear, DistrictCode, SchoolCode
-	FROM {{ ref('stg_school_joined_with_fields') }}
+	FROM {{ ref('Stg_School_Joined_With_Fields') }}
 	WHERE SchoolCode is not null
 )
 ,MissingSchoolsCombos AS (
@@ -24,7 +24,7 @@ WITH MissingSchoolsBase as (
 				ABS(m.AcademicYear - s.AcademicYear), s.AcademicYear ASC
 		) AS Rank
 	FROM MissingSchoolsBase m
-	LEFT JOIN {{ ref('stg_school_joined_with_fields') }} s
+	LEFT JOIN {{ ref('Stg_School_Joined_With_Fields') }} s
 		ON m.CountyAndDistrictCode = s.DistrictCode
 		AND m.Building = s.SchoolCode
 ),
@@ -48,7 +48,7 @@ DistrictNames as (
 			ORDER BY
 				AcademicYear DESC
 		) AS RN
-	FROM {{ ref('stg_school_joined_with_fields') }}
+	FROM {{ ref('Stg_School_Joined_With_Fields') }}
 ),
 MostRecentDistrictNames AS (
 	SELECT
@@ -104,7 +104,7 @@ SELECT
 	GenderX,
 	GenderXPercent,
 	MetaCreatedAt
-FROM {{ ref('stg_school_joined_with_fields') }}
+FROM {{ ref('Stg_School_Joined_With_Fields') }}
 UNION ALL
 SELECT
 	missing.AcademicYear
@@ -154,7 +154,7 @@ SELECT
     ,NULL AS GenderXPercent
 	,{{ getdate_fn() }} AS MetaCreatedAt
 FROM MissingSchools missing
-LEFT JOIN {{ ref('stg_school_joined_with_fields') }} s
+LEFT JOIN {{ ref('Stg_School_Joined_With_Fields') }} s
 	ON missing.CountyAndDistrictCode = s.DistrictCode
 	AND missing.Building = s.SchoolCode
 	AND missing.ClosestYearThatExists = s.AcademicYear

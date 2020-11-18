@@ -81,8 +81,8 @@ SELECT
     GenderX,
     GenderXPercent,
     {{ getdate_fn() }} AS MetaCreatedAt
-FROM {{ ref('stg_school_base') }} b
-LEFT JOIN {{ ref('stg_school_fields') }} f
+FROM {{ ref('Stg_School_Base') }} b
+LEFT JOIN {{ ref('Stg_School_Fields') }} f
     ON b.AcademicYear = f.AcademicYear
     AND b.DistrictCode = f.DistrictCode
     AND b.SchoolCode = f.SchoolCode

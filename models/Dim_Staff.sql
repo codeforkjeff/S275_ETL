@@ -20,19 +20,19 @@ Stage1 AS (
         END AS PersonOfColorCategory,
         CASE WHEN EXISTS (
             select 1
-            from {{ ref('stg_dim_staff_flags') }} f
+            from {{ ref('Stg_Dim_Staff_Flags') }} f
             where f.StaffID = base.StaffID
             and IsTeacherFlag = 1
         ) THEN 1 ELSE 0 END AS IsTeacherFlag,
         CASE WHEN EXISTS (
             select 1
-            from {{ ref('stg_dim_staff_flags') }} f
+            from {{ ref('Stg_Dim_Staff_Flags') }} f
             where f.StaffID = base.StaffID
             and IsPrincipalFlag = 1
         ) THEN 1 ELSE 0 END AS IsPrincipalFlag,
         CASE WHEN EXISTS (
             select 1
-            from {{ ref('stg_dim_staff_flags') }} f
+            from {{ ref('Stg_Dim_Staff_Flags') }} f
             where f.StaffID = base.StaffID
             and IsAsstPrincipalFlag = 1
         ) THEN 1 ELSE 0 END AS IsAsstPrincipalFlag,
@@ -53,14 +53,14 @@ Stage1 AS (
         END AS TempOrPermCert,
         CASE WHEN EXISTS (
             SELECT 1
-            FROM {{ ref('stg_first_year_in_district') }} FirstYearInDistrict
+            FROM {{ ref('Stg_First_Year_In_District') }} FirstYearInDistrict
             WHERE FirstYearInDistrict.CertificateNumber = base.CertificateNumber
             AND FirstYearInDistrict.CountyAndDistrictCode = base.CountyAndDistrictCode
             AND FirstYearInDistrict.FirstYear = base.AcademicYear
         ) THEN 1 ELSE 0 END AS IsNewHireFlag,
         CASE WHEN EXISTS (
             SELECT 1
-            FROM {{ ref('stg_first_year_in_wa') }} FirstYearInWA
+            FROM {{ ref('Stg_First_Year_In_WA') }} FirstYearInWA
             WHERE FirstYearInWA.CertificateNumber = base.CertificateNumber
             AND FirstYearInWA.FirstYear = base.AcademicYear
         ) THEN 1 ELSE 0 END AS IsNewHireWAStateFlag,
@@ -104,7 +104,7 @@ Stage1 AS (
             ) THEN 1
             ELSE 0
         END AS IsInPSESDFlag
-    FROM {{ ref('stg_dim_staff') }} base
+    FROM {{ ref('Stg_Dim_Staff') }} base
 )
 ,Stage2 AS (
     SELECT

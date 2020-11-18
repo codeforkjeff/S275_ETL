@@ -14,7 +14,7 @@ SELECT
     CertificateNumber,
     CountyAndDistrictCode,
     MIN(AcademicYear) AS FirstYear
-FROM {{ ref('stg_dim_staff') }}
+FROM {{ ref('Stg_Dim_Staff') }}
 WHERE CertificateNumber is not null
 GROUP BY
     CertificateNumber,

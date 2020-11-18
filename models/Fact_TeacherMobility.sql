@@ -26,6 +26,6 @@ SELECT
     ,MovedOutOfRMR
     ,Exited
     ,{{ getdate_fn() }} as MetaCreatedAt
-FROM {{ ref('stg_teachermobility') }} tm
+FROM {{ ref('Stg_TeacherMobility') }} tm
 LEFT JOIN {{ source('ext', 'ext_teachermobility_distance') }} d
     ON tm.TeacherMobilityID = d.TeacherMobilityID

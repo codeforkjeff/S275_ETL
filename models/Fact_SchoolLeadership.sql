@@ -56,7 +56,7 @@ SELECT
     ,TeacherOfColorRetention4Yr
     ,TeacherOfColorRetention4YrPct
     ,{{ getdate_fn() }} AS MetaCreatedAt
-FROM {{ ref('stg_schoolleadership') }} base
+FROM {{ ref('Stg_SchoolLeadership') }} base
 LEFT JOIN {{ source('ext', 'ext_schoolleadership_broad') }} broad
     ON base.AcademicYear = broad.AcademicYear
     AND base.CountyAndDistrictCode = broad.CountyAndDistrictCode

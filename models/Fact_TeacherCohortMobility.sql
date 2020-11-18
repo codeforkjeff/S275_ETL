@@ -34,7 +34,7 @@ SELECT
     ,MovedOutDistrict
     ,Exited
     ,{{ getdate_fn() }} as MetaCreatedAt
-FROM {{ ref('stg_teachercohortmobility_base') }}
+FROM {{ ref('Stg_TeacherCohortMobility_Base') }}
 
 UNION ALL
 
@@ -67,7 +67,7 @@ WHERE
     y.AcademicYear > tc.CohortYear
     AND NOT EXISTS (
         SELECT 1
-        FROM {{ ref('stg_teachercohortmobility_base') }} exists_
+        FROM {{ ref('Stg_TeacherCohortMobility_Base') }} exists_
         WHERE
             exists_.CohortYear = tc.CohortYear
             AND exists_.EndYear = y.AcademicYear
