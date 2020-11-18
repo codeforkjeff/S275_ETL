@@ -40,7 +40,7 @@ Stage1 AS (
         -- NationalBoardCertExpirationDate became available starting in 2017. note that this is different
         -- from the 'certflag' field which designates whether person is "certificated employee"
         CASE
-            WHEN {{ substring_fn() }}(NationalBoardCertExpirationDate, 1, 7) >=
+            WHEN {{ substring_fname() }}(NationalBoardCertExpirationDate, 1, 7) >=
             {% call concat() %}
             (CAST((AcademicYear - 1) as varchar) + '-09') -- sqlite_concat
             {% endcall %}

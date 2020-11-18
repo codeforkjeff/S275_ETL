@@ -28,7 +28,7 @@ SELECT
         ELSE
             CASE
                 WHEN Hispanic = 'Y' THEN 'Hispanic/Latino of any race(s)'
-                WHEN {{ len_fn() }}(LTRIM(RTRIM(Race))) > 1 THEN 'Two or More Races'
+                WHEN {{ len_fname() }}(LTRIM(RTRIM(Race))) > 1 THEN 'Two or More Races'
                 ELSE
                         CASE LTRIM(RTRIM(COALESCE(Race, '')))
                                 WHEN 'A' THEN 'Asian'

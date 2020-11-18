@@ -1,7 +1,7 @@
 
 {# Macros that translate from SQL Server to SQLite dialect #}
 
-{% macro substring_fn() %}
+{% macro substring_fname() %}
 	{%- if adapter.config.credentials.type == 'sqlite' -%}
 	SUBSTR
 	{%- else -%}
@@ -9,7 +9,7 @@
 	{%- endif -%}
 {% endmacro %}
 
-{% macro len_fn() %}
+{% macro len_fname() %}
 	{%- if adapter.config.credentials.type == 'sqlite' -%}
 	LENGTH
 	{%- else -%}
@@ -17,7 +17,7 @@
 	{%- endif -%}
 {% endmacro %}
 
-{% macro concat_fn() %}
+{% macro concat_fname() %}
 	{%- if adapter.config.credentials.type == 'sqlite' -%}
 	LENGTH
 	{%- else -%}

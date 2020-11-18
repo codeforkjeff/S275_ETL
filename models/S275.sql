@@ -4,7 +4,7 @@ SELECT
     -- only 2 digit 'yr' field was available in the file 1999-2000 AY and prior
     CAST(CASE
         WHEN SchoolYear IS NOT NULL
-        THEN {{ substring_fn() }}(SchoolYear, 6, 4)
+        THEN {{ substring_fname() }}(SchoolYear, 6, 4)
         ELSE cast(
             {% call concat() %}
             cast('19' + cast(yr as varchar) as int)-- sqlite_concat
@@ -29,12 +29,12 @@ SELECT
     ,cert as CertificateNumber
     ,CASE
         WHEN
-            bdate IS NULL AND byr IS NOT NULL AND {{ len_fn() }}(byr) > 1 AND NOT (byr = '00' AND  bmo = '00' and bday = '00')
+            bdate IS NULL AND byr IS NOT NULL AND {{ len_fname() }}(byr) > 1 AND NOT (byr = '00' AND  bmo = '00' and bday = '00')
         THEN
             {% call concat() %}
             '19' + CAST(byr as varchar) + '-'  -- sqlite_concat
-            + CASE WHEN {{ len_fn() }}(bmo) = 1 THEN '0' ELSE '' END + CAST(bmo as varchar) + '-' -- sqlite_concat
-            + CASE WHEN {{ len_fn() }}(bday) = 1 THEN '0' ELSE '' END + CAST(bday as varchar) + ' 00:00:00' -- sqlite_concat
+            + CASE WHEN {{ len_fname() }}(bmo) = 1 THEN '0' ELSE '' END + CAST(bmo as varchar) + '-' -- sqlite_concat
+            + CASE WHEN {{ len_fname() }}(bday) = 1 THEN '0' ELSE '' END + CAST(bday as varchar) + ' 00:00:00' -- sqlite_concat
             {% endcall %}
         ELSE bdate
     END as Birthdate
@@ -53,7 +53,7 @@ SELECT
     ,hdeg as HighestDegree
     ,CASE
         -- AY 1996 (yr=95) has 2 digit years, so we can safely assume they're in 20th century
-        WHEN yr = '95' AND {{ len_fn() }}(hyear) = 2 AND hyear <> '00' THEN '19' + hyear -- sqlite_concat
+        WHEN yr = '95' AND {{ len_fname() }}(hyear) = 2 AND hyear <> '00' THEN '19' + hyear -- sqlite_concat
         WHEN hyear = 'B0' THEN NULL
         WHEN hyear = '07' THEN '2007'
         WHEN hyear = '13' THEN '2013'
