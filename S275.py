@@ -232,43 +232,12 @@ def load():
     execute_sql_file("create_duty_codes.sql")
     load_into_database([('input/duty_codes.txt', 'duty_codes')])
 
-    # Dim_School_Base
+    # raw_school_base
 
     execute_sql_file("create_raw_school_base.sql")   
     load_into_database([('input/raw_school_base.txt', 'raw_school_base')])
 
-    # Dim_School_Fields
-
-    # Created by running this in RMP database:
-    # there's 53 rows with duplicate schoolcodes b/c of bad data quality;
-    # we arbitrarily order by districtcode to de-dupe these
-    #
-    # WITH T AS (
-    #     SELECT
-    #         *
-    #         ,ROW_NUMBER() OVER (PARTITION BY SchoolCode, AcademicYear
-    #             ORDER BY DistrictCode) AS Ranked
-    #     FROM Dim.School
-    # )
-    # SELECT
-    #     T.AcademicYear
-    #     ,T.DistrictCode
-    #     ,T.DistrictName
-    #     ,T.SchoolCode
-    #     ,T.SchoolName
-    #     ,GradeLevelStart
-    #     ,GradeLevelEnd
-    #     ,GradeLevelSortOrderStart 
-    #     ,GradeLevelSortOrderEnd
-    #     ,SchoolType
-    #     ,Lat
-    #     ,Long
-    #     ,NCESLocaleCode
-    #     ,NCESLocale
-    #     ,dRoadMapRegionFlag
-    # S275.dbo.Dim_School
-    # FROM T
-    # WHERE Ranked = 1;
+    # raw_school_fields
 
     execute_sql_file("create_raw_school_fields.sql")
     if os.path.exists(dim_school_fields):

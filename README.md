@@ -90,6 +90,45 @@ S275:
   your environment. In the CCER production environment, copy `S275_settings_prod.py` to
   `S275_settings.py`.
 
+# Supplemental Data
+
+The `dim_school_fields` variable in the `S275_settings.py` file points to a file that
+should provide additional fields for each school and academic year. It's not required for
+the ELT code to work.
+
+At CCER, the data for this table is created by by running this in the RMP database:
+
+```
+WITH T AS (
+    -- there's 53 rows with duplicate schoolcodes b/c of bad data quality;
+    -- we arbitrarily order by districtcode to de-dupe these
+    SELECT
+        *
+        ,ROW_NUMBER() OVER (PARTITION BY SchoolCode, AcademicYear
+            ORDER BY DistrictCode) AS Ranked
+    FROM Dim.School
+)
+SELECT
+    T.AcademicYear
+    ,T.DistrictCode
+    ,T.DistrictName
+    ,T.SchoolCode
+    ,T.SchoolName
+    ,GradeLevelStart
+    ,GradeLevelEnd
+    ,GradeLevelSortOrderStart
+    ,GradeLevelSortOrderEnd
+    ,SchoolType
+    ,Lat
+    ,Long
+    ,NCESLocaleCode
+    ,NCESLocale
+    ,dRoadMapRegionFlag
+S275.dbo.Dim_School
+FROM T
+WHERE Ranked = 1;
+```
+
 # Creating the Data
 
 Run this script:
