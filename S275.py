@@ -379,7 +379,8 @@ def get_db_conn():
         database_target = None
         if os.path.exists(profiles_path):
             profiles = yaml.load(open(profiles_path).read(), Loader=yaml.Loader)
-            database_target = profiles[profile_name]['outputs']['dev']
+            target_name = profiles[profile_name]['target']
+            database_target = profiles[profile_name]['outputs'][target_name]
         else:
             raise Exception(f"{profiles_path} doesn't exist, can't get db connection params")
 
