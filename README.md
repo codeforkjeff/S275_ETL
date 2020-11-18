@@ -107,6 +107,10 @@ production settings file does point to an actual file.
 
 # Creating the Data
 
+Open a Powershell window.
+
+Activate the virtual env: `./S275_env/Scripts/activate`
+
 Run this script:
 
 ```sh
