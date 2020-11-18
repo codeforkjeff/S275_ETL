@@ -43,7 +43,10 @@ WITH AssignmentsWithPrincipalType AS (
 )
 ,Filtered AS (
     SELECT
-        {% call concat() %}CAST(StaffID AS VARCHAR(500)) + CAST(Building AS VARCHAR(100)) + CAST(PrincipalType AS VARCHAR(100)){% endcall %} AS SchoolPrincipalID
+        {% call hash() %}
+        {% call concat() %}CAST(StaffID AS VARCHAR(500)) + CAST(Building AS VARCHAR(100)) + CAST(PrincipalType AS VARCHAR(100)){% endcall %} 
+        {% endcall %}
+        AS SchoolPrincipalID
         ,*
     FROM Rolledup
     WHERE NOT (

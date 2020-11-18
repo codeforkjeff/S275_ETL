@@ -41,3 +41,12 @@
 		GETDATE()
 	{%- endif -%}
 {% endmacro %}
+
+{% macro hash() %}
+	{%- if adapter.config.credentials.type == 'sqlite' -%}
+		{# sqlite doesn't have any builtin hashing fns, so do nothing #}
+		{{ caller() }}
+	{%- else -%}
+		CONVERT(VARCHAR(30), HASHBYTES('MD5', {{ caller() }}), 2)
+	{%- endif -%}
+{% endmacro %}

@@ -72,6 +72,7 @@ WITH T AS (
     FROM {{ ref('stg_s275_coalesced') }}
 )
 SELECT
+    {% call hash() %}
     {% call concat() %}
     CAST(COALESCE(AcademicYear, '') AS VARCHAR(100)) + 
     CAST(COALESCE(CountyAndDistrictCode, '') AS VARCHAR(100)) + 
@@ -80,6 +81,7 @@ SELECT
     CAST(COALESCE(MiddleNameC, '') AS VARCHAR(100)) + 
     CAST(COALESCE(CertificateNumberC, '') AS VARCHAR(100)) + 
     CAST(COALESCE(BirthdateC, '') AS VARCHAR(100))
+    {% endcall %}
     {% endcall %}
     AS StaffID
     ,*

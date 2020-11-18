@@ -107,8 +107,10 @@ Base AS (
         ON le.PrevAsstPrincipalStaffID = s_asstprinprev.StaffID
 )
 SELECT
+    {% call hash() %}
     {% call concat() %}
     CAST(AcademicYear AS VARCHAR(4)) + CAST(CountyAndDistrictCode AS VARCHAR(10)) + CAST(Building AS VARCHAR(10))
+    {% endcall %}
     {% endcall %}
     AS SchoolLeadershipID
     ,AcademicYear
