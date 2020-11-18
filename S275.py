@@ -225,23 +225,16 @@ def load():
 
     load_raw_s275()
 
-    # TODO: handle duty codes and Dim_School_Base as seeds
-
-    # DutyCodes
-
-    execute_sql_file("create_duty_codes.sql")
-    load_into_database([('input/duty_codes.txt', 'duty_codes')])
-
     # raw_school_base
 
-    execute_sql_file("create_raw_school_base.sql")   
-    load_into_database([('input/raw_school_base.txt', 'raw_school_base')])
+    execute_sql_file("create_Raw_School_Base.sql")
+    load_into_database([('input/Raw_School_Base.txt', 'Raw_School_Base')])
 
     # raw_school_fields
 
-    execute_sql_file("create_raw_school_fields.sql")
+    execute_sql_file("create_Raw_School_Fields.sql")
     if os.path.exists(dim_school_fields):
-        load_into_database([(dim_school_fields, 'raw_school_fields')])
+        load_into_database([(dim_school_fields, 'Raw_School_Fields')])
     else:
         print(f"{dim_school_fields} not found, skipping processing for that file")
 
@@ -432,13 +425,13 @@ def create_ext_teachermobility_distance_table():
     conn = get_db_conn()
     cursor = conn.cursor()
 
-    print("Creating ext_teachermobility_distance")
+    print("Creating Ext_TeacherMobility_Distance")
 
-    cursor.execute("DROP TABLE IF EXISTS ext_teachermobility_distance;")
+    cursor.execute("DROP TABLE IF EXISTS Ext_TeacherMobility_Distance;")
 
-    cursor.execute("CREATE TABLE ext_teachermobility_distance (TeacherMobilityID varchar(500), Distance real)")
+    cursor.execute("CREATE TABLE Ext_TeacherMobility_Distance (TeacherMobilityID varchar(500), Distance real)")
 
-    cursor.execute("CREATE INDEX idx_ext_teachermobility_distance ON ext_teachermobility_distance (TeacherMobilityID, Distance)");
+    cursor.execute("CREATE INDEX idx_ext_teachermobility_distance ON Ext_TeacherMobility_Distance (TeacherMobilityID, Distance)");
     conn.commit()
 
 
@@ -458,7 +451,7 @@ def create_ext_teachermobility_distance():
             ,s1.Long AS LongStart
             ,s2.Lat AS LatEnd
             ,s2.Long AS LongEnd
-        FROM stg_TeacherMobility m
+        FROM Stg_TeacherMobility m
         LEFT JOIN Dim_School s1 ON m.StartCountyAndDistrictCode = s1.DistrictCode AND m.StartBuilding = s1.SchoolCode AND m.StartYear = s1.AcademicYear 
         LEFT JOIN Dim_School s2 ON m.EndCountyAndDistrictCode = s2.DistrictCode AND m.EndBuilding = s2.SchoolCode AND m.EndYear = s2.AcademicYear
     """)
@@ -483,24 +476,24 @@ def create_ext_teachermobility_distance():
             f.write(str(row[1]))
             f.write(LINE_TERMINATOR)
 
-    print("Inserting %d entries in ext_teachermobility_distance" % (len(rows_to_insert)))
+    print("Inserting %d entries in Ext_TeacherMobility_Distance" % (len(rows_to_insert)))
 
-    load_into_database([('distances.tmp', 'ext_teachermobility_distance')])
+    load_into_database([('distances.tmp', 'Ext_TeacherMobility_Distance')])
 
     os.remove("distances.tmp")
 
 
 def create_ext_school_leadership_broad_table():
 
-    print("Creating ext_school_leadership_broad_table")
+    print("Creating Ext_SchoolLeadership_Broad table")
 
     conn = get_db_conn()
     cursor = conn.cursor()
 
-    cursor.execute("DROP TABLE IF EXISTS ext_schoolleadership_broad;")
+    cursor.execute("DROP TABLE IF EXISTS Ext_SchoolLeadership_Broad;")
 
     cursor.execute("""
-        CREATE TABLE ext_schoolleadership_broad (
+        CREATE TABLE Ext_SchoolLeadership_Broad (
             AcademicYear SMALLINT
             ,CountyAndDistrictCode VARCHAR(10)
             ,Building VARCHAR(10)
@@ -773,13 +766,13 @@ def create_ext_school_leadership_broad():
                 f.write(str(row.broad_leadership_lost_poc_flag))
                 f.write(LINE_TERMINATOR)
 
-    print("Inserting %d entries in ext_schoolleadership_broad" % (len(grouped)))
+    print("Inserting %d entries in Ext_SchoolLeadership_Broad" % (len(grouped)))
 
     create_ext_school_leadership_broad_table()
 
-    load_into_database([('ext_schoolleadership_broad.tmp', 'ext_schoolleadership_broad')])
+    load_into_database([('ext_schoolleadership_broad.tmp', 'Ext_SchoolLeadership_Broad')])
 
-    cursor.execute("CREATE UNIQUE INDEX idx_ext_schoolleadership_broad ON ext_schoolleadership_broad(AcademicYear, CountyAndDistrictCode, Building);")
+    cursor.execute("CREATE UNIQUE INDEX idx_Ext_SchoolLeadership_Broad ON Ext_SchoolLeadership_Broad(AcademicYear, CountyAndDistrictCode, Building);")
 
     conn.commit()
 

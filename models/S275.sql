@@ -102,7 +102,7 @@ SELECT
     ,yr as TwoDigitYear
     ,FileType
     ,{{ getdate_fn() }} as MetaCreatedAt
-FROM {{ source('sources', 'raw_s275') }}
+FROM {{ source('sources', 'Raw_S275') }}
 )
 ,Cleaned1 AS (
     -- some numeric fields in AY <= 2000 were stored as integers; convert them to decimal values

@@ -67,8 +67,8 @@ LongTable AS (
 	JOIN {{ ref('Dim_School') }} s
 		ON m.StartBuilding = s.SchoolCode
 		and s.AcademicYear = 2018
-	CROSS JOIN {{ ref('subgroupcategories') }} cat
-	CROSS JOIN {{ ref('indicators') }} ind
+	CROSS JOIN {{ ref('SubgroupCategories') }} cat
+	CROSS JOIN {{ ref('Indicators') }} ind
 )
 ,Aggregated AS (
 	-- sqlite doesn't have GROUPING SETS so use UNION ALL

@@ -55,7 +55,7 @@ JOIN {{ ref('Stg_Dim_Staff_Coalesced') }} d ON
     AND d.MiddleNameC = S275.MiddleNameC
     AND d.CertificateNumberC = S275.CertificateNumberC
     AND d.BirthdateC = S275.BirthdateC
-LEFT JOIN {{ source('sources', 'duty_codes') }} ON
+LEFT JOIN {{ source('sources', 'Duty_Codes') }} ON
     S275.DutyRoot = duty_codes.DutyRoot
     AND (duty_codes.DutySuffix IN ('x', 'y') OR duty_codes.DutySuffix = S275.DutySuffix)
 ;

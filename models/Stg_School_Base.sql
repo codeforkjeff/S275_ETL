@@ -17,4 +17,4 @@ SELECT
 	CAST(NCESLocaleCode AS VARCHAR(2)) AS NCESLocaleCode,
 	CAST(NCESLocale AS VARCHAR(50)) AS NCESLocale,
 	CAST(RMRFlag AS INT) AS RMRFlag
-FROM {{ source('sources', 'raw_school_base') }}
+FROM {{ source('sources', 'Raw_School_Base') }}

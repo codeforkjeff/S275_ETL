@@ -45,4 +45,4 @@ SELECT
     CAST(FemalePercent AS numeric(10,2)) AS FemalePercent,
     CAST(GenderX AS smallint) AS GenderX,
     CAST(GenderXPercent AS numeric(10,2)) AS GenderXPercent
-FROM {{ source('sources', 'raw_school_fields') }}
+FROM {{ source('sources', 'Raw_School_Fields') }}

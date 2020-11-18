@@ -1,9 +1,9 @@
 
-DROP TABLE IF EXISTS raw_school_fields;
+DROP TABLE IF EXISTS Raw_School_Fields;
 
 -- next
 
-CREATE TABLE raw_school_fields (
+CREATE TABLE Raw_School_Fields (
     AcademicYear VARCHAR(500),
     DistrictCode VARCHAR(500),
     DistrictName VARCHAR(500),
