@@ -425,8 +425,6 @@ def get_db_conn():
             db_pyodbc_connection_string = "Driver={SQL Server Native Client 11.0};Server=%s;Database=%s;Trusted_Connection=yes" % \
             (database_target['host'], database_target['database'])
 
-            print(db_pyodbc_connection_string)
-
             global_conn = pyodbc.connect(db_pyodbc_connection_string)
         elif database_target['type'] == "sqlite":
             schema_defs = database_target['schemas_and_paths'].split(";")
