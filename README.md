@@ -90,44 +90,20 @@ S275:
   your environment. In the CCER production environment, copy `S275_settings_prod.py` to
   `S275_settings.py`.
 
-# Supplemental Data
+# School-Level Data Used by the Code
 
-The `dim_school_fields` variable in the `S275_settings.py` file points to a file that
-should provide additional fields for each school and academic year. It's not required for
-the ELT code to work.
+There are two files containing school-level data that this ELT code uses. One is required
+(and checked into this repository), and one is not.
 
-At CCER, the data for this table is created by by running this in the RMP database:
+The `input\raw_school_base.txt` file contains basic information about WA schools for each
+academic year. It's generated out of the CCER data warehouse using the query in
+`export_Raw_School_Base_from_RMP.sql`. It should be updated every year and committed into
+this repository.
 
-```
-WITH T AS (
-    -- there's 53 rows with duplicate schoolcodes b/c of bad data quality;
-    -- we arbitrarily order by districtcode to de-dupe these
-    SELECT
-        *
-        ,ROW_NUMBER() OVER (PARTITION BY SchoolCode, AcademicYear
-            ORDER BY DistrictCode) AS Ranked
-    FROM Dim.School
-)
-SELECT
-    T.AcademicYear
-    ,T.DistrictCode
-    ,T.DistrictName
-    ,T.SchoolCode
-    ,T.SchoolName
-    ,GradeLevelStart
-    ,GradeLevelEnd
-    ,GradeLevelSortOrderStart
-    ,GradeLevelSortOrderEnd
-    ,SchoolType
-    ,Lat
-    ,Long
-    ,NCESLocaleCode
-    ,NCESLocale
-    ,dRoadMapRegionFlag
-S275.dbo.Dim_School
-FROM T
-WHERE Ranked = 1;
-```
+The other file, which is optional, provides additional fields for each school and
+academic year. The `dim_school_fields` variable in the `S275_settings.py` file
+points to a file. If the path doesn't exist, the ELT code simply doesn't load it. The
+production settings file does point to an actual file.
 
 # Creating the Data
 
