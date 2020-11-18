@@ -76,6 +76,7 @@ S275:
 
     dev:
       type: sqlserver
+      threads: 2
       driver: 'SQL Server Native Client 11.0'
       host: localhost\
       database: S275
