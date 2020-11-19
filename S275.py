@@ -275,7 +275,7 @@ def load_into_database(entries):
 
     for (output_file, table_name) in entries:
         if database_target['type'] == 'sqlserver':
-            os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (table_name, output_file, db_sqlserver_host, db_sqlserver_database))
+            os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (table_name, output_file, database_target['host'], database_target['database']))
         else:
             # read in the flat files and load into sqlite
             conn = get_db_conn()
