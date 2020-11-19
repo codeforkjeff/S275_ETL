@@ -6,7 +6,7 @@ This is a perpetual work in progress!
 
 # Features
 
-- Does ETL and data cleaning of the [S275 Microsoft Access files from OSPI](https://www.k12.wa.us/safs-database-files) into a single table in a SQL database.
+- Does ETL (ELT, really) and data cleaning of the [S275 Microsoft Access files from OSPI](https://www.k12.wa.us/safs-database-files) into a single table in a SQL database.
   Files for 1996 - 2019 are currently supported; however, not all of these years are currently available for download on the website.
 - Creates dimensional models for flexible reporting
 - Generates models for teacher/principal demographics, retention/mobility, and cohort analysis
@@ -33,10 +33,12 @@ Using Microsoft SQL Server is optional.
 
 - Install required Python packages by running: `pip install -r requirements.txt`
 
+- If you're using SQL Server, run `pip install dbt-sqlserver`
+
 - Download and unzip the S275 files for the desired years from [the OSPI website](https://www.k12.wa.us/safs-database-files).
   The unzipped files are Access databases (have an `.accdb` extension). Put these files
   in the `input/` directory. (Alternatively, you can set the path where the script looks for these files,
-  using settings in the next step.)
+  using settings file in the step below.)
 
   Instead of doing this step manually, you can run this script to do it for you:
 
@@ -45,35 +47,77 @@ Using Microsoft SQL Server is optional.
 python OSPI_data_downloader.py
 ```
 
+- Edit your `~/.dbt/profiles.yml` file (or create one) with one of these entries:
+
+For SQLite:
+
+```
+S275:
+
+  outputs:
+
+    dev:
+      type: sqlite
+      threads: 1
+      database: "database"
+      schema: "main"
+      schemas_and_paths: "main=C:/Users/jchiu/S275_ETL/output/S275.sqlite"
+      schema_directory: "C:/Users/jchiu/S275_ETL/output"
+
+  target: dev
+```
+
+For SQL Server:
+
+```
+S275:
+
+  outputs:
+
+    dev:
+      type: sqlserver
+      threads: 2
+      driver: 'SQL Server Native Client 11.0'
+      host: localhost\
+      database: S275
+      schema: dbo
+      windows_login: True
+
+  target: dev
+```
+
 - Copy the `S275_settings_sample.py` file to `S275_settings.py` and edit the paths and variables to suit
-  your environment. By default, the code does all data processing using the embedded sqlite3
-  database that comes with Python but you can change this to use SQL Server instead.
+  your environment. In the CCER production environment, copy `S275_settings_prod.py` to
+  `S275_settings.py`.
 
-  For CCER production environment, you can use the encrypted settings file,
-  `S275_settings.py.gpg` There's nothing really secret in there but we encrypt it anyway. Look in
-  you-know-where for the passphrase.
+# School-Level Data Used by the Code
 
-  To decrypt it:
+There are two files containing school-level data that this ELT code uses. One is required
+(and checked into this repository), and one is not.
 
-```sh
-gpg -d -o S275_settings.py S275_settings.py.gpg
-```
+The `input\raw_school_base.txt` file contains basic information about WA schools for each
+academic year. It's generated out of the CCER data warehouse using the query in
+`export_Raw_School_Base_from_RMP.sql`. It should be updated every year and committed into
+this repository.
 
-  If you update it, encrypt it back to the .gpg file to commit to the repo:
-
-```sh
-gpg -c -a -o S275_settings.py.gpg --cipher-algo AES256 S275_settings.py
-```
+The other file, which is optional, provides additional fields for each school and
+academic year. The `dim_school_fields` variable in the `S275_settings.py` file
+points to a file. If the path doesn't exist, the ELT code simply doesn't load it. The
+production settings file does point to an actual file.
 
 # Creating the Data
 
-To generate everything:
+Open a Powershell window.
+
+Activate the virtual env: `./S275_env/Scripts/activate`
+
+Run this script:
 
 ```sh
-python -c "import S275; S275.create_everything();"
+.\elt.ps1
 ```
 
-See the section "Development Notes" below for details on what this does.
+See the contents of that script and the section "Development Notes" below for more details.
 
 # Working with the Data
 
@@ -155,25 +199,12 @@ the flag fields describe the transitions between CohortYear and EndYear.
 
 # Development Notes
 
-The `create_everything()` function is composed of calls to two fuctions:
-- `create_base_S275()` - this creates a cleaned `S275` table with inconsistent
-values normalized, bad data removed, etc. The structure is the same as the table
-found in the Access databases provided by OSPI except that the columns have been
-renamed to be more verbose/meaningful.
-- `create_derived_tables()` - this uses the cleaned `S275` table to create all
-derivative tables
+This repo uses the open source tool [dbt](http://getdbt.com) to manage the transforms.
+See its documentation for how to use that tool, including how to generate
+a flow diagram for a bird's-eye view of the entire data pipeline.
 
-You can trace through what these functions do in the `S275.py` file
-in order to understand the complete set of steps for producing the resulting tables.
-
-If you are changing the SQL files and Python code, you can probably re-run
-`create_derived_tables()` instead of everything, to save some time. You could further
-selectively re-run only parts of that function to save time, if you feel confident
-about the dependencies. For details, see the code in `S275.py`.
-
-.sql files should be written in SQL Server dialect where standard SQL isn't possible;
-see the `execute_sql_file()` in `S275.py` for the code that translates SQL to the
-dialect for sqlite.
+In a nutshell, you can see definitions for each table in the `models/` directory,
+and trace backwards from there.
 
 # Credits
 

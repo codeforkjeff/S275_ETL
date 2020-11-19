@@ -15,6 +15,7 @@ import re
 import sqlalchemy
 import sqlite3
 import sys
+import yaml
 
 try:
     from S275_settings import *
@@ -105,6 +106,8 @@ all_possible_columns = [
 #### End Parameters
 
 global_conn = None
+
+database_target = None
 
 def transform_raw_row(row):
     new_row = []
@@ -215,101 +218,30 @@ def create_flat_file(access_db_path, file_type, output_path):
     f.close()
 
 
-def create_base_dimensional_models():
+# main entry point for loading all source tables
+def load():
 
-    print("creating dimensional models")
+    ## raw_s275
 
-    execute_sql_file("create_Dim_School.sql")
-    load_into_database([('input/Dim_School_Base.txt', 'Dim_School_Base')])
+    load_raw_s275()
 
+    # raw_school_base
+
+    execute_sql_file("create_Raw_School_Base.sql")
+    load_into_database([('input/Raw_School_Base.txt', 'Raw_School_Base')])
+
+    # raw_school_fields
+
+    execute_sql_file("create_Raw_School_Fields.sql")
     if os.path.exists(dim_school_fields):
-        load_into_database([(dim_school_fields, 'Dim_School_Fields')])
+        load_into_database([(dim_school_fields, 'Raw_School_Fields')])
     else:
         print(f"{dim_school_fields} not found, skipping processing for that file")
 
-    execute_sql_file("populate_Dim_School_Fields.sql")
+    ## create stubs for these tables
+    create_ext_teachermobility_distance_table()
 
-    execute_sql_file("create_Dim_Staff_and_Fact_Assignment.sql")
-
-    execute_sql_file("backfill_Dim_School.sql")
-
-    execute_sql_file("create_Fact_SchoolTeacher.sql")
-
-    execute_sql_file("create_Fact_SchoolPrincipal.sql")
-
-    # populate DimSchool w/ teacher counts
-    execute_sql_file("update_Dim_School.sql")
-
-
-def create_teacher_mobility():
-    print("creating teacher mobility tables (single teacher per year)")
-    execute_sql_file("create_Fact_TeacherMobility.sql")
-    populate_distance()
-
-
-def create_teacher_cohort_mobility():
-    print("creating teacher cohort mobility tables")
-    execute_sql_file("create_Fact_TeacherCohort.sql")
-    execute_sql_file("create_Fact_TeacherCohortMobility.sql")
-
-
-def create_teacher_mobility_aggregations():
-    print("creating teacher mobility aggregations")
-    execute_sql_file("create_teacher_mobility_aggregations.sql")
-
-
-def create_principal_mobility():
-    print("creating principal mobility tables")
-    execute_sql_file("create_Fact_PrincipalMobility.sql")
-
-
-def create_principal_cohort_mobility():
-    print("creating principal cohort mobility tables")
-    execute_sql_file("create_Fact_PrincipalCohort.sql")
-    execute_sql_file("create_Fact_PrincipalCohortMobility.sql")
-
-
-def create_school_leadership():
-    print("creating school leadership tables")
-    execute_sql_file("create_Fact_SchoolLeadership.sql")
-
-    populate_school_leadership_fields()
-
-def create_pesb_educator_persistence():
-    print("creating PESB educator persistence table")
-    execute_sql_file("create_Fact_PESBEducatorPersistence.sql")
-
-
-def create_additional_dimensional_models():
-
-    create_teacher_mobility()
-
-    create_teacher_cohort_mobility()
-
-    create_teacher_mobility_aggregations()
-
-    create_principal_mobility()
-
-    create_principal_cohort_mobility()
-
-    create_school_leadership()
-
-    create_pesb_educator_persistence()
-
-
-def create_derived_tables():
-
-    create_auxiliary_tables()
-
-    create_base_dimensional_models()
-
-    create_additional_dimensional_models()
-
-def create_everything():
-
-    create_base_S275()
-
-    create_derived_tables()
+    create_ext_school_leadership_broad_table()
 
 
 def execute_sql_file(path):
@@ -319,7 +251,7 @@ def execute_sql_file(path):
     str = open(path).read()
     statements = str.split("-- next")
     for statement in statements:
-        if db_type == "sqlite":
+        if database_target['type'] == "sqlite":
             statement = statement.replace("LEN(", "LENGTH(")
             statement = statement.replace("SUBSTRING(", "SUBSTR(")
             statement = statement.replace("INT IDENTITY(1,1) NOT NULL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
@@ -342,8 +274,8 @@ def load_into_database(entries):
     """ entries should be a tuple of (path, tablename) """
 
     for (output_file, table_name) in entries:
-        if db_type == 'SQL Server':
-            os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (table_name, output_file, db_sqlserver_host, db_sqlserver_database))
+        if database_target['type'] == 'sqlserver':
+            os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (table_name, output_file, database_target['host'], database_target['database']))
         else:
             # read in the flat files and load into sqlite
             conn = get_db_conn()
@@ -376,12 +308,7 @@ def load_into_database(entries):
                     conn.commit()
 
 
-def create_auxiliary_tables():
-    execute_sql_file("create_dutycodes.sql")
-    load_into_database([('input/DutyCodes.txt', 'DutyCodes')])
-
-
-def create_base_S275():
+def load_raw_s275():
     output_files = []
     for entry in source_files:
         path = entry[0]
@@ -396,9 +323,8 @@ def create_base_S275():
 
         output_files.append(output_file)
 
-    execute_sql_file("create_Raw_S275.sql")
-    load_into_database([(output_file, 'Raw_S275') for output_file in output_files])
-    execute_sql_file("create_Cleaned_S275.sql")
+    execute_sql_file("create_raw_s275.sql")
+    load_into_database([(output_file, 'raw_S275') for output_file in output_files])
 
 
 def export_query(sql, output_path):
@@ -435,13 +361,48 @@ def export_table(table, output_path):
 
 def get_db_conn():
     global global_conn
+    global database_target
+
     if global_conn is None:
-        if db_type == "SQL Server":
+        this_module_path = os.path.abspath(__file__)
+        dbt_project_path = os.path.join(os.path.dirname(this_module_path), "dbt_project.yml")
+
+        profile_name = ''
+        if os.path.exists(dbt_project_path):
+            profiles = yaml.load(open(dbt_project_path).read(), Loader=yaml.Loader)
+            profile_name = profiles['profile']
+        else:
+            raise Exception(f"{dbt_project_path} doesn't exist, can't get db connection params")
+
+        profiles_path = os.path.expanduser("~/.dbt/profiles.yml")
+
+        database_target = None
+        if os.path.exists(profiles_path):
+            profiles = yaml.load(open(profiles_path).read(), Loader=yaml.Loader)
+            target_name = profiles[profile_name]['target']
+            database_target = profiles[profile_name]['outputs'][target_name]
+        else:
+            raise Exception(f"{profiles_path} doesn't exist, can't get db connection params")
+
+        if database_target['type'] == "sqlserver":
+            db_pyodbc_connection_string = "Driver={SQL Server Native Client 11.0};Server=%s;Database=%s;Trusted_Connection=yes" % \
+            (database_target['host'], database_target['database'])
+
             global_conn = pyodbc.connect(db_pyodbc_connection_string)
-        elif db_type == "sqlite":
+        elif database_target['type'] == "sqlite":
+            schema_defs = database_target['schemas_and_paths'].split(";")
+
+            db_sqlite_path = None
+
+            for schema_def in schema_defs:
+                schema_name, sqlite_path = schema_def.split("=")
+                if schema_name == 'main':
+                    db_sqlite_path = sqlite_path
+
             global_conn = sqlite3.connect(db_sqlite_path)
         else:
-            raise "Unrecognized db_type: %s" % (db_type,)
+            raise "Unrecognized type: %s" % (database_target['type'],)
+
     return global_conn
 
 
@@ -460,20 +421,29 @@ def grouper(iterable, n, fillvalue=None):
     return itertools.zip_longest(*args, fillvalue=fillvalue)
 
 
-def populate_distance():
+def create_ext_teachermobility_distance_table():
+
     conn = get_db_conn()
     cursor = conn.cursor()
 
-    print("Populating distance")
+    print("Creating Ext_TeacherMobility_Distance")
 
-    cursor.execute("DROP TABLE IF EXISTS Distances;")
+    cursor.execute("DROP TABLE IF EXISTS Ext_TeacherMobility_Distance;")
 
-    cursor.execute("CREATE TABLE Distances (TeacherMobilityID int, Distance real)")
+    cursor.execute("CREATE TABLE Ext_TeacherMobility_Distance (TeacherMobilityID varchar(500), Distance real)")
 
-    cursor.execute("CREATE INDEX idx_Distances ON Distances (TeacherMobilityID, Distance)");
+    cursor.execute("CREATE INDEX idx_ext_teachermobility_distance ON Ext_TeacherMobility_Distance (TeacherMobilityID, Distance)");
     conn.commit()
 
-    print("Querying Fact_TeacherMobility")
+
+def create_ext_teachermobility_distance():
+
+    create_ext_teachermobility_distance_table()
+
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    print("Querying stg_TeacherMobility")
 
     cursor.execute("""
         SELECT
@@ -482,7 +452,7 @@ def populate_distance():
             ,s1.Long AS LongStart
             ,s2.Lat AS LatEnd
             ,s2.Long AS LongEnd
-        FROM Fact_TeacherMobility m
+        FROM Stg_TeacherMobility m
         LEFT JOIN Dim_School s1 ON m.StartCountyAndDistrictCode = s1.DistrictCode AND m.StartBuilding = s1.SchoolCode AND m.StartYear = s1.AcademicYear 
         LEFT JOIN Dim_School s2 ON m.EndCountyAndDistrictCode = s2.DistrictCode AND m.EndBuilding = s2.SchoolCode AND m.EndYear = s2.AcademicYear
     """)
@@ -507,18 +477,46 @@ def populate_distance():
             f.write(str(row[1]))
             f.write(LINE_TERMINATOR)
 
-    print("Inserting %d entries in Distances" % (len(rows_to_insert)))
+    print("Inserting %d entries in Ext_TeacherMobility_Distance" % (len(rows_to_insert)))
 
-    load_into_database([('distances.tmp', 'Distances')])
+    load_into_database([('distances.tmp', 'Ext_TeacherMobility_Distance')])
 
     os.remove("distances.tmp")
 
-    print("Updating Fact_TeacherMobility with distance values")
 
-    cursor.execute("UPDATE Fact_TeacherMobility SET Distance = (Select Distance FROM Distances WHERE TeacherMobilityID = Fact_TeacherMobility.TeacherMobilityID)")
-    conn.commit()
+def create_ext_school_leadership_broad_table():
 
-    cursor.execute("DROP TABLE Distances")
+    print("Creating Ext_SchoolLeadership_Broad table")
+
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    cursor.execute("DROP TABLE IF EXISTS Ext_SchoolLeadership_Broad;")
+
+    cursor.execute("""
+        CREATE TABLE Ext_SchoolLeadership_Broad (
+            AcademicYear SMALLINT
+            ,CountyAndDistrictCode VARCHAR(10)
+            ,Building VARCHAR(10)
+            ,AllPrincipalCertList VARCHAR(1000)
+            ,AllAsstPrinCertList VARCHAR(1000)
+            ,AnyPrincipalPOC TINYINT
+            ,AnyAsstPrinPOC TINYINT
+            ,BroadLeadershipAnyPOCFlag TINYINT
+            ,BroadLeadershipChangeFlag TINYINT
+            ,BroadLeadershipAnyPOCStayedFlag TINYINT
+            ,BroadLeadershipStayedNoPOCFlag TINYINT
+            ,BroadLeadershipChangeAnyPOCToNoneFlag TINYINT
+            ,BroadLeadershipChangeNoPOCToAnyFlag TINYINT
+            ,BroadLeadershipGainedPrincipalPOCFlag TINYINT
+            ,BroadLeadershipGainedAsstPrinPOCFlag TINYINT
+            ,BroadLeadershipGainedPOCFlag TINYINT
+            ,BroadLeadershipLostPrincipalPOCFlag TINYINT
+            ,BroadLeadershipLostAsstPrinPOCFlag TINYINT
+            ,BroadLeadershipLostPOCFlag TINYINT
+        )
+    """)
+
     conn.commit()
 
 
@@ -545,7 +543,7 @@ LeadershipFields = collections.namedtuple('LeadershipFields', [
     ])
 
 
-def populate_school_leadership_fields():
+def create_ext_school_leadership_broad():
     """
     we do this in Python because our version of SQL Server doesn't support STRING_AGG() function
     (sqlite does have group_concat())
@@ -703,7 +701,7 @@ def populate_school_leadership_fields():
         final[key] = new_leadership
 
 
-    with codecs.open("fact_schoolleadership_fields.tmp", "w", 'utf-8') as f:
+    with codecs.open("ext_schoolleadership_broad.tmp", "w", 'utf-8') as f:
             header = "\t".join([
                 "AcademicYear",
                 "CountyAndDistrictCode",
@@ -769,42 +767,14 @@ def populate_school_leadership_fields():
                 f.write(str(row.broad_leadership_lost_poc_flag))
                 f.write(LINE_TERMINATOR)
 
-    print("Inserting %d entries in Fact_SchoolLeadership_Fields" % (len(grouped)))
+    print("Inserting %d entries in Ext_SchoolLeadership_Broad" % (len(grouped)))
 
-    cursor.execute("DROP TABLE IF EXISTS Fact_SchoolLeadership_Fields;")
+    create_ext_school_leadership_broad_table()
 
-    cursor.execute("""
-        CREATE TABLE Fact_SchoolLeadership_Fields (
-            AcademicYear SMALLINT
-            ,CountyAndDistrictCode VARCHAR(10)
-            ,Building VARCHAR(10)
-            ,AllPrincipalCertList VARCHAR(1000)
-            ,AllAsstPrinCertList VARCHAR(1000)
-            ,AnyPrincipalPOC TINYINT
-            ,AnyAsstPrinPOC TINYINT
-            ,BroadLeadershipAnyPOCFlag TINYINT
-            ,BroadLeadershipChangeFlag TINYINT
-            ,BroadLeadershipAnyPOCStayedFlag TINYINT
-            ,BroadLeadershipStayedNoPOCFlag TINYINT
-            ,BroadLeadershipChangeAnyPOCToNoneFlag TINYINT
-            ,BroadLeadershipChangeNoPOCToAnyFlag TINYINT
-            ,BroadLeadershipGainedPrincipalPOCFlag TINYINT
-            ,BroadLeadershipGainedAsstPrinPOCFlag TINYINT
-            ,BroadLeadershipGainedPOCFlag TINYINT
-            ,BroadLeadershipLostPrincipalPOCFlag TINYINT
-            ,BroadLeadershipLostAsstPrinPOCFlag TINYINT
-            ,BroadLeadershipLostPOCFlag TINYINT
-        )
-    """)
+    load_into_database([('ext_schoolleadership_broad.tmp', 'Ext_SchoolLeadership_Broad')])
+
+    cursor.execute("CREATE UNIQUE INDEX idx_Ext_SchoolLeadership_Broad ON Ext_SchoolLeadership_Broad(AcademicYear, CountyAndDistrictCode, Building);")
 
     conn.commit()
 
-    load_into_database([('fact_schoolleadership_fields.tmp', 'Fact_SchoolLeadership_Fields')])
-
-    cursor.execute("CREATE UNIQUE INDEX idx_Fact_SchoolLeadership_Fields ON Fact_SchoolLeadership_Fields(AcademicYear, CountyAndDistrictCode, Building);")
-
-    conn.commit()
-
-    os.remove("fact_schoolleadership_fields.tmp")
-
-    execute_sql_file("populate_Fact_SchoolLeadership_Fields.sql")
+    os.remove("ext_schoolleadership_broad.tmp")

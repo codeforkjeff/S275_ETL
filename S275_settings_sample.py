@@ -27,15 +27,3 @@ source_files = [
 
 # Dim_School_Fields table gets loaded from this only if file exists
 dim_school_fields = "Dim_School_Fields.txt"
-
-# currently supported: "SQL Server" or "sqlite"
-# python typically comes with sqlite compiled into it.
-# if you use SQL Server (on Windows), you'll need the bcp program installed.
-#db_type = "SQL Server"
-db_type = "sqlite"
-
-db_sqlite_path = os.path.join(output_dir, "S275.sqlite")
-
-db_sqlserver_host = "SERVER_NAME"
-db_sqlserver_database = "DATABASE_NAME"
-db_pyodbc_connection_string = "Driver={SQL Server};Server=%s;Database=%s;Trusted_Connection=yes" % (db_sqlserver_host, db_sqlserver_database)

@@ -1,0 +1,21 @@
+
+{{
+    config({
+        "pre-hook": [
+            "{{ drop_index(1) }}"
+        ]
+        ,"post-hook": [
+            "{{ create_index(1, ['CertificateNumber', 'CountyAndDistrictCode', 'FirstYear']) }}"
+        ]
+    })
+}}
+
+SELECT
+    CertificateNumber,
+    CountyAndDistrictCode,
+    MIN(AcademicYear) AS FirstYear
+FROM {{ ref('Stg_Dim_Staff') }}
+WHERE CertificateNumber is not null
+GROUP BY
+    CertificateNumber,
+    CountyAndDistrictCode

@@ -1,0 +1,20 @@
+
+version: 2
+
+sources:
+  - name: sources
+    description: raw source data
+    # by default, schema is set to name of source. we use schema from our target (defined in profiles.yml)
+    schema: "{{ target.schema }}"
+    tables:
+      - name: Duty_Codes
+      - name: Raw_School_Base
+      - name: Raw_School_Fields
+      - name: Raw_S275
+  - name: ext
+    description: data created outside SQL and the DAG, but is part of the DAG
+    # by default, schema is set to name of source. we use schema from our target (defined in profiles.yml)
+    schema: "{{ target.schema }}"
+    tables:
+      - name: Ext_TeacherMobility_Distance
+      - name: Ext_SchoolLeadership_Broad

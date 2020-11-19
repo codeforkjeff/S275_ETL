@@ -5,3 +5,7 @@ __pycache__/
 S275_env/
 .ipynb_checkpoints
 *.sublime-workspace
+
+target/
+dbt_modules/
+logs/
