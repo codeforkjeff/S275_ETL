@@ -102,9 +102,9 @@ WITH AssignmentsWithPrincipalType AS (
 )
 SELECT
     base.SchoolPrincipalID,
-    StaffID,
-    AcademicYear,
-    CountyAndDistrictCode,
+    base.StaffID,
+    base.AcademicYear,
+    base.CountyAndDistrictCode,
     Building,
     PrincipalType,
     PrincipalPercentage,
@@ -112,8 +112,20 @@ SELECT
     PrincipalSalaryTotal,
     CASE WHEN T_PrimaryFlag.SchoolPrincipalID IS NOT NULL THEN 1 ELSE 0 END AS PrimaryFlag,
     CASE WHEN T_PrimaryForSchoolFlag.SchoolPrincipalID IS NOT NULL THEN 1 ELSE 0 END AS PrimaryForSchoolFlag,
+    -- this is a count of cumulative years spent at the school.
+    -- it does NOT handle gaps in tenure (e.g. person starts begin a principal in 2014,
+    -- goes elsewhere for 2015, returns in 2016. The row for 2016 will have Tenure = 2)
+    ROW_NUMBER() OVER (PARTITION BY
+            base.CountyAndDistrictCode,
+            base.Building,
+            staff.CertificateNumber,
+            base.PrincipalType
+        ORDER BY base.AcademicYear
+    ) AS Tenure,
     {{ getdate_fn() }} as MetaCreatedAt
 FROM Filtered base
+JOIN {{ ref('Dim_Staff') }} staff
+    ON base.StaffID = staff.StaffID
 LEFT JOIN T_PrimaryFlag
     ON T_PrimaryFlag.RN = 1
     AND base.SchoolPrincipalID = T_PrimaryFlag.SchoolPrincipalID

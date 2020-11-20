@@ -28,14 +28,18 @@ WITH Primaries AS (
         ,CountyAndDistrictCode
         ,Building
         ,MAX(PrincipalStaffID) AS PrincipalStaffID
+        ,MAX(PrincipalTenure) AS PrincipalTenure
         ,MAX(AsstPrincipalStaffID) AS AsstPrincipalStaffID
+        ,MAX(AsstPrincipalTenure) AS AsstPrincipalTenure
     FROM (
         SELECT
             p.AcademicYear
             ,p.CountyAndDistrictCode
             ,p.Building
             ,p.StaffID AS PrincipalStaffID
+            ,p.Tenure as PrincipalTenure
             ,NULL AS AsstPrincipalStaffID
+            ,NULL AS AsstPrincipalTenure
         FROM Primaries p
         WHERE p.PrincipalType = 'Principal'
 
@@ -46,7 +50,9 @@ WITH Primaries AS (
             ,ap.CountyAndDistrictCode
             ,ap.Building
             ,NULL AS PrincipalStaffID
+            ,NULL AS PrincipalTenure
             ,ap.StaffID AS AsstPrincipalStaffID
+            ,ap.Tenure AS AsstPrincipalTenure
         FROM Primaries ap
         WHERE ap.PrincipalType = 'AssistantPrincipal'
     ) T
@@ -64,6 +70,8 @@ WITH Primaries AS (
         ,prev.PrincipalStaffID AS PrevPrincipalStaffID
         ,curr.AsstPrincipalStaffID
         ,prev.AsstPrincipalStaffID AS PrevAsstPrincipalStaffID
+        ,curr.PrincipalTenure
+        ,curr.AsstPrincipalTenure
     from leadership curr
     left join leadership prev
         ON curr.AcademicYear = prev.AcademicYear + 1
@@ -96,6 +104,8 @@ Base AS (
                 NULL
         END AS SameAsstPrincipalFlag
         ,CASE WHEN s_prin.CertificateNumber = s_asstprinprev.CertificateNumber THEN 1 ELSE 0 END AS PromotionFlag
+        ,le.PrincipalTenure
+        ,le.AsstPrincipalTenure
     from LeadershipWithPrevious le
     left join {{ ref('Dim_Staff') }} s_prin
         ON le.PrincipalStaffID = s_prin.StaffID
@@ -126,4 +136,6 @@ SELECT
     ,SameAsstPrincipalFlag
     ,CASE WHEN SamePrincipalFlag = 0 OR SameAsstPrincipalFlag = 0 THEN 1 ELSE 0 END AS LeadershipChangeFlag
     ,PromotionFlag
+    ,PrincipalTenure
+    ,AsstPrincipalTenure
 FROM Base

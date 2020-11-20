@@ -64,15 +64,23 @@ WITH TeachingRollups AS (
     JOIN {{ ref('Dim_Staff') }} s ON st.StaffID = s.StaffID
 )
 SELECT
-    StaffID,
-    AcademicYear,
+    base.StaffID,
+    base.AcademicYear,
     Building,
     TeachingPercent,
     TeachingFTEDesignation,
     TeachingSalaryTotal,
+    ROW_NUMBER() OVER (PARTITION BY
+        staff.CountyAndDistrictCode,
+        base.Building,
+        staff.CertificateNumber
+    ORDER BY base.AcademicYear
+    ) AS Tenure,
     CASE WHEN r.SchoolTeacherID IS NOT NULL THEN 1 ELSE 0 END AS PrimaryFlag,
-    MetaCreatedAt
-FROM Filtered f
+    {{ getdate_fn() }} as MetaCreatedAt
+FROM Filtered base
+JOIN {{ ref('Dim_Staff') }} staff
+    ON base.StaffID = staff.StaffID
 LEFT JOIN Ranked r
     ON r.RN = 1
-    AND r.SchoolTeacherID = f.SchoolTeacherID
+    AND r.SchoolTeacherID = base.SchoolTeacherID

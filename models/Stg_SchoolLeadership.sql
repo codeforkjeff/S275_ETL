@@ -26,8 +26,8 @@ WITH t AS (
         ,SameAsstPrincipalFlag
         ,LeadershipChangeFlag
         ,PromotionFlag
-        ,ten.PrincipalTenure
-        ,ten.AsstPrincipalTenure
+        ,PrincipalTenure
+        ,AsstPrincipalTenure
         ,ds.TotalTeachers AS TeacherCount
         ,ds.TeachersOfColor AS TeacherOfColorCount
         ,tr.TeacherRetention1Yr
@@ -39,8 +39,6 @@ WITH t AS (
         ,tr.TeacherOfColorRetention3Yr
         ,tr.TeacherOfColorRetention4Yr
     FROM {{ ref('Stg_SchoolLeadership_Single') }} base
-    LEFT JOIN {{ ref('Stg_SchoolLeadership_Tenure') }} ten
-        ON base.SchoolLeadershipID = ten.SchoolLeadershipID
     LEFT JOIN {{ ref('Dim_School') }} ds
         ON base.AcademicYear = ds.AcademicYear
         AND base.CountyAndDistrictCode = ds.DistrictCode
