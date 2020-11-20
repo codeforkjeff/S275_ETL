@@ -166,5 +166,5 @@ SELECT
     CAST(IsNewHireFlag AS TINYINT) AS IsNewHireFlag,
     CAST(IsNewHireWAStateFlag AS TINYINT) AS IsNewHireWAStateFlag,
     CAST(IsInPSESDFlag AS TINYINT) AS IsInPSESDFlag,
-    MetaCreatedAt
+    {{ getdate_fn() }} as MetaCreatedAt
 FROM Stage2

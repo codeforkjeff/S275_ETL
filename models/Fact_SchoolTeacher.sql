@@ -24,7 +24,6 @@ WITH TeachingRollups AS (
         ,COALESCE(SUM(AssignmentPercent), 0) AS TeachingPercent
         ,SUM(AssignmentFTEDesignation) AS TeachingFTEDesignation
         ,SUM(AssignmentSalaryTotal) AS TeachingSalaryTotal
-        ,{{ getdate_fn() }} as MetaCreatedAt
     from {{ ref('Fact_Assignment') }} a
     JOIN {{ ref('Dim_Staff') }} s ON a.StaffID = s.StaffID
     WHERE IsTeachingAssignment = 1

@@ -103,7 +103,7 @@ SELECT
 	FemalePercent,
 	GenderX,
 	GenderXPercent,
-	MetaCreatedAt
+	{{ getdate_fn() }} AS MetaCreatedAt
 FROM {{ ref('Stg_School_Joined_With_Fields') }}
 UNION ALL
 SELECT

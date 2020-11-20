@@ -101,7 +101,6 @@ SELECT
     ,major as Major
     ,yr as TwoDigitYear
     ,FileType
-    ,{{ getdate_fn() }} as MetaCreatedAt
 FROM {{ source('sources', 'Raw_S275') }}
 )
 ,Cleaned1 AS (
@@ -190,8 +189,7 @@ FROM {{ source('sources', 'Raw_S275') }}
         END AS AssignmentHoursPerYear,
         Major,
         TwoDigitYear,
-        FileType,
-        MetaCreatedAt
+        FileType
     FROM Base
 )
 ,Cleaned2 AS (
@@ -250,4 +248,5 @@ FROM {{ source('sources', 'Raw_S275') }}
 )
 SELECT
     *
+    ,{{ getdate_fn() }} as MetaCreatedAt
 FROM Cleaned2
