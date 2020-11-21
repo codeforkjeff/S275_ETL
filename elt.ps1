@@ -1,4 +1,7 @@
 
+# NOTE: our python scripts use the target specified in ~/.dbt/profiles.yml,
+# there's no way to override it on the command line, so beware!
+
 
 # Load the raw S275 data and other source tables
 python -c "import S275; S275.load()"
