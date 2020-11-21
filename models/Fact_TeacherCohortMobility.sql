@@ -73,13 +73,3 @@ WHERE
             AND exists_.EndYear = y.AcademicYear
             AND exists_.CertificateNumber = tc.CertificateNumber
     )
-
--- validation: this should return 0 rows
--- select top 1000 * 
--- from Fact_TeacherCohortMobility
--- where
---  StayedInSchool = 0
---  and ChangedBuildingStayedDistrict = 0
---  and ChangedRoleStayedDistrict = 0
---  and MovedOutDistrict = 0
---  and Exited = 0 

@@ -22,9 +22,10 @@ SELECT
         ,h.CountyAndDistrictCode AS EndHighestFTECountyAndDistrictCode
         ,h.Building AS EndHighestFTEBuilding
         ,endpc.CohortPrincipalType as EndPrincipalType
-        ,CASE WHEN pc.CohortBuilding = h.Building THEN 1 ELSE 0 END AS StayedInSchool
-        ,CASE WHEN pc.CohortBuilding <> h.Building AND pc.CohortCountyAndDistrictCode = h.CountyAndDistrictCode  AND pc.CohortPrincipalType = endpc.CohortPrincipalType THEN 1 ELSE 0 END AS ChangedBuildingStayedDistrict
-        ,CASE WHEN pc.CohortBuilding <> h.Building AND pc.CohortCountyAndDistrictCode = h.CountyAndDistrictCode  AND pc.CohortPrincipalType <> COALESCE(endpc.CohortPrincipalType, '') THEN 1 ELSE 0 END AS ChangedRoleStayedDistrict
+        ,CASE WHEN pc.CohortCountyAndDistrictCode = h.CountyAndDistrictCode AND pc.CohortBuilding = h.Building THEN 1 ELSE 0 END AS StayedInSchool
+        -- in a tiny number of cases, the end building is NULL, so coalesce
+        ,CASE WHEN pc.CohortBuilding <> COALESCE(h.Building, '') AND pc.CohortCountyAndDistrictCode = h.CountyAndDistrictCode  AND pc.CohortPrincipalType = endpc.CohortPrincipalType THEN 1 ELSE 0 END AS ChangedBuildingStayedDistrict
+        ,CASE WHEN pc.CohortBuilding <> COALESCE(h.Building, '') AND pc.CohortCountyAndDistrictCode = h.CountyAndDistrictCode  AND pc.CohortPrincipalType <> COALESCE(endpc.CohortPrincipalType, '') THEN 1 ELSE 0 END AS ChangedRoleStayedDistrict
         ,CASE WHEN pc.CohortCountyAndDistrictCode <> h.CountyAndDistrictCode  THEN 1 ELSE 0 END AS MovedOutDistrict
         ,0 AS Exited
         ,{{ getdate_fn() }} as MetaCreatedAt
