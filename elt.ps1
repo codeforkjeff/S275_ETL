@@ -2,8 +2,10 @@
 # NOTE: our python scripts use the target specified in ~/.dbt/profiles.yml,
 # there's no way to override it on the command line, so beware!
 
+# Extract S275 from Access database files to flat files
+python -c "import S275; S275.extract()"
 
-# Load the raw S275 data and other source tables
+# Load the raw S275 data and other source tables into db
 python -c "import S275; S275.load()"
 
 # Create some seed tables

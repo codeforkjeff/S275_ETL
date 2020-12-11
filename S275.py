@@ -218,6 +218,11 @@ def create_flat_file(access_db_path, file_type, output_path):
     f.close()
 
 
+# main entry point for extracting S275
+def extract():
+    extract_raw_s275()
+
+
 # main entry point for loading all source tables
 def load():
 
@@ -308,22 +313,29 @@ def load_into_database(entries):
                     conn.commit()
 
 
-def load_raw_s275():
-    output_files = []
+def get_extracted_path(source_path):
+    basename = os.path.basename(source_path)
+    return os.path.join(output_dir, basename[0:basename.rindex(".")] + ".txt")
+
+
+def extract_raw_s275():
+
     for entry in source_files:
         path = entry[0]
         file_type = entry[1]
-        basename = os.path.basename(path)
-        output_file = os.path.join(output_dir, basename[0:basename.rindex(".")] + ".txt")
+        output_file = get_extracted_path(path)
 
         if not os.path.exists(output_file):
             create_flat_file(path, file_type, output_file)
         else:
             print("%s already exists, skipping" % (output_file,))
 
-        output_files.append(output_file)
 
+def load_raw_s275():
     execute_sql_file("create_raw_s275.sql")
+
+    output_files = [get_extracted_path(entry[0]) for entry in source_files]
+
     load_into_database([(output_file, 'raw_S275') for output_file in output_files])
 
 
