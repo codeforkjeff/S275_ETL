@@ -1,20 +1,21 @@
 
-import pandas as pd
 import codecs
 import collections
 import copy
 import csv
 import datetime
 import glob
-import haversine
 import itertools
-import numpy as np
-import pyodbc
 import os
 import re
-import sqlalchemy
 import sqlite3
 import sys
+
+import pandas as pd
+import haversine
+import numpy as np
+import pyodbc
+import snowflake.connector
 import yaml
 
 try:
@@ -281,7 +282,26 @@ def load_into_database(entries):
     for (output_file, table_name) in entries:
         if database_target['type'] == 'sqlserver':
             os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (table_name, output_file, database_target['host'], database_target['database']))
-        else:
+
+        elif database_target['type'] == 'snowflake':
+
+            conn = get_db_conn()
+            cursor = conn.cursor()
+
+            cursor.execute("create stage if not exists source_files")
+
+            print(f"Uploading file to stage: {output_file}")
+
+            path = os.path.abspath(output_file).replace("\\", "/")
+            sql = f"put 'file://{path}' @source_files OVERWRITE=TRUE"
+            cursor.execute(sql)
+
+            print(f"Running COPY command into {table_name}")
+            sql = f"copy into {table_name} FROM '@source_files/{os.path.basename(output_file)}' FILE_FORMAT=(TYPE='CSV' FIELD_DELIMITER='\t' skip_header=1)"
+            cursor.execute(sql)
+
+        elif database_target['type'] == 'sqlite':
+
             # read in the flat files and load into sqlite
             conn = get_db_conn()
             cursor = conn.cursor()
@@ -371,30 +391,39 @@ def export_table(table, output_path):
     export_query("Select * From %s" % (table,), output_path)
 
 
+def get_database_target():
+    profiles_path = os.path.expanduser("~/.dbt/profiles.yml")
+
+    profile_name = get_profile_name()
+
+    database_target = None
+    if os.path.exists(profiles_path):
+        profiles = yaml.load(open(profiles_path).read(), Loader=yaml.Loader)
+        target_name = profiles[profile_name]['target']
+        database_target = profiles[profile_name]['outputs'][target_name]
+    else:
+        raise Exception(f"{profiles_path} doesn't exist, can't get db connection params")
+    return database_target
+
+
+def get_profile_name():
+    this_module_path = os.path.abspath(__file__)
+    dbt_project_path = os.path.join(os.path.dirname(this_module_path), "dbt_project.yml")
+
+    profile_name = ''
+    if os.path.exists(dbt_project_path):
+        profiles = yaml.load(open(dbt_project_path).read(), Loader=yaml.Loader)
+        profile_name = profiles['profile']
+    else:
+        raise Exception(f"{dbt_project_path} doesn't exist, can't get db connection params")
+
+    return profile_name
+
+
 def get_db_conn():
     global global_conn
-    global database_target
 
     if global_conn is None:
-        this_module_path = os.path.abspath(__file__)
-        dbt_project_path = os.path.join(os.path.dirname(this_module_path), "dbt_project.yml")
-
-        profile_name = ''
-        if os.path.exists(dbt_project_path):
-            profiles = yaml.load(open(dbt_project_path).read(), Loader=yaml.Loader)
-            profile_name = profiles['profile']
-        else:
-            raise Exception(f"{dbt_project_path} doesn't exist, can't get db connection params")
-
-        profiles_path = os.path.expanduser("~/.dbt/profiles.yml")
-
-        database_target = None
-        if os.path.exists(profiles_path):
-            profiles = yaml.load(open(profiles_path).read(), Loader=yaml.Loader)
-            target_name = profiles[profile_name]['target']
-            database_target = profiles[profile_name]['outputs'][target_name]
-        else:
-            raise Exception(f"{profiles_path} doesn't exist, can't get db connection params")
 
         if database_target['type'] == "sqlserver":
             db_pyodbc_connection_string = "Driver={SQL Server Native Client 11.0};Server=%s;Database=%s;Trusted_Connection=yes" % \
@@ -412,6 +441,17 @@ def get_db_conn():
                     db_sqlite_path = sqlite_path
 
             global_conn = sqlite3.connect(db_sqlite_path)
+        elif database_target['type'] == "snowflake":
+
+            global_conn = snowflake.connector.connect(
+                account=database_target['account'],
+                user=database_target['user'],
+                password=database_target['password'],
+                role=database_target['role'],
+                database=database_target['database'],
+                warehouse=database_target['warehouse'],
+                schema=database_target['schema']
+            )
         else:
             raise "Unrecognized type: %s" % (database_target['type'],)
 
@@ -444,7 +484,9 @@ def create_ext_teachermobility_distance_table():
 
     cursor.execute("CREATE TABLE Ext_TeacherMobility_Distance (TeacherMobilityID varchar(500), Distance real)")
 
-    cursor.execute("CREATE INDEX idx_ext_teachermobility_distance ON Ext_TeacherMobility_Distance (TeacherMobilityID, Distance)");
+    if database_target['type'] in ("sqlite", "sqlserver"):
+        cursor.execute("CREATE INDEX idx_ext_teachermobility_distance ON Ext_TeacherMobility_Distance (TeacherMobilityID, Distance)")
+
     conn.commit()
 
 
@@ -785,8 +827,12 @@ def create_ext_school_leadership_broad():
 
     load_into_database([('ext_schoolleadership_broad.tmp', 'Ext_SchoolLeadership_Broad')])
 
-    cursor.execute("CREATE UNIQUE INDEX idx_Ext_SchoolLeadership_Broad ON Ext_SchoolLeadership_Broad(AcademicYear, CountyAndDistrictCode, Building);")
+    if database_target['type'] in ("sqlite", "sqlserver"):
+        cursor.execute("CREATE UNIQUE INDEX idx_Ext_SchoolLeadership_Broad ON Ext_SchoolLeadership_Broad(AcademicYear, CountyAndDistrictCode, Building);")
 
     conn.commit()
 
     os.remove("ext_schoolleadership_broad.tmp")
+
+
+database_target = get_database_target()

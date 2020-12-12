@@ -74,7 +74,7 @@ WITH T AS (
 SELECT
     {% call hash() %}
     {% call concat() %}
-    CAST(COALESCE(AcademicYear, '') AS VARCHAR(100)) + 
+    CAST(COALESCE(CAST(AcademicYear AS VARCHAR(100)), '') AS VARCHAR(100)) + 
     CAST(COALESCE(CountyAndDistrictCode, '') AS VARCHAR(100)) + 
     CAST(COALESCE(LastNameC, '') AS VARCHAR(100)) + 
     CAST(COALESCE(FirstNameC, '') AS VARCHAR(100)) + 

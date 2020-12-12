@@ -13,6 +13,8 @@
 		#}
 
 		SELECT 1
+	{% elif adapter.config.credentials.type == 'snowflake' %}
+		SELECT 1
 	{% else %}
 		{{ exceptions.raise_not_implemented("create_index not implemented for this database type") }}
 	{% endif %}
@@ -25,6 +27,8 @@
 		DROP INDEX IF EXISTS {{ this.schema }}.idx_{{ prefix|string }}_{{ this.table }}
 	{% elif adapter.config.credentials.type == 'sqlserver' %}
 		DROP INDEX IF EXISTS idx_{{ prefix|string }}_{{ this.table }} ON {{this}}
+	{% elif adapter.config.credentials.type == 'snowflake' %}
+		SELECT 1
 	{% else %}
 		{{ exceptions.raise_not_implemented("drop_index not implemented for this database type") }}
 	{% endif %}
