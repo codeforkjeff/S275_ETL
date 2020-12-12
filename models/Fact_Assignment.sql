@@ -58,4 +58,4 @@ JOIN {{ ref('Stg_Dim_Staff_Coalesced') }} d ON
 LEFT JOIN {{ source('sources', 'Duty_Codes') }} ON
     S275.DutyRoot = duty_codes.DutyRoot
     AND (duty_codes.DutySuffix IN ('x', 'y') OR duty_codes.DutySuffix = S275.DutySuffix)
-;
+

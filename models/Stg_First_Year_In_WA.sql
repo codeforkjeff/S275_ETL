@@ -16,4 +16,4 @@ SELECT
 FROM {{ ref('Stg_Dim_Staff') }}
 WHERE CertificateNumber is not null
 GROUP BY
-    CertificateNumber;
+    CertificateNumber
