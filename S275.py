@@ -352,7 +352,7 @@ def extract_raw_s275():
 
 
 def load_raw_s275():
-    execute_sql_file("create_raw_s275.sql")
+    execute_sql_file("create_Raw_S275.sql")
 
     output_files = [get_extracted_path(entry[0]) for entry in source_files]
 
