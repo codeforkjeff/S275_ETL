@@ -140,62 +140,14 @@ python -c "import S275; S275.export_table('Fact_TeacherMobility', 'output/Fact_T
 
 Sample queries demonstrating how to use the tables can be found in `report_teacher_mobility.sql`
 
-# Generated Tables
+# Documentation
 
-The end result is a set of tables based on [dimensional modeling](https://www.kimballgroup.com/2003/01/fact-tables-and-dimension-tables/).
-We follow this method so that the reporting tables can be reused for many
-types of research and reporting questions and so that what each table represents is
-clear and concise.
+View the dbt-generated documentation in a browser by running:
 
-Note that AcademicYear values are based on the "end year": e.g. 2016 means 2015-2016.
-
-## Base Tables
-
-`Dim_Staff` - dimension table for staff person for a given year, county, and district.
-This is the grain because a person can be employed by more than one district in an
-academic year.
-
-`Dim_School` - dimension table for schools. The grain of this table is school building
-and academic year.
-
-`Fact_Assignment` - an assignment line item. This table is at the same grain as the rows
-in the S275 file. Personnel can (and often do) have multiple assignments within the district
-they're employed by, and multiple assignments within a given school building.
-
-`Fact_SchoolTeacher` - table of teachers at schools, and rolled up Percentage, FTEDesignation,
-and Salary fields per teacher/school. The PrimaryFlag field is used to support a single school selection
-for each teacher/year for reports that want to avoid double counting.
-
-`Fact_SchoolPrincipal` - table of principals and asst principals
-
-## Tables using College of Ed logic
-
-These were created specifically to reproduce the work from the College of Ed.
-
-`Fact_TeacherMobility` - mobility of teachers from their "primary" school,
-calculated both year over year and at 5 year snapshots, with flag fields describing
-the transitions.
-
-`Fact_PrincipalMobility` - mobility of principals from their "primary" school,
-calculated both year over year and at 5 year snapshots.
-
-## Cohort Tables
-
-These were created to enable analysis of what happens to individuals from a starting
-cohort year to each subsequent year. These are more "general purpose" (from a CCER
-standpoint) than the COE tables above.
-
-`Fact_TeacherCohort` - cohort table containining teachers for each year.
-
-`Fact_TeacherCohortMobility` - mobility of teachers from their CohortYear to
-each successive EndYear up to the present. In this table, the flag fields
-describe the transitions between CohortYear and EndYear.
-
-`Fact_PrincipalCohort` - cohort table containing principals and assistant principals.
-
-`Fact_PrincipalCohortMobility` - mobility of principals and asst principals from
-their CohortYear to each successive EndYear up to the present. In this table,
-the flag fields describe the transitions between CohortYear and EndYear.
+```sh
+dbt docs generate
+dbt docs serve
+```
 
 # Development Notes
 

@@ -18,3 +18,27 @@ sources:
     tables:
       - name: Ext_TeacherMobility_Distance
       - name: Ext_SchoolLeadership_Broad
+
+models:
+  - name: Dim_Staff
+    description: '{{ doc("Dim_Staff") }}'
+  - name: Dim_School
+    description: '{{ doc("Dim_School") }}'
+  - name: Fact_Assignment
+    description: '{{ doc("Fact_Assignment") }}'
+  - name: Fact_SchoolTeacher
+    description: '{{ doc("Fact_SchoolTeacher") }}'
+  - name: Fact_SchoolPrincipal
+    description: '{{ doc("Fact_SchoolPrincipal") }}'
+  - name: Fact_TeacherMobility
+    description: '{{ doc("Fact_TeacherMobility") }}'
+  - name: Fact_PrincipalMobility
+    description: '{{ doc("Fact_PrincipalMobility") }}'
+  - name: Fact_TeacherCohort
+    description: '{{ doc("Fact_TeacherCohort") }}'
+  - name: Fact_TeacherCohortMobility
+    description: '{{ doc("Fact_TeacherCohortMobility") }}'
+  - name: Fact_PrincipalCohort
+    description: '{{ doc("Fact_PrincipalCohort") }}'
+  - name: Fact_PrincipalCohortMobility
+    description: '{{ doc("Fact_PrincipalCohortMobility") }}'
