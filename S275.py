@@ -234,7 +234,7 @@ def load():
     # raw_school_base
 
     execute_sql_file("create_Raw_School_Base.sql")
-    load_into_database([('input/Raw_School_Base.txt', 'Raw_School_Base')])
+    load_into_database([('input/raw_school_base.txt', 'Raw_School_Base')])
 
     # raw_school_fields
 
