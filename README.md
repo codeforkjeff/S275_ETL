@@ -31,9 +31,14 @@ Using Microsoft SQL Server is optional.
 
 - Activate the virtual env: `./S275_env/Scripts/activate`
 
-- Install required Python packages by running: `pip install -r requirements.txt`
+- Install required Python packages by running one of the following,
+  depending on which database you want to use:
 
-- If you're using SQL Server, run `pip install dbt-sqlserver`
+  `pip install -r requirements-sqlite.txt`
+
+  OR
+
+  `pip install -r requirements-sqlserver.txt`
 
 - Download and unzip the S275 files for the desired years from [the OSPI website](https://www.k12.wa.us/safs-database-files).
   The unzipped files are Access databases (have an `.accdb` extension). Put these files
