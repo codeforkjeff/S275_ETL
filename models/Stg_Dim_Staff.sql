@@ -69,5 +69,6 @@ SELECT
     ClassificationFlag,
     CertifiedFlag,
     NationalBoardCertExpirationDate,
+    FileType,
     {{ getdate_fn() }} as MetaCreatedAt
 FROM {{ ref('Stg_Dim_Staff_Coalesced') }}
