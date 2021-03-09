@@ -41,7 +41,8 @@ input_dir = os.path.join(os.path.dirname(__file__), "input")
 #data_links = get_data_links()
 
 data_links = [
-"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1920/2019-2020_Final_S-275_Personnel_Database.zip"
+"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/2021/2020-2021_Preliminary_S-275_Personnel_Database.zip"
+,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1920/2019-2020_Final_S-275_Personnel_Database.zip"
 ,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1819/2018-2019_Final_S-275_Personnel_Database.zip"
 ,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1718/2017-2018FinalS-275PersonnelDatabase.zip"
 ,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1617/2016-2017_Final_S-275_Personnel_Database.zip"

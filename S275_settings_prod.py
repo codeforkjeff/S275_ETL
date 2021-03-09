@@ -36,6 +36,7 @@ source_files = [
 	,(os.path.join(input_dir, "Final\\2017-2018FinalS-275PersonnelDatabase.accdb"), "FINAL")
 	,(os.path.join(input_dir, "Final\\2018-2019_Final_S-275_Personnel_Database.accdb"), "FINAL")
 	,(os.path.join(input_dir, "Final\\2019-2020_Final_S-275_Personnel_Database.accdb"), "FINAL")
+	,(os.path.join(input_dir, "Preliminary\\2020-2021_Preliminary_S-275_Personnel_Database.accdb"), "PRELIMINARY")
 ]
 
 # see the stored proc Exports.usp_create_S275_Dim_School_Fields in the data warehouse
