@@ -16,3 +16,5 @@ pycryptodomex==3.9.9
 
 google-cloud-bigquery-storage==2.1.0
 google-cloud-storage==1.32.0
+# required for bigquery's db-api adapter to return results properly
+pyarrow==0.17.1

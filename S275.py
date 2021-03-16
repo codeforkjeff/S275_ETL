@@ -653,7 +653,7 @@ def create_ext_teachermobility_distance_table():
 
     execute_sql("DROP TABLE IF EXISTS Ext_TeacherMobility_Distance;")
 
-    execute_sql("CREATE TABLE Ext_TeacherMobility_Distance (TeacherMobilityID varchar(500), Distance FLOAT)")
+    execute_sql("CREATE TABLE Ext_TeacherMobility_Distance (TeacherMobilityID varchar(500), Distance varchar(500) )")
 
     if database_target['type'] in ("sqlite", "sqlserver"):
         execute_sql("CREATE INDEX idx_ext_teachermobility_distance ON Ext_TeacherMobility_Distance (TeacherMobilityID, Distance)")
@@ -715,25 +715,25 @@ def create_ext_school_leadership_broad_table():
 
     execute_sql("""
         CREATE TABLE Ext_SchoolLeadership_Broad (
-            AcademicYear SMALLINT
+            AcademicYear VARCHAR(10)
             ,CountyAndDistrictCode VARCHAR(10)
             ,Building VARCHAR(10)
             ,AllPrincipalCertList VARCHAR(1000)
             ,AllAsstPrinCertList VARCHAR(1000)
-            ,AnyPrincipalPOC TINYINT
-            ,AnyAsstPrinPOC TINYINT
-            ,BroadLeadershipAnyPOCFlag TINYINT
-            ,BroadLeadershipChangeFlag TINYINT
-            ,BroadLeadershipAnyPOCStayedFlag TINYINT
-            ,BroadLeadershipStayedNoPOCFlag TINYINT
-            ,BroadLeadershipChangeAnyPOCToNoneFlag TINYINT
-            ,BroadLeadershipChangeNoPOCToAnyFlag TINYINT
-            ,BroadLeadershipGainedPrincipalPOCFlag TINYINT
-            ,BroadLeadershipGainedAsstPrinPOCFlag TINYINT
-            ,BroadLeadershipGainedPOCFlag TINYINT
-            ,BroadLeadershipLostPrincipalPOCFlag TINYINT
-            ,BroadLeadershipLostAsstPrinPOCFlag TINYINT
-            ,BroadLeadershipLostPOCFlag TINYINT
+            ,AnyPrincipalPOC VARCHAR(10)
+            ,AnyAsstPrinPOC VARCHAR(10)
+            ,BroadLeadershipAnyPOCFlag VARCHAR(10)
+            ,BroadLeadershipChangeFlag VARCHAR(10)
+            ,BroadLeadershipAnyPOCStayedFlag VARCHAR(10)
+            ,BroadLeadershipStayedNoPOCFlag VARCHAR(10)
+            ,BroadLeadershipChangeAnyPOCToNoneFlag VARCHAR(10)
+            ,BroadLeadershipChangeNoPOCToAnyFlag VARCHAR(10)
+            ,BroadLeadershipGainedPrincipalPOCFlag VARCHAR(10)
+            ,BroadLeadershipGainedAsstPrinPOCFlag VARCHAR(10)
+            ,BroadLeadershipGainedPOCFlag VARCHAR(10)
+            ,BroadLeadershipLostPrincipalPOCFlag VARCHAR(10)
+            ,BroadLeadershipLostAsstPrinPOCFlag VARCHAR(10)
+            ,BroadLeadershipLostPOCFlag VARCHAR(10)
         )
     """)
 

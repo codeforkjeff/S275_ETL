@@ -102,6 +102,14 @@
 	{%- endif -%}
 {% endmacro %}
 
+{% macro t_float() %}
+	{%- if adapter.config.credentials.type == 'bigquery' -%}
+		FLOAT64
+	{%- else -%}
+		FLOAT
+	{%- endif -%}
+{% endmacro %}
+
 {% macro t_numeric(precision=None, scale=None) %}
 	{%- if adapter.config.credentials.type == 'bigquery' -%}
 		NUMERIC
