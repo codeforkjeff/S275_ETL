@@ -25,7 +25,7 @@ SELECT
     ,Long
     ,NCESLocaleCode
     ,NCESLocale
-    ,dRoadMapRegionFlag
+    ,dRoadMapRegionFlag AS RMRFlag
 INTO S275.dbo.Dim_School
 FROM T
 WHERE Ranked = 1;
