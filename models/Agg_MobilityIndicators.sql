@@ -142,6 +142,6 @@ SELECT
 	Subgroup,
 	Met,
 	Total,
-	CAST(Met AS REAL) / Total AS Percentage,
+	CAST(Met AS {{ t_real() }}) / Total AS Percentage,
 	{{ getdate_fn() }} as MetaCreatedAt
 FROM Aggregated

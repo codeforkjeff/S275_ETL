@@ -119,7 +119,7 @@ Base AS (
 SELECT
     {% call hash() %}
     {% call concat() %}
-    CAST(AcademicYear AS VARCHAR(4)) + CAST(CountyAndDistrictCode AS VARCHAR(10)) + CAST(Building AS VARCHAR(10))
+    CAST(AcademicYear AS {{ t_varchar(4) }}) + CAST(CountyAndDistrictCode AS {{ t_varchar(10) }}) + CAST(Building AS {{ t_varchar(10) }})
     {% endcall %}
     {% endcall %}
     AS SchoolLeadershipID

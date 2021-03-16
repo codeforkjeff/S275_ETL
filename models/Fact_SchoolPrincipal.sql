@@ -13,8 +13,8 @@ WITH AssignmentsWithPrincipalType AS (
     SELECT
         *
         ,CASE
-            WHEN cast(DutyRoot as integer) IN (21, 23) THEN 'Principal'
-            WHEN cast(DutyRoot as integer) IN (22, 24) THEN 'AssistantPrincipal'
+            WHEN cast(DutyRoot as {{ t_int() }}) IN (21, 23) THEN 'Principal'
+            WHEN cast(DutyRoot as {{ t_int() }}) IN (22, 24) THEN 'AssistantPrincipal'
         END AS PrincipalType
     FROM {{ ref('Fact_Assignment') }}
 )
@@ -44,7 +44,7 @@ WITH AssignmentsWithPrincipalType AS (
 ,Filtered AS (
     SELECT
         {% call hash() %}
-        {% call concat() %}CAST(StaffID AS VARCHAR(500)) + CAST(Building AS VARCHAR(100)) + CAST(PrincipalType AS VARCHAR(100)){% endcall %} 
+        {% call concat() %}CAST(StaffID AS {{ t_varchar(500) }}) + CAST(Building AS {{ t_varchar(100) }}) + CAST(PrincipalType AS {{ t_varchar(100) }}){% endcall %}
         {% endcall %}
         AS SchoolPrincipalID
         ,*
