@@ -91,6 +91,9 @@ S275:
   target: dev
 ```
 
+Note that the non-dbt python code reads these dbt settings to do its
+own database stuff.
+
 - Copy the `S275_settings_sample.py` file to `S275_settings.py` and edit the paths and variables to suit
   your environment. In the CCER production environment, copy `S275_settings_prod.py` to
   `S275_settings.py`.
