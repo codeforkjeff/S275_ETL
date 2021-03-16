@@ -392,16 +392,17 @@ def bq_load(local_path, bucket_uri, table, delimiter=",", write_disposition=bigq
     """
     synced = sync_to_bucket(local_path, bucket_uri)
 
-    if synced or True:
-        print(f"Reloading {bucket_uri} into table {table}")
+    # we always have to reload, since this script re-create the table schema
 
-        column_names = []
+    print(f"Reloading {bucket_uri} into table {table}")
 
-        with codecs.open(local_path, encoding=encoding) as f:
-            headers = f.readline().strip()
-            column_names = [name for name in headers.split(delimiter)]
+    column_names = []
 
-        bq_load_from_uri(bucket_uri, table, column_names, delimiter, write_disposition)
+    with codecs.open(local_path, encoding=encoding) as f:
+        headers = f.readline().strip()
+        column_names = [name for name in headers.split(delimiter)]
+
+    bq_load_from_uri(bucket_uri, table, column_names, delimiter, write_disposition)
 
 
 def bq_load_from_uri(uri, table, column_names, delimiter, write_disposition):
@@ -445,7 +446,7 @@ def load_into_database(entries):
         elif database_target['type'] == 'bigquery':
 
             basename = os.path.basename(output_file)
-            bucket_uri = f"gs://ccer-s275/{basename}"
+            bucket_uri = f"gs://{ google_cloud_storage_bucket }/{basename}"
             bq_load(output_file, bucket_uri, "main." + table_name, delimiter="\t", write_disposition=bigquery.job.WriteDisposition.WRITE_APPEND, encoding="utf-8")
 
         elif database_target['type'] == 'snowflake':
