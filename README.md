@@ -2,15 +2,16 @@
 S275_ETL
 ========
 
+This code does ELT for the [WA State S-275 school personnel data from OSPI](https://www.k12.wa.us/safs-database-files).
+It does data cleaning and creates dimensional models for for teacher/principal demographics, retention/mobility,
+and cohort analysis... with more to come, probably.
+
 This is a perpetual work in progress!
 
 # Features
 
-- Does ETL (ELT, really) and data cleaning of the [S275 Microsoft Access files from OSPI](https://www.k12.wa.us/safs-database-files) into a single table in a SQL database.
-  Files for 1996 - 2019 are currently supported; however, not all of these years are currently available for download on the website.
-- Creates dimensional models for flexible reporting
-- Generates models for teacher/principal demographics, retention/mobility, and cohort analysis
-- Supports sqlite3 (included with Python) and Microsoft SQL Server databases
+- Files for 1996 - 2019 are currently supported; however, not all of these years are currently available for download on the website.
+- Supported databases: sqlite (included with Python), Microsoft SQL Server, BigQuery
 
 # Requirements
 
@@ -19,9 +20,6 @@ Make sure you install all 32-bit or 64-bit programs; don't mix and match or you'
 - Windows 10 (needed for ODBC)
 - Python >= 3.7.4 - this includes the minimum version of sqlite3 (3.28.0) needed to support the window functions used in this code.
 - ODBC drivers for Microsoft Access (included with [Microsoft Access Database Engine 2016](https://www.microsoft.com/en-us/download/details.aspx?id=54920))
-- Roughly 1GB of disk space for each academic year of data, when using sqlite3
-
-Using Microsoft SQL Server is optional.
 
 # Setup
 
@@ -39,6 +37,10 @@ Using Microsoft SQL Server is optional.
   OR
 
   `pip install -r requirements-sqlserver.txt`
+
+  OR
+
+  `pip install -r requirements-bigquery.txt`
 
 - Download and unzip the S275 files for the desired years from [the OSPI website](https://www.k12.wa.us/safs-database-files).
   The unzipped files are Access databases (have an `.accdb` extension). Put these files
@@ -87,6 +89,33 @@ S275:
       database: S275
       schema: dbo
       windows_login: True
+
+  target: dev
+```
+
+For BigQuery:
+
+```
+# create a service account for your Google Cloud project, generate a key for it,
+# and download it to your machine; the "keyfile" configuration parameter below
+# should point to it.
+#
+# make sure the service account has permissions for BigQuery and Google Cloud Storage.
+
+S275:
+
+  outputs:
+
+    dev:
+      type: bigquery
+      method: service-account
+      project: project-id-goes-here
+      dataset: main
+      threads: 4
+      keyfile: C:/path/to/keyfile.json
+      timeout_seconds: 1000
+      priority: interactive
+      retries: 1
 
   target: dev
 ```

@@ -185,8 +185,8 @@ def create_flat_file(access_db_path, file_type, output_path):
     f.write(LINE_TERMINATOR)
     f.flush()
 
-    # 2009-2010 file has at least one row with a value consisting of 2 ASCII NULs
-    # bigquery chokes on these when loading, so transform them to blank strings
+    # some files have rows with a value consisting of one or more ASCII NULs (value 0).
+    # bigquery chokes on these when loading, so we transform them to blank strings
     to_file_value = lambda s: '' if s is None or s.strip().strip(chr(0)) == '' else s
 
     for table_entry in cursor.tables(tableType='TABLE'):
