@@ -11,10 +11,12 @@ import re
 import sqlite3
 import sys
 
+from google.cloud import bigquery
 import pandas as pd
 import haversine
 import numpy as np
 import pyodbc
+import pytz
 import snowflake.connector
 import yaml
 
@@ -106,6 +108,8 @@ all_possible_columns = [
 
 #### End Parameters
 
+utc = pytz.UTC
+
 global_conn = None
 
 database_target = None
@@ -181,7 +185,9 @@ def create_flat_file(access_db_path, file_type, output_path):
     f.write(LINE_TERMINATOR)
     f.flush()
 
-    to_file_value = lambda s: '' if s is None else s
+    # some files have rows with a value consisting of one or more ASCII NULs (value 0).
+    # bigquery chokes on these when loading, so we transform them to blank strings
+    to_file_value = lambda s: '' if s is None or s.strip().strip(chr(0)) == '' else s
 
     for table_entry in cursor.tables(tableType='TABLE'):
         table_name = table_entry[2]
@@ -242,7 +248,7 @@ def load():
     if os.path.exists(dim_school_fields):
         load_into_database([(dim_school_fields, 'Raw_School_Fields')])
     else:
-        print(f"{dim_school_fields} not found, skipping processing for that file")
+        print(f"dim_school_fields file not found, skipping processing for that file")
 
     ## create stubs for these tables
     create_ext_teachermobility_distance_table()
@@ -252,8 +258,6 @@ def load():
 
 def execute_sql_file(path):
     """ files should default to using SQL Server dialect; we do some translation here """
-    conn = get_db_conn()
-    cursor = conn.cursor()
     str = open(path).read()
     statements = str.split("-- next")
     for statement in statements:
@@ -270,10 +274,166 @@ def execute_sql_file(path):
                     line = line.replace("+", "||")
                 transformed.append(line)
             statement = "\n".join(transformed)
+        elif database_target['type'] == "bigquery":
+            statement = re.sub("VARCHAR[\(\)\d]*", "string", statement, flags=re.IGNORECASE)
 
-        print("RUNNING: " + statement)
-        cursor.execute(statement)
-        conn.commit()
+        execute_sql(statement)
+
+
+def execute_sql(statement):
+    """ files should default to using SQL Server dialect; we do some translation here """
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    if database_target['type'] == "sqlite":
+        statement = statement.replace("LEN(", "LENGTH(")
+        statement = statement.replace("SUBSTRING(", "SUBSTR(")
+        statement = statement.replace("INT IDENTITY(1,1) NOT NULL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
+        statement = statement.replace("GETDATE()", "DATETIME('NOW')")
+        # handle ||
+        lines = statement.split("\n")
+        transformed = []
+        for line in lines:
+            if "sqlite_concat" in line:
+                line = line.replace("+", "||")
+            transformed.append(line)
+        statement = "\n".join(transformed)
+    elif database_target['type'] == "bigquery":
+        statement = re.sub("VARCHAR[\(\)\d]*", "string", statement, flags=re.IGNORECASE)
+        statement = statement.replace("FLOAT", "FLOAT64")
+        statement = statement.replace("SMALLINT", "INT64")
+        statement = statement.replace("TINYINT", "INT64")
+
+    print("RUNNING: " + statement)
+    cursor.execute(statement)
+
+    conn.commit()
+
+
+def get_bq_project_id():
+    return database_target['project']
+
+
+def get_bq_dataset():
+    return database_target['dataset']
+
+
+def get_bq_keyfile():
+    return database_target['keyfile']
+
+
+def get_gcs_client():
+    import google.cloud.storage as storage
+    client = storage.Client.from_service_account_json(
+        get_bq_keyfile(),
+        project=get_bq_project_id())
+    return client
+
+def parse_gs_uri(uri):
+    stripped = uri.replace("gs://", "")
+    (bucket, path) = stripped.split("/", 1)
+    return (bucket, path)
+
+
+def sync_to_bucket(local_path, bucket_uri):
+    client = get_gcs_client()
+
+    (bucket_name, bucket_path) = parse_gs_uri(bucket_uri)
+    bucket = client.get_bucket(bucket_name)
+
+    blob = bucket.blob(bucket_path)
+
+    if blob.exists():
+        blob.reload()
+        blob_last_updated = blob.updated
+    else:
+        blob_last_updated = utc.localize(datetime.datetime.utcfromtimestamp(0))
+
+    file_timestamp = utc.localize(datetime.datetime.utcfromtimestamp(os.path.getmtime(local_path)))
+
+    if not blob.exists() or file_timestamp >= blob_last_updated:
+
+        print(f"Uploading {local_path} to {bucket_uri}")
+
+        # needed to prevent connection timeouts when upstream is slow
+        #
+        # https://github.com/googleapis/python-storage/issues/74
+        blob.chunk_size = 5 * 1024 * 1024 # Set 5 MB blob size
+
+        blob.upload_from_filename(filename=local_path)
+        return True
+    else:
+        print(f"File {local_path} not modified since last sync to bucket")
+
+    return False
+
+
+def get_bq_client():
+    """
+    factory method for client objects for BigQuery
+    """
+    from google.cloud import bigquery
+
+    query_job_config = bigquery.job.QueryJobConfig(
+        default_dataset=get_bq_project_id() + "." + get_bq_dataset())
+
+    client = bigquery.Client.from_service_account_json(
+        get_bq_keyfile(),
+        project=get_bq_project_id(),
+        default_query_job_config=query_job_config)
+
+    return client
+
+
+def bq_load(local_path, bucket_uri, table, delimiter=",", write_disposition=bigquery.job.WriteDisposition.WRITE_TRUNCATE, encoding="utf8"):
+    """
+    Sync a local file up to a storage bucket location and reload the
+    source table in BigQuery.
+    """
+    synced = sync_to_bucket(local_path, bucket_uri)
+
+    # we always have to reload, since this script re-create the table schema
+
+    print(f"Reloading {bucket_uri} into table {table}")
+
+    column_names = []
+
+    with codecs.open(local_path, encoding=encoding) as f:
+        headers = f.readline().strip()
+        column_names = [name for name in headers.split(delimiter)]
+
+    bq_load_from_uri(bucket_uri, table, column_names, delimiter, write_disposition)
+
+
+def bq_load_from_uri(uri, table, column_names, delimiter, write_disposition):
+    """
+    table should be "dataset.table"
+    """
+
+    from google.cloud import bigquery
+
+    client = get_bq_client()
+
+    project_id = get_bq_project_id()
+    table_id = project_id + "." + table
+
+    job_config = bigquery.LoadJobConfig(
+        schema=[bigquery.SchemaField(column_name, "STRING") for column_name in column_names],
+        skip_leading_rows=1,
+        write_disposition=write_disposition,
+        # The source format defaults to CSV, so the line below is optional.
+        source_format=bigquery.SourceFormat.CSV,
+        field_delimiter=delimiter
+    )
+
+    load_job = client.load_table_from_uri(
+        uri, table_id, job_config=job_config
+    )
+
+    load_job.result()  # Waits for the job to complete.
+
+    destination_table = client.get_table(table_id)
+    print("Loaded {} rows.".format(destination_table.num_rows))
 
 
 def load_into_database(entries):
@@ -282,6 +442,12 @@ def load_into_database(entries):
     for (output_file, table_name) in entries:
         if database_target['type'] == 'sqlserver':
             os.system("bcp %s in \"%s\" -T -S %s -d %s -F 2 -t \\t -c -b 10000" % (table_name, output_file, database_target['host'], database_target['database']))
+
+        elif database_target['type'] == 'bigquery':
+
+            basename = os.path.basename(output_file)
+            bucket_uri = f"gs://{ google_cloud_storage_bucket }/{basename}"
+            bq_load(output_file, bucket_uri, "main." + table_name, delimiter="\t", write_disposition=bigquery.job.WriteDisposition.WRITE_APPEND, encoding="utf-8")
 
         elif database_target['type'] == 'snowflake':
 
@@ -356,7 +522,7 @@ def load_raw_s275():
 
     output_files = [get_extracted_path(entry[0]) for entry in source_files]
 
-    load_into_database([(output_file, 'raw_S275') for output_file in output_files])
+    load_into_database([(output_file, 'Raw_S275') for output_file in output_files])
 
 
 def export_query(sql, output_path):
@@ -441,6 +607,15 @@ def get_db_conn():
                     db_sqlite_path = sqlite_path
 
             global_conn = sqlite3.connect(db_sqlite_path)
+
+        elif database_target['type'] == "bigquery":
+
+            from google.cloud.bigquery import dbapi
+
+            client = get_bq_client()
+
+            global_conn = dbapi.Connection(client)
+
         elif database_target['type'] == "snowflake":
 
             global_conn = snowflake.connector.connect(
@@ -475,19 +650,14 @@ def grouper(iterable, n, fillvalue=None):
 
 def create_ext_teachermobility_distance_table():
 
-    conn = get_db_conn()
-    cursor = conn.cursor()
-
     print("Creating Ext_TeacherMobility_Distance")
 
-    cursor.execute("DROP TABLE IF EXISTS Ext_TeacherMobility_Distance;")
+    execute_sql("DROP TABLE IF EXISTS Ext_TeacherMobility_Distance;")
 
-    cursor.execute("CREATE TABLE Ext_TeacherMobility_Distance (TeacherMobilityID varchar(500), Distance real)")
+    execute_sql("CREATE TABLE Ext_TeacherMobility_Distance (TeacherMobilityID varchar(500), Distance varchar(500) )")
 
     if database_target['type'] in ("sqlite", "sqlserver"):
-        cursor.execute("CREATE INDEX idx_ext_teachermobility_distance ON Ext_TeacherMobility_Distance (TeacherMobilityID, Distance)")
-
-    conn.commit()
+        execute_sql("CREATE INDEX idx_ext_teachermobility_distance ON Ext_TeacherMobility_Distance (TeacherMobilityID, Distance)")
 
 
 def create_ext_teachermobility_distance():
@@ -507,7 +677,7 @@ def create_ext_teachermobility_distance():
             ,s2.Lat AS LatEnd
             ,s2.Long AS LongEnd
         FROM Stg_TeacherMobility m
-        LEFT JOIN Dim_School s1 ON m.StartCountyAndDistrictCode = s1.DistrictCode AND m.StartBuilding = s1.SchoolCode AND m.StartYear = s1.AcademicYear 
+        LEFT JOIN Dim_School s1 ON m.StartCountyAndDistrictCode = s1.DistrictCode AND m.StartBuilding = s1.SchoolCode AND m.StartYear = s1.AcademicYear
         LEFT JOIN Dim_School s2 ON m.EndCountyAndDistrictCode = s2.DistrictCode AND m.EndBuilding = s2.SchoolCode AND m.EndYear = s2.AcademicYear
     """)
 
@@ -542,36 +712,31 @@ def create_ext_school_leadership_broad_table():
 
     print("Creating Ext_SchoolLeadership_Broad table")
 
-    conn = get_db_conn()
-    cursor = conn.cursor()
+    execute_sql("DROP TABLE IF EXISTS Ext_SchoolLeadership_Broad;")
 
-    cursor.execute("DROP TABLE IF EXISTS Ext_SchoolLeadership_Broad;")
-
-    cursor.execute("""
+    execute_sql("""
         CREATE TABLE Ext_SchoolLeadership_Broad (
-            AcademicYear SMALLINT
+            AcademicYear VARCHAR(10)
             ,CountyAndDistrictCode VARCHAR(10)
             ,Building VARCHAR(10)
             ,AllPrincipalCertList VARCHAR(1000)
             ,AllAsstPrinCertList VARCHAR(1000)
-            ,AnyPrincipalPOC TINYINT
-            ,AnyAsstPrinPOC TINYINT
-            ,BroadLeadershipAnyPOCFlag TINYINT
-            ,BroadLeadershipChangeFlag TINYINT
-            ,BroadLeadershipAnyPOCStayedFlag TINYINT
-            ,BroadLeadershipStayedNoPOCFlag TINYINT
-            ,BroadLeadershipChangeAnyPOCToNoneFlag TINYINT
-            ,BroadLeadershipChangeNoPOCToAnyFlag TINYINT
-            ,BroadLeadershipGainedPrincipalPOCFlag TINYINT
-            ,BroadLeadershipGainedAsstPrinPOCFlag TINYINT
-            ,BroadLeadershipGainedPOCFlag TINYINT
-            ,BroadLeadershipLostPrincipalPOCFlag TINYINT
-            ,BroadLeadershipLostAsstPrinPOCFlag TINYINT
-            ,BroadLeadershipLostPOCFlag TINYINT
+            ,AnyPrincipalPOC VARCHAR(10)
+            ,AnyAsstPrinPOC VARCHAR(10)
+            ,BroadLeadershipAnyPOCFlag VARCHAR(10)
+            ,BroadLeadershipChangeFlag VARCHAR(10)
+            ,BroadLeadershipAnyPOCStayedFlag VARCHAR(10)
+            ,BroadLeadershipStayedNoPOCFlag VARCHAR(10)
+            ,BroadLeadershipChangeAnyPOCToNoneFlag VARCHAR(10)
+            ,BroadLeadershipChangeNoPOCToAnyFlag VARCHAR(10)
+            ,BroadLeadershipGainedPrincipalPOCFlag VARCHAR(10)
+            ,BroadLeadershipGainedAsstPrinPOCFlag VARCHAR(10)
+            ,BroadLeadershipGainedPOCFlag VARCHAR(10)
+            ,BroadLeadershipLostPrincipalPOCFlag VARCHAR(10)
+            ,BroadLeadershipLostAsstPrinPOCFlag VARCHAR(10)
+            ,BroadLeadershipLostPOCFlag VARCHAR(10)
         )
     """)
-
-    conn.commit()
 
 
 LeadershipFields = collections.namedtuple('LeadershipFields', [

@@ -74,13 +74,13 @@ WITH T AS (
 SELECT
     {% call hash() %}
     {% call concat() %}
-    CAST(COALESCE(CAST(AcademicYear AS VARCHAR(100)), '') AS VARCHAR(100)) + 
-    CAST(COALESCE(CountyAndDistrictCode, '') AS VARCHAR(100)) + 
-    CAST(COALESCE(LastNameC, '') AS VARCHAR(100)) + 
-    CAST(COALESCE(FirstNameC, '') AS VARCHAR(100)) + 
-    CAST(COALESCE(MiddleNameC, '') AS VARCHAR(100)) + 
-    CAST(COALESCE(CertificateNumberC, '') AS VARCHAR(100)) + 
-    CAST(COALESCE(BirthdateC, '') AS VARCHAR(100))
+    CAST(COALESCE(CAST(AcademicYear AS {{ t_varchar(100) }}), '') AS {{ t_varchar(100) }}) +
+    CAST(COALESCE(CountyAndDistrictCode, '') AS {{ t_varchar(100) }}) +
+    CAST(COALESCE(LastNameC, '') AS {{ t_varchar(100) }}) +
+    CAST(COALESCE(FirstNameC, '') AS {{ t_varchar(100) }}) +
+    CAST(COALESCE(MiddleNameC, '') AS {{ t_varchar(100) }}) +
+    CAST(COALESCE(CertificateNumberC, '') AS {{ t_varchar(100) }}) +
+    CAST(COALESCE(BirthdateC, '') AS {{ t_varchar(100) }})
     {% endcall %}
     {% endcall %}
     AS StaffID

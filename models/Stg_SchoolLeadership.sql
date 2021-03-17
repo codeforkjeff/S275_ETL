@@ -88,21 +88,21 @@ SELECT
     --
     ,TeacherCount
     ,TeacherRetention1Yr
-    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention1Yr AS REAL) / TeacherCount END AS TeacherRetention1YrPct
+    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention1Yr AS {{ t_real() }}) / TeacherCount END AS TeacherRetention1YrPct
     ,TeacherRetention2Yr
-    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention2Yr AS REAL) / TeacherCount END AS TeacherRetention2YrPct
+    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention2Yr AS {{ t_real() }}) / TeacherCount END AS TeacherRetention2YrPct
     ,TeacherRetention3Yr
-    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention3Yr AS REAL) / TeacherCount END AS TeacherRetention3YrPct
+    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention3Yr AS {{ t_real() }}) / TeacherCount END AS TeacherRetention3YrPct
     ,TeacherRetention4Yr
-    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention4Yr AS REAL) / TeacherCount END AS TeacherRetention4YrPct
+    ,CASE WHEN TeacherCount > 0 THEN CAST(TeacherRetention4Yr AS {{ t_real() }}) / TeacherCount END AS TeacherRetention4YrPct
     ,TeacherOfColorCount
     ,TeacherOfColorRetention1Yr
-    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention1Yr AS REAL) / TeacherOfColorCount END AS TeacherOfColorRetention1YrPct
+    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention1Yr AS {{ t_real() }}) / TeacherOfColorCount END AS TeacherOfColorRetention1YrPct
     ,TeacherOfColorRetention2Yr
-    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention2Yr AS REAL) / TeacherOfColorCount END AS TeacherOfColorRetention2YrPct
+    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention2Yr AS {{ t_real() }}) / TeacherOfColorCount END AS TeacherOfColorRetention2YrPct
     ,TeacherOfColorRetention3Yr
-    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention3Yr AS REAL) / TeacherOfColorCount END AS TeacherOfColorRetention3YrPct
+    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention3Yr AS {{ t_real() }}) / TeacherOfColorCount END AS TeacherOfColorRetention3YrPct
     ,TeacherOfColorRetention4Yr
-    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention4Yr AS REAL) / TeacherOfColorCount END AS TeacherOfColorRetention4YrPct
+    ,CASE WHEN TeacherOfColorCount > 0 THEN CAST(TeacherOfColorRetention4Yr AS {{ t_real() }}) / TeacherOfColorCount END AS TeacherOfColorRetention4YrPct
     ,{{ getdate_fn() }} AS MetaCreatedAt
 FROM t

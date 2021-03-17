@@ -5,7 +5,7 @@ WITH MissingSchoolsBase as (
 	JOIN {{ ref('Dim_Staff') }} s
 		ON a.StaffID = s.StaffID
 	WHERE Building is not null
-	EXCEPT
+	{{ except() }}
 	SELECT DISTINCT AcademicYear, DistrictCode, SchoolCode
 	FROM {{ ref('Stg_School_Joined_With_Fields') }}
 	WHERE SchoolCode is not null
@@ -57,7 +57,7 @@ MostRecentDistrictNames AS (
 	FROM DistrictNames
 	WHERE RN = 1
 )
-SELECT 
+SELECT
 	AcademicYear,
 	DistrictCode,
 	DistrictName,

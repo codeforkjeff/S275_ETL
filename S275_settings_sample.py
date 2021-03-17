@@ -28,3 +28,7 @@ source_files = [
 
 # Dim_School_Fields table gets loaded from this only if file exists
 dim_school_fields = "Dim_School_Fields.txt"
+
+# if you're using BigQuery, you need to have a bucket set up in Google Cloud Storage
+# to stage the flat files for loading into BigQuery
+google_cloud_storage_bucket = "bucket-name-goes-here"

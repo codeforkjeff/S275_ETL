@@ -129,7 +129,7 @@ PrincipalsLookup AS (
         ,CASE WHEN
             EndCountyAndDistrictCode IS NOT NULL
             AND EndBuilding IS NOT NULL
-            AND COALESCE(StartCountyAndDistrictCode, -1) <> COALESCE(EndCountyAndDistrictCode, -1)
+            AND COALESCE(StartCountyAndDistrictCode, '-1') <> COALESCE(EndCountyAndDistrictCode, '-1')
         THEN 1 ELSE 0 END AS MovedOut
         ,0 AS MovedOutOfRMR
         ,CASE WHEN
@@ -141,7 +141,7 @@ SELECT
     -- since StaffID can be none if they exited, we include EndYear in composite key to ensure uniqueness
     {% call hash() %}
     {% call concat() %}
-    CAST(StartStaffID AS VARCHAR(500)) + CAST(COALESCE(EndStaffID, 'NONE') AS VARCHAR(500)) + CAST(EndYear as VARCHAR(4))
+    CAST(StartStaffID AS {{ t_varchar(500) }}) + CAST(COALESCE(EndStaffID, 'NONE') AS {{ t_varchar(500) }}) + CAST(EndYear as {{ t_varchar(4) }})
     {% endcall %}
     {% endcall %}
     AS TeacherMobilityID

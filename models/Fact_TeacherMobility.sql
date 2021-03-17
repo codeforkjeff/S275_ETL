@@ -14,7 +14,7 @@ SELECT
     ,EndBuilding
     ,EndLocale
     ,EndTeacherFlag
-    ,d.Distance
+    ,CAST(d.Distance AS {{ t_float() }}) AS Distance
     ,RoleChanged
     ,RoleChangedToPrincipal
     ,RoleChangedToAsstPrincipal

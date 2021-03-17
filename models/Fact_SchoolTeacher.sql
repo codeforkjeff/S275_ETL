@@ -15,7 +15,7 @@
 WITH TeachingRollups AS (
     select
         {% call hash() %}
-        {% call concat() %}CAST(a.StaffID AS VARCHAR(500)) + CAST(a.AcademicYear AS VARCHAR(4)) + CAST(Building AS VARCHAR(100)){% endcall %}
+        {% call concat() %}CAST(a.StaffID AS {{ t_varchar(500) }}) + CAST(a.AcademicYear AS {{ t_varchar(4) }}) + CAST(Building AS {{ t_varchar(100) }}){% endcall %}
         {% endcall %}
         AS SchoolTeacherID
         ,a.StaffID

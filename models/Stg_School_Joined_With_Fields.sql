@@ -12,7 +12,7 @@
     })
 }}
 
-SELECT 
+SELECT
     b.AcademicYear,
     b.DistrictCode,
     b.DistrictName,
@@ -60,7 +60,7 @@ SELECT
             + COALESCE(Hispanic, 0)
             + COALESCE(TwoOrMoreRaces, 0)
             {% endcall %}
-        as INT)
+        as {{ t_int() }})
     END AS StudentsOfColor,
     CASE WHEN TotalEnrollmentOct > 0 THEN
         CAST(
@@ -72,7 +72,7 @@ SELECT
             + COALESCE(Hispanic, 0)
             + COALESCE(TwoOrMoreRaces, 0)
             {% endcall %}
-        as REAL) / TotalEnrollmentOct
+        as {{ t_real() }}) / TotalEnrollmentOct
     END AS StudentsOfColorPercent,
     Male,
     MalePercent,

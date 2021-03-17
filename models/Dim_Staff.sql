@@ -42,7 +42,7 @@ Stage1 AS (
         CASE
             WHEN {{ substring_fname() }}(NationalBoardCertExpirationDate, 1, 7) >=
             {% call concat() %}
-            (CAST((AcademicYear - 1) as varchar) + '-09') -- sqlite_concat
+            (CAST((AcademicYear - 1) as {{ t_varchar() }}) + '-09') -- sqlite_concat
             {% endcall %}
             THEN 1 ELSE 0
         END AS IsNationalBoardCertified,
@@ -109,7 +109,7 @@ Stage1 AS (
 ,Stage2 AS (
     SELECT
         *,
-        CASE WHEN IsTeacherFlag = 1 AND CAST(CertYearsOfExperience AS REAL) < 2.0 THEN 1 ELSE 0 END
+        CASE WHEN IsTeacherFlag = 1 AND CAST(CertYearsOfExperience AS {{ t_real() }}) < 2.0 THEN 1 ELSE 0 END
         AS IsNoviceTeacherFlag
     FROM Stage1
 )
@@ -133,40 +133,40 @@ SELECT
     PersonOfColorCategory,
     HighestDegree,
     HighestDegreeYear,
-    CAST(AcademicCredits AS NUMERIC(6,2)) AS AcademicCredits,
-    CAST(InServiceCredits AS NUMERIC(6,2)) AS InServiceCredits,
-    CAST(ExcessCredits AS NUMERIC(6,2)) AS ExcessCredits,
-    CAST(NonDegreeCredits AS NUMERIC(6,2)) AS NonDegreeCredits,
-    CAST(CertYearsOfExperience AS REAL) AS CertYearsOfExperience,
+    CAST(AcademicCredits AS {{ t_numeric(6, 2) }}) AS AcademicCredits,
+    CAST(InServiceCredits AS {{ t_numeric(6, 2) }}) AS InServiceCredits,
+    CAST(ExcessCredits AS {{ t_numeric(6, 2) }}) AS ExcessCredits,
+    CAST(NonDegreeCredits AS {{ t_numeric(6, 2) }}) AS NonDegreeCredits,
+    CAST(CertYearsOfExperience AS {{ t_real() }}) AS CertYearsOfExperience,
     StaffMixFactor,
     StaffMixFactor1,
     StaffMixFactor1A,
     StaffMixFactor1S,
     StaffMixFactor1Sa,
     StaffMixFactor1SB,
-    CAST(FTEHours AS NUMERIC(6,2)) AS FTEHours,
-    CAST(FTEDays AS NUMERIC(10,4)) AS FTEDays,
-    CAST(CertificatedFTE AS numeric(6,3)) AS CertificatedFTE,
-    CAST(ClassifiedFTE AS numeric(6,3)) AS ClassifiedFTE,
-    CAST(CertificatedBase AS INT) AS CertificatedBase,
-    CAST(ClassifiedBase AS INT) AS ClassifiedBase,
-    CAST(OtherSalary AS INT) AS OtherSalary,
-    CAST(TotalFinalSalary AS INT) AS TotalFinalSalary,
-    CAST(ActualAnnualInsurance AS INT) AS ActualAnnualInsurance,
-    CAST(ActualAnnualMandatory AS INT) AS ActualAnnualMandatory,
+    CAST(FTEHours AS {{ t_numeric(6, 2) }}) AS FTEHours,
+    CAST(FTEDays AS {{ t_numeric(10,4) }}) AS FTEDays,
+    CAST(CertificatedFTE AS {{ t_numeric(6, 3) }}) AS CertificatedFTE,
+    CAST(ClassifiedFTE AS {{ t_numeric(6, 3) }}) AS ClassifiedFTE,
+    CAST(CertificatedBase AS {{ t_int() }}) AS CertificatedBase,
+    CAST(ClassifiedBase AS {{ t_int() }}) AS ClassifiedBase,
+    CAST(OtherSalary AS {{ t_int() }}) AS OtherSalary,
+    CAST(TotalFinalSalary AS {{ t_int() }}) AS TotalFinalSalary,
+    CAST(ActualAnnualInsurance AS {{ t_int() }}) AS ActualAnnualInsurance,
+    CAST(ActualAnnualMandatory AS {{ t_int() }}) AS ActualAnnualMandatory,
     CBRTNCode,
     ClassificationFlag,
     CertifiedFlag,
     NationalBoardCertExpirationDate,
     FileType,
-    CAST(IsTeacherFlag AS TINYINT) AS IsTeacherFlag,
-    CAST(IsNoviceTeacherFlag AS TINYINT) AS IsNoviceTeacherFlag,
-    CAST(IsPrincipalFlag AS TINYINT) AS IsPrincipalFlag,
-    CAST(IsAsstPrincipalFlag AS TINYINT) AS IsAsstPrincipalFlag,
-    CAST(IsNationalBoardCertified AS TINYINT) AS IsNationalBoardCertified,
-    CAST(TempOrPermCert AS VARCHAR(1)) AS TempOrPermCert,
-    CAST(IsNewHireFlag AS TINYINT) AS IsNewHireFlag,
-    CAST(IsNewHireWAStateFlag AS TINYINT) AS IsNewHireWAStateFlag,
-    CAST(IsInPSESDFlag AS TINYINT) AS IsInPSESDFlag,
+    CAST(IsTeacherFlag AS {{ t_tinyint() }}) AS IsTeacherFlag,
+    CAST(IsNoviceTeacherFlag AS {{ t_tinyint() }}) AS IsNoviceTeacherFlag,
+    CAST(IsPrincipalFlag AS {{ t_tinyint() }}) AS IsPrincipalFlag,
+    CAST(IsAsstPrincipalFlag AS {{ t_tinyint() }}) AS IsAsstPrincipalFlag,
+    CAST(IsNationalBoardCertified AS {{ t_tinyint() }}) AS IsNationalBoardCertified,
+    CAST(TempOrPermCert AS {{ t_varchar(1) }}) AS TempOrPermCert,
+    CAST(IsNewHireFlag AS {{ t_tinyint() }}) AS IsNewHireFlag,
+    CAST(IsNewHireWAStateFlag AS {{ t_tinyint() }}) AS IsNewHireWAStateFlag,
+    CAST(IsInPSESDFlag AS {{ t_tinyint() }}) AS IsInPSESDFlag,
     {{ getdate_fn() }} as MetaCreatedAt
 FROM Stage2
