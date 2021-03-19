@@ -11,14 +11,13 @@
 }}
 
 SELECT
-    StartYear AS CohortYear
-	,StartStaffID AS CohortStaffID
+    AcademicYear AS CohortYear
+	,StaffID AS CohortStaffID
 	,CertificateNumber
-    ,StartCountyAndDistrictCode AS CohortCountyAndDistrictCode
-    ,StartBuilding AS CohortBuilding
+    ,CountyAndDistrictCode AS CohortCountyAndDistrictCode
+    ,Building AS CohortBuilding
     ,{{ getdate_fn() }} as MetaCreatedAt
-FROM {{ ref('Fact_TeacherMobility') }}
+FROM {{ ref('Stg_Base_SchoolTeachers') }}
 WHERE
-	DiffYears = 1
 	-- handful of rows where Building is null from raw file. no idea what these mean.
-	AND StartBuilding IS NOT NULL
+	Building IS NOT NULL
