@@ -1,5 +1,11 @@
 
--- this is the query to run in the CCER data warehouse to create input\raw_school_base.txt
+-- this is the query to run to populate Raw_School_Base from an RMP database
+-- in SQL Server. This needs to be done each academic year.
+--
+-- The resulting table should then be exported to input\raw_school_base.txt
+-- so builds can load it from there.
+--
+-- Export-RmpTable -Database
 
 WITH T AS (
     -- there's 53 rows with duplicate schoolcodes b/c of bad data quality;
@@ -26,6 +32,6 @@ SELECT
     ,NCESLocaleCode
     ,NCESLocale
     ,dRoadMapRegionFlag AS RMRFlag
-INTO S275.dbo.Dim_School
+INTO S275.dbo.Raw_School_Base
 FROM T
-WHERE Ranked = 1;
+WHERE Ranked = 1
