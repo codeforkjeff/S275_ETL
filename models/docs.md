@@ -76,6 +76,20 @@ PK = StaffID (key into Dim_Staff), RecordNumber
 
 {% enddocs %}
 
+{% docs Fact_Career %}
+
+This is a table that rolls up various aspects of a staff person's career. Currently
+the attribute fields are focused on tracking teacher to asstprincipal/principal career
+transitions, though it could be extended to look at other kinds of career trajectories
+as well.
+
+The gain is the individual. As such, there is no information in this table that pertains
+to a specific year, although there are 'FirstYear' and 'LastYear' types of columns.
+
+PK = CertificateNumber
+
+{% enddocs %}
+
 {% docs Fact_SchoolTeacher %}
 
 Teachers at schools. This table rolls up from assignments, so a row sums the Percentage, FTEDesignation,

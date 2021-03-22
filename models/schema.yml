@@ -26,6 +26,39 @@ models:
     description: '{{ doc("Dim_School") }}'
   - name: Fact_Assignment
     description: '{{ doc("Fact_Assignment") }}'
+  - name: Fact_Career
+    description: '{{ doc("Fact_Career") }}'
+    columns:
+      - name: RaceEthOSPI
+        description: most recent race value in the S-275 for this individual
+      - name: Sex
+        description: most recent 'sex' value in the S-275 for this individual
+      - name: FirstYear
+        description: first year that individual is present in S-275 data
+      - name: MostRecentYear
+        description: most recent year that individual is present in S-275 data
+      - name: TotalActiveYearsWA
+        description: total years this person is in the S-275 data
+      - name: NumDistrictsWorked
+        description: number of districts where this person was ever employed
+      - name: NumSchoolsWorked
+        description: number of schools where this person was ever employed
+      - name: NumDistinctDutyRoots
+        description: number of distinct DutyRoot codes this person ever had
+      - name: TeacherFirstYear
+        description: the first year that this individual was a teacher
+      - name: TeacherLastYear
+        description: the last year that this individual was a teacher
+      - name: TeacherNumYears
+        description: number of years this individual was a teacher
+      - name: APOrPrincipalFirstYear
+        description: the first year that this individual was an Asst Prin or Principal
+      - name: APOrPrincipalLastYear
+        description: the last year that this individual was an Asst Prin or Principal
+      - name: APOrPrincipalNumYears
+        description: number of years this individual was an Asst Prin or Principal
+      - name: TeacherToAPOrPrincipal
+        description: set to 1 if individual was a teacher who then became a principal
   - name: Fact_SchoolTeacher
     description: '{{ doc("Fact_SchoolTeacher") }}'
   - name: Fact_SchoolPrincipal
