@@ -46,6 +46,8 @@ models:
         description: number of schools where this person was ever employed
       - name: NumDistinctDutyRoots
         description: number of distinct DutyRoot codes this person ever had
+      - name: DutyList
+        description: comma-sep list of all of this individual's duty descriptions, in chronological order
       - name: TeacherFirstYear
         description: the first year that this individual was a teacher
       - name: TeacherLastYear
