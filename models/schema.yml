@@ -18,6 +18,7 @@ sources:
     tables:
       - name: Ext_TeacherMobility_Distance
       - name: Ext_SchoolLeadership_Broad
+      - name: Ext_DutyList
 
 models:
   - name: Dim_Staff

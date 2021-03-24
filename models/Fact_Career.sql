@@ -70,6 +70,7 @@ select
 	,base.NumDistrictsWorked
 	,a.NumSchools
 	,a.NumDistinctDutyRoots
+	,d.DutyList
 	--
 	,base.TeacherFirstYear
 	,base.TeacherLastYear
@@ -83,3 +84,5 @@ LEFT Join FromAssignments a
 	ON base.CertificateNumber = a.CertificateNumber
 LEFT Join Characteristics c
 	ON base.CertificateNumber = c.CertificateNumber
+LEFT JOIN {{ source('ext', 'Ext_DutyList') }} d
+	ON base.CertificateNumber = d.CertificateNumber

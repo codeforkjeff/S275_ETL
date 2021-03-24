@@ -255,6 +255,8 @@ def load():
 
     create_ext_school_leadership_broad_table()
 
+    create_ext_duty_list_table()
+
 
 def execute_sql_file(path):
     """ files should default to using SQL Server dialect; we do some translation here """
@@ -739,6 +741,20 @@ def create_ext_school_leadership_broad_table():
     """)
 
 
+def create_ext_duty_list_table():
+
+    print("Creating Ext_DutyList table")
+
+    execute_sql("DROP TABLE IF EXISTS Ext_DutyList;")
+
+    execute_sql("""
+        CREATE TABLE Ext_DutyList (
+            CertificateNumber VARCHAR(10)
+            ,DutyList VARCHAR(1000)
+        )
+    """)
+
+
 LeadershipFields = collections.namedtuple('LeadershipFields', [
     'key',
     'principal_rows',
@@ -998,6 +1014,100 @@ def create_ext_school_leadership_broad():
     conn.commit()
 
     os.remove("ext_schoolleadership_broad.tmp")
+
+
+def unique(values):
+    """ returns unique values from passed-in list, preserving order """
+    from functools import reduce
+    return reduce(lambda acc, elem: acc + [elem] if not elem in acc else acc, values, [])
+
+
+def create_ext_duty_list():
+    """
+    we do this in Python because our version of SQL Server doesn't support STRING_AGG() function
+    (sqlite does have group_concat())
+    """
+
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    print("Creating list of duty descriptions for each individual")
+
+    cursor.execute("""
+        WITH T AS (
+            SELECT
+                s.CertificateNumber
+                ,DutyDescription
+                ,MIN(a.AcademicYear) AS FirstYear
+                ,MAX(a.AcademicYear) AS MostRecentYear
+            FROM Fact_Assignment a
+            JOIN Dim_Staff s
+                ON a.StaffID = s.StaffID
+            GROUP BY
+                s.CertificateNumber,
+                DutyDescription
+        )
+        SELECT *
+        FROM T
+        WHERE
+            CertificateNumber IS NOT NULL
+            AND DutyDescription IS NOT NULL
+        ORDER BY
+            CertificateNumber, FirstYear, DutyDescription
+    """)
+
+    raw_rows = cursor.fetchall()
+
+    ####
+
+    rows = []
+
+    for raw_row in raw_rows:
+        row = {}
+        (row['CertificateNumber'], row['DutyDescription'], row['FirstYear'], row['MostRecentYear']) = raw_row
+        rows.append(row)
+
+    key_fn = lambda row: row['CertificateNumber']
+
+    def group_and_sort(rows):
+        i = itertools.groupby(rows, key=key_fn)
+        results = {}
+        for (key, values) in i:
+            # realize iterator as a list so we can use 'values' multiple times
+            values = list(values)
+
+            duties = ", ".join(unique([v['DutyDescription'] for v in values]))
+
+            results[key] = (key, duties)
+
+        return results
+
+    grouped = group_and_sort(rows)
+
+    with codecs.open("ext_duty_list.tmp", "w", 'utf-8') as f:
+        header = "\t".join([
+            "CertificateNumber",
+            "DutyList"
+        ])
+
+        f.write(header)
+        f.write(LINE_TERMINATOR)
+        for row in grouped.values():
+            f.write(row[0])
+            f.write("\t")
+            f.write(row[1])
+            f.write(LINE_TERMINATOR)
+
+    create_ext_duty_list_table()
+
+    load_into_database([('ext_duty_list.tmp', 'Ext_DutyList')])
+
+    if database_target['type'] in ("sqlite", "sqlserver"):
+        cursor.execute("CREATE UNIQUE INDEX idx_Ext_DutyList ON Ext_DutyList(CertificateNumber);")
+
+    conn.commit()
+
+    os.remove("ext_duty_list.tmp")
 
 
 database_target = get_database_target()
