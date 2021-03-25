@@ -14,10 +14,11 @@ Note that AcademicYear values are based on the "end year": e.g. 2016 means 2015-
 These are broadly useful tables, with high fidelity to the "upstream" source data.
 
 ```
-S275
-Dim_Staff
-Dim_School
-Fact_Assignment
+S275 - union of all the raw data, cleaned
+Dim_Staff - "left side" set of fields from the raw data pertaining to employment at a district in a given AY
+Fact_Assignment - "right side" set of fields from the raw data pertaining to assignments at a school
+
+Dim_School - information about schools
 Fact_SchoolTeacher
 Fact_SchoolPrincipal
 ```
@@ -171,5 +172,12 @@ It's easier to do rollups on the flag fields using this table rather than
 the counts won't add up for a given combo because 'exited' isn't represented.
 
 PK = CohortYear, EndYear, CertificateNumber
+
+{% enddocs %}
+
+{% docs S275 %}
+
+This is all years of the S275 data, cleaned and with fields given more verbose names
+for clarity.
 
 {% enddocs %}

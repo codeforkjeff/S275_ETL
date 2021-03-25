@@ -78,3 +78,5 @@ models:
     description: '{{ doc("Fact_PrincipalCohort") }}'
   - name: Fact_PrincipalCohortMobility
     description: '{{ doc("Fact_PrincipalCohortMobility") }}'
+  - name: S275
+    description: '{{ doc("S275") }}'
