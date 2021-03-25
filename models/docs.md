@@ -47,6 +47,8 @@ Fact_PrincipalCohortMobility
 
 {% enddocs %}
 
+{# ----------------------------- #}
+
 {% docs Dim_Staff %}
 
 Dimension table for a staff person in a given year and district.
@@ -56,6 +58,8 @@ in an academic year.
 PK = AcademicYear, CountyAndDistrictCode, CertificateNumber
 
 {% enddocs %}
+
+{# ----------------------------- #}
 
 {% docs Dim_School %}
 
@@ -67,15 +71,19 @@ often for administrative units.
 
 {% enddocs %}
 
+{# ----------------------------- #}
+
 {% docs Fact_Assignment %}
 
 An assignment line item. This table is at the same grain as the rows in the original
-S275 data. Personnel can (and often do) have multiple assignments within the district
-they're employed by, and multiple assignments within a given school building.
+S275 data. Personnel can (and often do) have assignments across the multiple buildings
+where they work, and multiple assignments within the same building.
 
 PK = StaffID (key into Dim_Staff), RecordNumber
 
 {% enddocs %}
+
+{# ----------------------------- #}
 
 {% docs Fact_Career %}
 
@@ -84,12 +92,14 @@ the attribute fields are focused on tracking teacher to asstprincipal/principal 
 transitions, though it could be extended to look at other kinds of career trajectories
 as well.
 
-The gain is the individual. As such, there is no information in this table that pertains
+The grain is the individual. As such, there is no information in this table that pertains
 to a specific year, although there are 'FirstYear' and 'LastYear' types of columns.
 
 PK = CertificateNumber
 
 {% enddocs %}
+
+{# ----------------------------- #}
 
 {% docs Fact_SchoolTeacher %}
 
@@ -101,6 +111,8 @@ PK = StaffID (key into Dim_Staff), Building
 
 {% enddocs %}
 
+{# ----------------------------- #}
+
 {% docs Fact_SchoolPrincipal %}
 
 Table of all principals and assistant principals at all the schools where they served.
@@ -108,6 +120,8 @@ Table of all principals and assistant principals at all the schools where they s
 PK = StaffID (key into Dim_Staff), Building, PrincipalType
 
 {% enddocs %}
+
+{# ----------------------------- #}
 
 {% docs Fact_TeacherMobility %}
 
@@ -120,6 +134,8 @@ PK = StartYear, EndYear, CertificateNumber
 
 {% enddocs %}
 
+{# ----------------------------- #}
+
 {% docs Fact_PrincipalMobility %}
 
 Created to reproduce College of Ed work.
@@ -131,6 +147,8 @@ PK = StartYear, EndYear, CertificateNumber
 
 {% enddocs %}
 
+{# ----------------------------- #}
+
 {% docs Fact_TeacherCohort %}
 
 Cohort table containining teachers for each year.
@@ -138,6 +156,8 @@ Cohort table containining teachers for each year.
 PK = CohortYear, CertificateNumber
 
 {% enddocs %}
+
+{# ----------------------------- #}
 
 {% docs Fact_TeacherCohortMobility %}
 
@@ -153,6 +173,8 @@ PK = CohortYear, EndYear, CertificateNumber
 
 {% enddocs %}
 
+{# ----------------------------- #}
+
 {% docs Fact_PrincipalCohort %}
 
 Cohort table containing principals and assistant principals.
@@ -160,6 +182,8 @@ Cohort table containing principals and assistant principals.
 PK = CohortYear, CertificateNumber
 
 {% enddocs %}
+
+{# ----------------------------- #}
 
 {% docs Fact_PrincipalCohortMobility %}
 
@@ -174,6 +198,8 @@ the counts won't add up for a given combo because 'exited' isn't represented.
 PK = CohortYear, EndYear, CertificateNumber
 
 {% enddocs %}
+
+{# ----------------------------- #}
 
 {% docs S275 %}
 
