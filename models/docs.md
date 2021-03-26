@@ -11,12 +11,12 @@ Note that AcademicYear values are based on the "end year": e.g. 2016 means 2015-
 
 ## Base Tables
 
-These are broadly useful tables, with high fidelity to the "upstream" source data.
+These are broadly useful tables, with high fidelity to the upstream source data.
 
 ```
 S275 - union of all the raw data, cleaned
 Dim_Staff - "left side" set of fields from the raw data pertaining to employment at a district in a given AY
-Fact_Assignment - "right side" set of fields from the raw data pertaining to assignments at a school
+Fact_Assignment - "right side" set of fields from the raw data pertaining to assignments at schools
 
 Dim_School - information about schools
 Fact_SchoolTeacher
@@ -64,6 +64,10 @@ PK = AcademicYear, CountyAndDistrictCode, CertificateNumber
 {% docs Dim_School %}
 
 Dimension table for school in an academic year.
+
+Many fields in this table are from a join with `Raw_School_Fields` which
+is populated with an extract from CCER's RMP database. Data in `Raw_School_Fields`
+is optional, though, in which case the fields will be null.
 
 PK = AcademicYear, DistrictCode, SchoolCode. DistrictCode is part of the PK b/c there
 are a small number of cases where the same SchoolCode is used across districts,
@@ -117,6 +121,11 @@ PK = StaffID (key into Dim_Staff), Building
 
 Table of all principals and assistant principals at all the schools where they served.
 
+PrimaryFlag is set 1 for the assignment w/ highest FTE for the individual across all schools
+where they serve, regardless of AP/Prinicpal role.
+
+PrimaryForSchoolFlag is set to 1 for the assignment w/ the highest FTE at the building.
+
 PK = StaffID (key into Dim_Staff), Building, PrincipalType
 
 {% enddocs %}
@@ -165,9 +174,13 @@ Mobility of teachers from their `CohortYear` to each successive `EndYear`
 up to the present. The flag fields describe the transitions between `CohortYear`
 and `EndYear`.
 
-It's easier to do rollups on the flag fields using this table rather than
-`Fact_TeacherMobility`: because the latter doesn't contain every CohortYear/EndYear combo,
-the counts won't add up for a given combo because 'exited' isn't represented.
+This includes rows for CohortYear, EndYear pairs where the individual no longer
+exists in the S-275 data. In these cases, they are considered Exited.
+
+This is the main difference from `Fact_TeacherMobility` (an earlier table
+created to reproduce COE work), which doesn't contain CohortYear/EndYear combos
+for end years where individual is no longer in the data. So `Fact_TeacherCohortMobility`
+makes it easier to do rollups on the flag fields with better completeness.
 
 PK = CohortYear, EndYear, CertificateNumber
 
@@ -196,6 +209,22 @@ It's easier to do rollups on the flag fields using this table rather than
 the counts won't add up for a given combo because 'exited' isn't represented.
 
 PK = CohortYear, EndYear, CertificateNumber
+
+{% enddocs %}
+
+{# ----------------------------- #}
+
+{% docs Fact_SchoolLeadership %}
+
+Table describing leadership at a school in a given year, and how it has changed from
+the previous year in terms of POC composition. Fields with teacher retention are also included
+in this table to enable correlation analysis.
+
+A single individual is selected for the Principal and AsstPrincipal fields, but there are
+sometimes more than one principal or AP at a school. The BroadLeadership fields consider
+changes in the entire set of principals and APs.
+
+PK = AcademicYear, CountyAndDistrictCode, Building
 
 {% enddocs %}
 
