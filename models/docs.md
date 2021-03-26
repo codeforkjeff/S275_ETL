@@ -1,5 +1,12 @@
 {% docs __S275__ %}
 
+# S275 Project
+
+This project does ELT for the S-275 school personnel data.
+
+Below is a high-level "lay of the land" for the tables in this project.
+Browse the individual tables for more detailed information.
+
 ## Dimensional Modeling
 
 The `Dim_` and `Fact_` tables use [dimensional modeling](https://www.kimballgroup.com/2003/01/fact-tables-and-dimension-tables/).
@@ -67,7 +74,7 @@ Dimension table for school in an academic year.
 
 Many fields in this table are from a join with `Raw_School_Fields` which
 is populated with an extract from CCER's RMP database. Data in `Raw_School_Fields`
-is optional, though, in which case the fields will be null.
+is optional, though, in which case the fields here will be null.
 
 PK = AcademicYear, DistrictCode, SchoolCode. DistrictCode is part of the PK b/c there
 are a small number of cases where the same SchoolCode is used across districts,
