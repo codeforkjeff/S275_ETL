@@ -13,3 +13,9 @@ dbt-sqlserver==0.19.0.1
 # pin pycryptodomex: newer versions require compiling on windows
 # which is a pain, and it's used for snowflake, which we don't use anyway
 pycryptodomex==3.9.9
+
+# agate >= 1.6.2 requires PyICU which isn't installable via pip
+# https://github.com/fishtown-analytics/dbt/pull/3161
+# so pin to 1.6.1
+agate==1.6.1
+
