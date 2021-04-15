@@ -79,6 +79,7 @@ select
 	,base.APOrPrincipalLastYear
 	,base.APOrPrincipalNumYears
 	,CASE WHEN APOrPrincipalFirstYear >= TeacherLastYear THEN 1 ELSE 0 END AS TeacherToAPOrPrincipal
+	,{{ getdate_fn() }} as MetaCreatedAt
 FROM Stage base
 LEFT Join FromAssignments a
 	ON base.CertificateNumber = a.CertificateNumber
