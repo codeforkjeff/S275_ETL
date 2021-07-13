@@ -599,14 +599,9 @@ def get_db_conn():
 
             global_conn = pyodbc.connect(db_pyodbc_connection_string)
         elif database_target['type'] == "sqlite":
-            schema_defs = database_target['schemas_and_paths'].split(";")
+            schema_defs = database_target['schemas_and_paths']
 
-            db_sqlite_path = None
-
-            for schema_def in schema_defs:
-                schema_name, sqlite_path = schema_def.split("=")
-                if schema_name == 'main':
-                    db_sqlite_path = sqlite_path
+            db_sqlite_path = schema_defs['main']
 
             global_conn = sqlite3.connect(db_sqlite_path)
 
