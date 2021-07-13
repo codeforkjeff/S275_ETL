@@ -25,9 +25,9 @@ Make sure you install all 32-bit or 64-bit programs; don't mix and match or you'
 
 - Open a PowerShell window.
 
-- Create a virtual environment: `python -m venv ./S275_env`
+- Create a virtual environment: `python -m venv $HOME\S275_env`
 
-- Activate the virtual env: `./S275_env/Scripts/activate`
+- Activate the virtual env: `. $HOME\S275_env\Scripts\activate.ps1`
 
 - Install required Python packages by running one of the following,
   depending on which database you want to use:
@@ -58,7 +58,7 @@ python OSPI_data_downloader.py
 
 For SQLite:
 
-```
+```yaml
 S275:
 
   outputs:
@@ -68,7 +68,8 @@ S275:
       threads: 1
       database: "database"
       schema: "main"
-      schemas_and_paths: "main=C:/Users/jchiu/S275_ETL/output/S275.sqlite"
+      schemas_and_paths:
+        main: "C:/Users/jchiu/S275_ETL/output/S275.sqlite"
       schema_directory: "C:/Users/jchiu/S275_ETL/output"
 
   target: dev
@@ -76,7 +77,7 @@ S275:
 
 For SQL Server:
 
-```
+```yaml
 S275:
 
   outputs:
@@ -95,7 +96,7 @@ S275:
 
 For BigQuery:
 
-```
+```yaml
 # create a service account for your Google Cloud project, generate a key for it,
 # and download it to your machine; the "keyfile" configuration parameter below
 # should point to it.
@@ -146,7 +147,7 @@ production settings file does point to an actual file.
 
 Open a Powershell window.
 
-Activate the virtual env: `./S275_env/Scripts/activate`
+Activate the virtual env: `. $HOME\S275_env\Scripts\activate.ps1`
 
 Run this script:
 
