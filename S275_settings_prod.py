@@ -7,7 +7,7 @@ scriptDir = os.path.dirname(__file__)
 input_dir = "S:\\Data\\Data System\\RawSourceFiles\\From OSPI\\S-275 Personnel Database"
 
 # output directory to write files to
-output_dir = "S:\\Data\\Data System\\Jeff\\S275\\output"
+output_dir = "S:\\Data\\Data System\\RawSourceFiles\\From OSPI\\S-275 Personnel Database\\extracted"
 
 # filenames of the source files
 source_files = [
