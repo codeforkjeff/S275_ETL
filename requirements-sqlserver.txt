@@ -9,4 +9,4 @@ jupyterlab==2.1.2
 seaborn==0.10.1
 rootpath==0.1.1
 dbt==0.19.2
-dbt-sqlserver==0.19.1
+dbt-sqlserver==0.19.2
