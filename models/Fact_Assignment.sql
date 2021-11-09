@@ -40,7 +40,8 @@ SELECT
     THEN 1 ELSE 0 END AS IsAsstPrincipalAssignment,
     -- definition of an 'Educator' according to PESB
     CASE
-        WHEN CAST(S275.DutyRoot as {{ t_int() }}) IN (11, 12, 13, 21, 22, 23, 24, 31, 32, 33, 34, 41, 42, 43, 45, 46, 47, 48, 49, 51, 52, 63, 64)
+        WHEN CAST(S275.DutyRoot as {{ t_int() }}) IN
+            (11, 12, 13, 21, 22, 23, 24, 25, 31, 32, 33, 34, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 52, 63, 64, 91, 99)
         THEN 1
         ELSE 0
     END AS IsPESBEducatorAssignment,
