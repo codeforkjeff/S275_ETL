@@ -124,9 +124,8 @@ S275:
 Note that the non-dbt python code reads these dbt settings to do its
 own database stuff.
 
-- Copy the `S275_settings_sample.py` file to `S275_settings.py` and edit the paths and variables to suit
-  your environment. In the CCER production environment, copy `S275_settings_prod.py` to
-  `S275_settings.py`.
+- Edit the `S275_settings.py` file, changing the paths and variables to suit
+  your environment.
 
 # School-Level Data Used by the Code
 
@@ -144,6 +143,8 @@ points to a file. If the path doesn't exist, the ELT code simply doesn't load it
 production settings file does point to an actual file.
 
 # Creating the Data
+
+Make sure the (empty) database already exists; these scripts do not create a new database.
 
 Open a Powershell window.
 

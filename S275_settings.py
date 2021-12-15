@@ -7,7 +7,10 @@ scriptDir = os.path.dirname(__file__)
 input_dir = "S:\\Data\\Data System\\RawSourceFiles\\From OSPI\\S-275 Personnel Database"
 
 # output directory to write files to
-output_dir = "S:\\Data\\Data System\\RawSourceFiles\\From OSPI\\S-275 Personnel Database\\extracted"
+#output_dir = "S:\\Data\\Data System\\RawSourceFiles\\From OSPI\\S-275 Personnel Database\\extracted"
+
+# reading extracted files from network drive causes failures in bcp sometimes, so we stage them locally
+output_dir = os.path.join(scriptDir, "output")
 
 # filenames of the source files
 source_files = [
@@ -36,9 +39,10 @@ source_files = [
 	,(os.path.join(input_dir, "Final\\2017-2018FinalS-275PersonnelDatabase.accdb"), "FINAL")
 	,(os.path.join(input_dir, "Final\\2018-2019_Final_S-275_Personnel_Database.accdb"), "FINAL")
 	,(os.path.join(input_dir, "Final\\2019-2020_Final_S-275_Personnel_Database.accdb"), "FINAL")
-	,(os.path.join(input_dir, "Preliminary\\2020-2021_Preliminary_S-275_Personnel_Database.accdb"), "PRELIMINARY")
+	,(os.path.join(input_dir, "Final\\2020-2021_Final_S-275_Personnel_Database.accdb"), "FINAL")
 ]
 
-# see the stored proc Exports.usp_create_S275_Dim_School_Fields in the data warehouse
-# for creating this file
-dim_school_fields = "S:\\DB Server Files\\DevSourceFiles\\Personnel Database\\Dim_School_Fields_20200520.txt"
+# export the view Exports.S275_Dim_School_Fields in the data warehouse to create this file
+# e.g.
+# Export-RmpTable -Table Exports.S275_Dim_School_Fields -DBHost sqldb-dev-02 -Database RMPProd -OutputPath Dim_School_Fields_20211215.txt
+dim_school_fields = "S:\\DB Server Files\\DevSourceFiles\\Personnel Database\\Dim_School_Fields_20211215.txt"

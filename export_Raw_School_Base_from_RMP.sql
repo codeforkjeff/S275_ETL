@@ -1,11 +1,6 @@
 
--- this is the query to run to populate Raw_School_Base from an RMP database
--- in SQL Server. This needs to be done each academic year.
---
--- The resulting table should then be exported to input\raw_school_base.txt
--- so builds can load it from there.
---
--- Export-RmpTable -Database
+-- this is here for legacy reasons: in the RMP data warehouse, use
+-- the Exports.S275_Dim_School_Fields view
 
 WITH T AS (
     -- there's 53 rows with duplicate schoolcodes b/c of bad data quality;

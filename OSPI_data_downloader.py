@@ -49,6 +49,7 @@ data_links = [
 ,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1516/2015-2016_Final_S-275_Personnel_Database.zip"
 ,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1415/2014-2015_Final_S-275_Personnel_Database.zip"
 ,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1314/2013-2014_Final_S-275_Personnel_Database.zip"
+,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/2021/2020-2021_Final_S-275_Personnel_Database.zip"
 ]
 
 for link in data_links:
