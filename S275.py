@@ -10,14 +10,21 @@ import os
 import re
 import sqlite3
 import sys
+import warnings
 
-from google.cloud import bigquery
+try:
+    from google.cloud import bigquery
+except:
+    print("WARNING: Couldn't import google.cloud packages, BigQuery functionality won't work. This is probably fine.")
 import pandas as pd
 import haversine
 import numpy as np
 import pyodbc
 import pytz
-import snowflake.connector
+try:
+    import snowflake.connector
+except:
+    print("WARNING: Couldn't import snowflake packages, Snowflake functionality won't work. This is probably fine.")
 import yaml
 
 try:
@@ -28,6 +35,12 @@ except Exception as e:
     sys.exit(1)
 
 #### Parameters
+
+WRITE_TRUNCATE = None
+try:
+    WRITE_TRUNCATE = bigquery.job.WriteDisposition.WRITE_TRUNCATE
+except:
+    pass
 
 LINE_TERMINATOR = u"\r\n"
 
@@ -387,7 +400,7 @@ def get_bq_client():
     return client
 
 
-def bq_load(local_path, bucket_uri, table, delimiter=",", write_disposition=bigquery.job.WriteDisposition.WRITE_TRUNCATE, encoding="utf8"):
+def bq_load(local_path, bucket_uri, table, delimiter=",", write_disposition=WRITE_TRUNCATE, encoding="utf8"):
     """
     Sync a local file up to a storage bucket location and reload the
     source table in BigQuery.

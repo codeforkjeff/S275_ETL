@@ -8,5 +8,5 @@ haversine==2.1.2
 jupyterlab==2.1.2
 seaborn==0.10.1
 rootpath==0.1.1
-dbt==0.19.2
-dbt-sqlite==0.1.2
+dbt-core==1.0.6
+dbt-sqlite==1.0.1
