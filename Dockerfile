@@ -25,4 +25,6 @@ RUN \
   && /opt/venv/bin/python3 -m pip --cache-dir=/var/cache/pip install -r requirements-postgres.txt \
   && rm requirements-postgres.txt
 
+EXPOSE 8080
+
 CMD ./elt.sh

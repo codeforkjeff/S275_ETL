@@ -10,15 +10,16 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+    ports: [ "8080:8080" ]
     volumes:
       - .:/opt/s275
 
   postgresql:
     command: >
-      -c shared_buffers=2GB
-      -c work_mem=1GB
-      -c maintenance_work_mem=1GB
-      -c max_wal_size=2GB
+      -c shared_buffers=4GB
+      -c work_mem=2GB
+      -c maintenance_work_mem=2GB
+      -c max_wal_size=4GB
     environment:
       POSTGRES_PASSWORD: "s275"
       POSTGRES_USER: "s275"
