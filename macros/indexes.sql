@@ -4,7 +4,10 @@
 	{%- if adapter.config.credentials.type == 'sqlite' -%}
 		CREATE {% if unique %}UNIQUE {% endif %} INDEX {{ this.schema }}.idx_{{ prefix|string }}_{{ this.table }} ON {{ this.table }}
 		({{ '"' + columns|join('", "') + '"' }})
-	{% elif adapter.config.credentials.type in ['sqlserver','postgres'] %}
+	{%- elif adapter.config.credentials.type == 'postgres' -%}
+		CREATE {% if unique %}UNIQUE {% endif %} INDEX idx_{{ prefix|string }}_{{ this.table }} ON {{ this.table }}
+		({{ columns|join(',') }})
+	{% elif adapter.config.credentials.type == 'sqlserver' %}
 		{#
 		dbt-sqlserver auto-creates column store indexes, so make all create_index() calls no-ops.
 
