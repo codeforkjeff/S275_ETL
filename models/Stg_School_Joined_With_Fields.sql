@@ -52,26 +52,22 @@ SELECT
     TwoOrMoreRacesPercent,
     CASE WHEN TotalEnrollmentOct > 0 THEN
         CAST(
-            {% call concat() %}
             COALESCE(AmIndOrAlaskan, 0)
             + COALESCE(Asian, 0)
             + COALESCE(PacIsl, 0)
             + COALESCE(Black, 0)
             + COALESCE(Hispanic, 0)
             + COALESCE(TwoOrMoreRaces, 0)
-            {% endcall %}
         as {{ t_int() }})
     END AS StudentsOfColor,
     CASE WHEN TotalEnrollmentOct > 0 THEN
         CAST(
-            {% call concat() %}
             COALESCE(AmIndOrAlaskan, 0)
             + COALESCE(Asian, 0)
             + COALESCE(PacIsl, 0)
             + COALESCE(Black, 0)
             + COALESCE(Hispanic, 0)
             + COALESCE(TwoOrMoreRaces, 0)
-            {% endcall %}
         as {{ t_real() }}) / TotalEnrollmentOct
     END AS StudentsOfColorPercent,
     Male,

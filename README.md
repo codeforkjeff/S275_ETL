@@ -2,7 +2,7 @@
 S275_ETL
 ========
 
-This code does ELT for the [WA State S-275 school personnel data from OSPI](https://www.k12.wa.us/safs-database-files).
+This code does ELT for the [WA State S-275 school personnel data from OSPI](https://ospi.k12.wa.us/safs-data-files).
 It does data cleaning and creates dimensional models for teacher/principal demographics, retention/mobility,
 and cohort analysis... with more to come, probably.
 
@@ -13,7 +13,25 @@ This is a perpetual work in progress!
 - Files for 1996 - 2019 are currently supported; however, not all of these years are currently available for download on the website.
 - Supported databases: sqlite (included with Python), Microsoft SQL Server, BigQuery
 
-# Requirements
+# Running on Linux
+
+Using docker on Linux is the recommended way to build the database. Run the compose stack:
+
+```
+docker compose up
+```
+
+This will start a postgres database and run the entire elt process, including downloading the
+database files from the OSPI website, loading them into the database, and running all the transforms.
+
+You'll know it's ready when you see the message "ELT is finished, starting documentation server"
+on the console. You can now use a SQL client to connect to the "s275" database on localhost,
+with "s275" as the username and password. You can also view the browser-based documentation
+at http://localhost:8080
+
+# Running on Windows
+
+## Requirements
 
 Make sure you install all 32-bit or 64-bit programs; don't mix and match or you'll get errors about missing data sources.
 
@@ -21,7 +39,7 @@ Make sure you install all 32-bit or 64-bit programs; don't mix and match or you'
 - Python >= 3.7.4 - this includes the minimum version of sqlite3 (3.28.0) needed to support the window functions used in this code.
 - ODBC drivers for Microsoft Access (included with [Microsoft Access Database Engine 2016](https://www.microsoft.com/en-us/download/details.aspx?id=54920))
 
-# Setup
+## Setup
 
 - Open a PowerShell window.
 

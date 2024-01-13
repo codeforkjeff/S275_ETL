@@ -10,7 +10,7 @@
 {% endmacro %}
 
 {% macro len_fname() %}
-	{%- if adapter.config.credentials.type in ('sqlite', 'bigquery') -%}
+	{%- if adapter.config.credentials.type in ('sqlite', 'bigquery', 'postgres') -%}
 	LENGTH
 	{%- else -%}
 	LEN
@@ -27,7 +27,7 @@
 
 {# this one does string replacment on caller 'body' #}
 {% macro concat() %}
-	{%- if adapter.config.credentials.type in ('sqlite', 'snowflake', 'bigquery') -%}
+	{%- if adapter.config.credentials.type in ('sqlite', 'snowflake', 'bigquery', 'postgres') -%}
 		{{ caller()|replace('+','||') }}
 	{%- else -%}
 		{{ caller() }}
@@ -39,6 +39,8 @@
 		DATETIME('NOW')
 	{%- elif adapter.config.credentials.type == 'bigquery' -%}
 		CURRENT_DATETIME()
+	{%- elif adapter.config.credentials.type == 'postgres' -%}
+		NOW()
 	{%- else -%}
 		GETDATE()
 	{%- endif -%}
@@ -48,7 +50,7 @@
 	{%- if adapter.config.credentials.type == 'sqlite' -%}
 		{# sqlite doesn't have any builtin hashing fns, so do nothing #}
 		{{ caller() }}
-	{%- elif adapter.config.credentials.type == 'snowflake' -%}
+	{%- elif adapter.config.credentials.type in ['snowflake', 'postgres'] -%}
 		MD5({{ caller() }})
 	{%- elif adapter.config.credentials.type == 'bigquery' -%}
 		TO_HEX(MD5({{ caller() }}))
@@ -81,6 +83,8 @@
 {% macro t_tinyint() %}
 	{%- if adapter.config.credentials.type == 'bigquery' -%}
 		INT64
+	{%- elif adapter.config.credentials.type == 'postgres' -%}
+		SMALLINT
 	{%- else -%}
 		TINYINT
 	{%- endif -%}

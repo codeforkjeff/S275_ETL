@@ -9,47 +9,21 @@ import os
 import requests
 import time
 import zipfile
-from bs4 import BeautifulSoup
 
-
-# scrape the links from web page.
-# OSPI's website changed in 2019: this no longer works
-def get_data_links():
-    data_url = "http://www.k12.wa.us/safs/"
-    archive_url = "http://www.k12.wa.us/safs/db.asp"
-
-    # create request object
-    r = requests.get(archive_url)
-    # create beautiful-soup object like inspect element in chrome
-    soup = BeautifulSoup(r.content,'html5lib')
-
-    # find all links on web-page
-    links = soup.findAll('a')
-
-    # only look at links that end with desired file type...in our case ".mdb" and ".accdb"...both access files
-    l_links = [data_url + link['href'] for link in links if link['href'].endswith(('.mdb', '.accdb')) and ("S275" in link['href'] or "S-275" in link['href'])]
-
-    data_links = sorted([str(link) for link in set(l_links)])
-
-    return data_links
-
-
-# ## Let's try to create a loop to do the job...
 
 input_dir = os.path.join(os.path.dirname(__file__), "input")
 
-#data_links = get_data_links()
-
 data_links = [
-"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/2021/2020-2021_Preliminary_S-275_Personnel_Database.zip"
-,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1920/2019-2020_Final_S-275_Personnel_Database.zip"
-,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1819/2018-2019_Final_S-275_Personnel_Database.zip"
-,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1718/2017-2018FinalS-275PersonnelDatabase.zip"
-,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1617/2016-2017_Final_S-275_Personnel_Database.zip"
-,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1516/2015-2016_Final_S-275_Personnel_Database.zip"
-,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1415/2014-2015_Final_S-275_Personnel_Database.zip"
-,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/1314/2013-2014_Final_S-275_Personnel_Database.zip"
-,"https://www.k12.wa.us/sites/default/files/public/safs/pub/per/2021/2020-2021_Final_S-275_Personnel_Database.zip"
+"https://ospi.k12.wa.us/sites/default/files/2023-08/2013-2014_final_s-275_personnel_database.zip"
+,"https://ospi.k12.wa.us/sites/default/files/2023-08/2014-2015_final_s-275_personnel_database.zip"
+,"https://ospi.k12.wa.us/sites/default/files/2023-08/2015-2016_final_s-275_personnel_database.zip"
+,"https://ospi.k12.wa.us/sites/default/files/2023-08/2016-2017_final_s-275_personnel_database.zip"
+,"https://ospi.k12.wa.us/sites/default/files/2023-08/2017-2018finals-275personneldatabase.zip"
+,"https://ospi.k12.wa.us/sites/default/files/2023-08/2018-2019_final_s-275_personnel_database.zip"
+,"https://ospi.k12.wa.us/sites/default/files/2023-08/2019-2020_final_s-275_personnel_database.zip"
+,"https://ospi.k12.wa.us/sites/default/files/2023-08/2020-2021_final_s-275_personnel_database.zip"
+,"https://ospi.k12.wa.us/sites/default/files/2023-11/2021-2022_final_s-275_personnel_database.zip"
+,"https://ospi.k12.wa.us/sites/default/files/2023-10/2022-2023_final_s-275_personnel_database_1.zip"
 ]
 
 for link in data_links:

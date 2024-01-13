@@ -1,0 +1,40 @@
+
+version: "3.5"
+
+services:
+
+  elt:
+    build:
+      context: .
+    networks: [ all ]
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    ports: [ "8080:8080" ]
+    volumes:
+      - .:/opt/s275
+
+  postgresql:
+    command: >
+      -c shared_buffers=4GB
+      -c work_mem=2GB
+      -c maintenance_work_mem=2GB
+      -c max_wal_size=4GB
+    environment:
+      POSTGRES_PASSWORD: "s275"
+      POSTGRES_USER: "s275"
+    healthcheck:
+      test: pg_isready -U s275
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    hostname: postgresql
+    image: postgres:13
+    networks: [ all ]
+    ports: [ "5432:5432" ]
+    shm_size: 1g
+
+networks:
+  all:
+    driver: bridge
+    name: all
