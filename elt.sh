@@ -52,6 +52,8 @@ python -c "import S275; S275.create_ext_duty_list()"
 # Re-run the specific transforms that depend on the above re-created tables.
 dbt run -m source:ext+
 
+echo "**** ELT is finished, starting documentation server ****"
+
 # generate docs
 dbt docs generate
 
