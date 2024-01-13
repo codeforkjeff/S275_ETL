@@ -2,7 +2,7 @@
 S275_ETL
 ========
 
-This code does ELT for the [WA State S-275 school personnel data from OSPI](https://www.k12.wa.us/safs-database-files).
+This code does ELT for the [WA State S-275 school personnel data from OSPI](https://ospi.k12.wa.us/safs-data-files).
 It does data cleaning and creates dimensional models for teacher/principal demographics, retention/mobility,
 and cohort analysis... with more to come, probably.
 

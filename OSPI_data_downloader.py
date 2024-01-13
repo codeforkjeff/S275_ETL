@@ -9,36 +9,9 @@ import os
 import requests
 import time
 import zipfile
-from bs4 import BeautifulSoup
 
-
-# scrape the links from web page.
-# OSPI's website changed in 2019: this no longer works
-def get_data_links():
-    data_url = "http://www.k12.wa.us/safs/"
-    archive_url = "http://www.k12.wa.us/safs/db.asp"
-
-    # create request object
-    r = requests.get(archive_url)
-    # create beautiful-soup object like inspect element in chrome
-    soup = BeautifulSoup(r.content,'html5lib')
-
-    # find all links on web-page
-    links = soup.findAll('a')
-
-    # only look at links that end with desired file type...in our case ".mdb" and ".accdb"...both access files
-    l_links = [data_url + link['href'] for link in links if link['href'].endswith(('.mdb', '.accdb')) and ("S275" in link['href'] or "S-275" in link['href'])]
-
-    data_links = sorted([str(link) for link in set(l_links)])
-
-    return data_links
-
-
-# ## Let's try to create a loop to do the job...
 
 input_dir = os.path.join(os.path.dirname(__file__), "input")
-
-#data_links = get_data_links()
 
 data_links = [
 "https://ospi.k12.wa.us/sites/default/files/2023-08/2013-2014_final_s-275_personnel_database.zip"
