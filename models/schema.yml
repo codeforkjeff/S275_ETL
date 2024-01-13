@@ -6,6 +6,10 @@ sources:
     description: raw source data
     # by default, schema is set to name of source. we use schema from our target (defined in profiles.yml)
     schema: "{{ target.schema }}"
+    quoting:
+      database: false
+      schema: false
+      identifier: false
     tables:
       - name: Duty_Codes
       - name: Raw_School_Base
@@ -15,6 +19,10 @@ sources:
     description: data created outside SQL and the DAG, but is part of the DAG
     # by default, schema is set to name of source. we use schema from our target (defined in profiles.yml)
     schema: "{{ target.schema }}"
+    quoting:
+      database: false
+      schema: false
+      identifier: false
     tables:
       - name: Ext_TeacherMobility_Distance
       - name: Ext_SchoolLeadership_Broad

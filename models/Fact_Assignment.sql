@@ -9,7 +9,7 @@ SELECT
     DutyArea,
     S275.DutyRoot,
     S275.DutySuffix,
-    duty_codes.Description AS DutyDescription,
+    dc.Description AS DutyDescription,
     Grade,
     Building,
     CAST(AssignmentPercent AS {{ t_numeric(14,4) }}) AS AssignmentPercent,
@@ -56,7 +56,7 @@ JOIN {{ ref('Stg_Dim_Staff_Coalesced') }} d ON
     AND d.MiddleNameC = S275.MiddleNameC
     AND d.CertificateNumberC = S275.CertificateNumberC
     AND d.BirthdateC = S275.BirthdateC
-LEFT JOIN {{ source('sources', 'Duty_Codes') }} ON
-    S275.DutyRoot = CAST(duty_codes.DutyRoot AS {{ t_varchar() }})
-    AND (duty_codes.DutySuffix IN ('x', 'y') OR duty_codes.DutySuffix = S275.DutySuffix)
+LEFT JOIN {{ source('sources', 'Duty_Codes') }} dc ON
+    S275.DutyRoot = CAST(dc.DutyRoot AS {{ t_varchar() }})
+    AND (dc.DutySuffix IN ('x', 'y') OR dc.DutySuffix = S275.DutySuffix)
 

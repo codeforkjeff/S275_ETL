@@ -60,7 +60,7 @@ SELECT
         WHEN hyear = '07' THEN '2007'
         WHEN hyear = '13' THEN '2013'
         WHEN hyear = '19' THEN '2019'
-        WHEN UNICODE(hyear) = 0 THEN NULL -- 4 rows with weird NUL ascii chars?!
+        -- WHEN UNICODE(hyear) = 0 THEN NULL -- 4 rows with weird NUL ascii chars?!
         ELSE hyear
     END as HighestDegreeYear
     ,acred as AcademicCredits

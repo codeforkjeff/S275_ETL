@@ -31,3 +31,11 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   S275:
     +materialized: 'table'
+
+quoting:
+  database: false
+  schema: false
+  identifier: false
+
+seeds:
+  +quote_columns: false

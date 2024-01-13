@@ -7,24 +7,18 @@ import datetime
 import glob
 import itertools
 import os
+import psycopg2
 import re
 import sqlite3
+import subprocess
 import sys
 import warnings
 
-try:
-    from google.cloud import bigquery
-except:
-    print("WARNING: Couldn't import google.cloud packages, BigQuery functionality won't work. This is probably fine.")
+
 import pandas as pd
 import haversine
 import numpy as np
-import pyodbc
 import pytz
-try:
-    import snowflake.connector
-except:
-    print("WARNING: Couldn't import snowflake packages, Snowflake functionality won't work. This is probably fine.")
 import yaml
 
 try:
@@ -133,16 +127,16 @@ def transform_raw_row(row):
         value = row.get(column_name)
         if value is not None:
             new_value = str(value).rstrip()
-            if column_name in ['acred','icred','bcred','vcred','exp', 'ftehrs']:
-                new_value = '%.1f' % (value)
-            elif column_name in ['certfte']:
-                new_value = '%.2f' % (value)
-            elif column_name in ['ftedays','clasfte','asspct','assfte','asshpy']:
-                new_value = '%.4f' % (value)
-            elif column_name in ['camix','camix1','camix1A','camix1S','camix1Sa','camix1SB']:
-                new_value = '%.5f' % (value)
-            elif column_name in ['certbase','clasbase','othersal','tfinsal','cins','cman','asssal']:
-                new_value = '%d' % (value)
+            # if column_name in ['acred','icred','bcred','vcred','exp', 'ftehrs']:
+            #     new_value = '%.1f' % (value)
+            # elif column_name in ['certfte']:
+            #     new_value = '%.2f' % (value)
+            # elif column_name in ['ftedays','clasfte','asspct','assfte','asshpy']:
+            #     new_value = '%.4f' % (value)
+            # elif column_name in ['camix','camix1','camix1A','camix1S','camix1Sa','camix1SB']:
+            #     new_value = '%.5f' % (value)
+            # elif column_name in ['certbase','clasbase','othersal','tfinsal','cins','cman','asssal']:
+            #     new_value = '%d' % (value)
         else:
             new_value = None
         new_row.append(new_value)
@@ -167,14 +161,6 @@ def transform_row_for_export(final_columns, row):
     return new_row
 
 
-def pyodbc_row_to_dict(columns_in_result, row):
-    d = {}
-    for col in columns_in_result:
-        value = getattr(row, col, None)
-        d[col] = value
-    return d
-
-
 def strip_if_str(s):
     if s is None:
         return s
@@ -189,9 +175,14 @@ def create_flat_file(access_db_path, file_type, output_path):
     """ conform all the column names across tables and write to flat files """
     print("Processing %s" % (access_db_path))
 
-    connectionString = "Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=%s" % access_db_path
-    dbConnection = pyodbc.connect(connectionString)
-    cursor = dbConnection.cursor()
+    create_table = "CREATE TABLE"
+    with subprocess.Popen(f"mdb-schema {access_db_path}", shell=True, stdout=subprocess.PIPE, text=True) as proc:
+        lines = proc.stdout.read().split("\n")
+        create_table_line = [line for line in lines if line.startswith(create_table)][0]
+    m = re.search(r"\[(.+?)\]", create_table_line)
+    table_name = m.group(1)
+
+    print("Creating flat file for table %s, hang on..." % (table_name))
 
     f = codecs.open(output_path, "w", 'utf-8')
     f.write("\t".join(all_possible_columns + ['FileType']))
@@ -202,26 +193,8 @@ def create_flat_file(access_db_path, file_type, output_path):
     # bigquery chokes on these when loading, so we transform them to blank strings
     to_file_value = lambda s: '' if s is None or s.strip().strip(chr(0)) == '' else s
 
-    for table_entry in cursor.tables(tableType='TABLE'):
-        table_name = table_entry[2]
-
-        print("Found table: %s" % (table_name))
-
-        # for row in cursor.columns(table=table_name):
-        #     print("Field name: %s, Type: %s, Width: %s" % (row.column_name,row.type_name,row.column_size))
-
-        print("Creating flat file for table %s, hang on..." % (table_name))
-        cursor.execute("Select * From [%s]" % (table_name))
-
-        rows = cursor.fetchall()
-
-        columns_in_result = [column[0] for column in cursor.description]
-
-        print("Writing rows to file...")
-
-        for row in rows:
-            row = pyodbc_row_to_dict(columns_in_result, row)
-
+    with subprocess.Popen(f"mdb-export {access_db_path} {table_name}", shell=True, stdout=subprocess.PIPE, text=True) as proc:
+        for row in csv.DictReader(proc.stdout):
             # in 2001 file, Cert is uppercased
             if 'Cert' in row:
                 row['cert'] = row['Cert']
@@ -230,10 +203,6 @@ def create_flat_file(access_db_path, file_type, output_path):
             values = [to_file_value(value) for value in transform_raw_row(row)]
             f.write("\t".join(values + [file_type]))
             f.write(LINE_TERMINATOR)
-
-        f.flush()
-
-    dbConnection.close()
 
     f.close()
 
@@ -513,6 +482,22 @@ def load_into_database(entries):
                     cursor.executemany('INSERT INTO %s VALUES (%s)' % (table_name, ",".join(["?" for x in range(len(column_names))])), batch)
                     conn.commit()
 
+        elif database_target['type'] == 'postgres':
+
+            print("Loading %s" % (output_file,))
+
+            command = f"\\COPY {table_name} FROM '{output_file}' DELIMITER E'\\t' CSV HEADER;\n"
+            proc = subprocess.Popen(
+                "psql -h postgresql -U s275",
+                shell=True,
+                env={"PGPASSWORD": "s275"},
+                text=True,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+            )
+            (stdout, stderr) = proc.communicate(command)
+            print(stdout)
+
 
 def get_extracted_path(source_path):
     basename = os.path.basename(source_path)
@@ -637,6 +622,9 @@ def get_db_conn():
                 warehouse=database_target['warehouse'],
                 schema=database_target['schema']
             )
+        elif database_target['type'] == "postgres":
+            global_conn = psycopg2.connect(f"dbname={database_target['database']} user={database_target['user']} password={database_target['password']} host={database_target['host']}")
+
         else:
             raise "Unrecognized type: %s" % (database_target['type'],)
 
