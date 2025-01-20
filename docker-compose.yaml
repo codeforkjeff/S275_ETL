@@ -6,7 +6,8 @@ services:
   elt:
     build:
       context: .
-    networks: [ all ]
+      args:
+        DATABASE: postgres
     depends_on:
       postgresql:
         condition: service_healthy

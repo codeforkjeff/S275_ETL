@@ -24,6 +24,8 @@ docker compose up
 This will start a postgres database and run the entire elt process, including downloading the
 database files from the OSPI website, loading them into the database, and running all the transforms.
 
+sqlite is also supported. Change the `DATABASE` build argument in `docker-compose.yml`
+
 You'll know it's ready when you see the message "ELT is finished, starting documentation server"
 on the console. You can now use a SQL client to connect to the "s275" database on localhost,
 with "s275" as the username and password. You can also view the browser-based documentation

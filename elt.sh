@@ -3,28 +3,6 @@
 # NOTE: our python scripts use the target specified in ~/.dbt/profiles.yml,
 # there's no way to override it on the command line, so beware!
 
-source /opt/venv/bin/activate
-
-mkdir ~/.dbt
-cat > ~/.dbt/profiles.yml <<EOF
-S275:
-
-  outputs:
-
-    dev:
-      type: postgres
-      host: postgresql
-      database: s275
-      user: s275
-      password: s275
-      schema: public
-      port: 5432
-      threads: 1
-
-  target: dev
-
-EOF
-
 # download .zip files from OSPI website
 python OSPI_data_downloader.py
 
@@ -62,4 +40,4 @@ echo "********************************************************"
 dbt docs generate
 
 # start documentation server
-dbt docs serve
+dbt docs serve --host "0.0.0.0"

@@ -1,11 +1,11 @@
 pandas==2.0.2
 numpy==1.26.0
-psycopg2-binary==2.9.6
-requests==2.22.0
+psycopg2-binary==2.9.10
+requests==2.32.3
 BeautifulSoup4==4.8.1
 haversine==2.1.2
 jupyterlab==2.1.2
 seaborn==0.10.1
 rootpath==0.1.1
-dbt-core==1.7.4
-dbt-postgres==1.7.4
+dbt-core==1.9.1
+dbt-postgres==1.9.0
