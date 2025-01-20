@@ -11,6 +11,7 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+    networks: [ all ]
     ports: [ "8080:8080" ]
     volumes:
       - .:/opt/s275
