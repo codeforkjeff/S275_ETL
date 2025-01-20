@@ -31,7 +31,7 @@ services:
       timeout: 5s
       retries: 5
     hostname: postgresql
-    image: postgres:13
+    image: postgres:17
     networks: [ all ]
     ports: [ "5432:5432" ]
     shm_size: 1g
