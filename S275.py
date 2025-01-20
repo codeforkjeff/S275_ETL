@@ -7,7 +7,6 @@ import datetime
 import glob
 import itertools
 import os
-import psycopg2
 import re
 import sqlite3
 import subprocess
@@ -15,9 +14,7 @@ import sys
 import warnings
 
 
-import pandas as pd
 import haversine
-import numpy as np
 import pytz
 import yaml
 
@@ -623,6 +620,7 @@ def get_db_conn():
                 schema=database_target['schema']
             )
         elif database_target['type'] == "postgres":
+            import psycopg2
             global_conn = psycopg2.connect(f"dbname={database_target['database']} user={database_target['user']} password={database_target['password']} host={database_target['host']}")
 
         else:
