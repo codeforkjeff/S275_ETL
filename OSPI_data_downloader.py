@@ -24,6 +24,9 @@ data_links = [
 ,"https://ospi.k12.wa.us/sites/default/files/2023-08/2020-2021_final_s-275_personnel_database.zip"
 ,"https://ospi.k12.wa.us/sites/default/files/2023-11/2021-2022_final_s-275_personnel_database.zip"
 ,"https://ospi.k12.wa.us/sites/default/files/2023-10/2022-2023_final_s-275_personnel_database_1.zip"
+,"https://ospi.k12.wa.us/sites/default/files/2024-12/2023-2024_final_s-275_personnel_database.zip"
+,"https://ospi.k12.wa.us/sites/default/files/safs/2024-2025_Final_S-275_Personnel_Database.zip"
+,"https://ospi.k12.wa.us/sites/default/files/2026-02/2025-2026_preliminary_s-275_personnel_database.zip"
 ]
 
 for link in data_links:

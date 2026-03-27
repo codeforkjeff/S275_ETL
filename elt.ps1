@@ -1,3 +1,4 @@
+$ErrorActionPreference = 'Stop'
 
 # NOTE: our python scripts use the target specified in ~/.dbt/profiles.yml,
 # there's no way to override it on the command line, so beware!

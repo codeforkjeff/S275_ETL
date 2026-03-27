@@ -167,42 +167,69 @@ def strip_if_str(s):
 def empty_str_to_none(s):
     return None if s == '' else s
 
-
+def wsl_path(path):
+    path = os.path.abspath(path)  
+    drive = path[0].lower()
+    rest = path[2:].replace("\\", "/")
+    return f"/mnt/{drive}{rest}"
 def create_flat_file(access_db_path, file_type, output_path):
     """ conform all the column names across tables and write to flat files """
     print("Processing %s" % (access_db_path))
 
+    mdb_path = wsl_path(access_db_path) if os.name == "nt" else access_db_path
+
     create_table = "CREATE TABLE"
-    with subprocess.Popen(f"mdb-schema {access_db_path}", shell=True, stdout=subprocess.PIPE, text=True) as proc:
-        lines = proc.stdout.read().split("\n")
-        create_table_line = [line for line in lines if line.startswith(create_table)][0]
+    schema_cmd = ["wsl", "mdb-schema", mdb_path] if os.name == "nt" else ["mdb-schema", mdb_path]
+
+    with subprocess.Popen(schema_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as proc:
+        stdout, stderr = proc.communicate()
+        if proc.returncode != 0:
+            raise RuntimeError(f"mdb-schema failed for {access_db_path}\n{stderr}")
+        lines = stdout.split("\n")
+        create_table_lines = [line for line in lines if line.startswith(create_table)]
+        if not create_table_lines:
+            raise RuntimeError(f"Could not find CREATE TABLE in mdb-schema output for {access_db_path}\n{stderr}")
+        create_table_line = create_table_lines[0]
+
     m = re.search(r"\[(.+?)\]", create_table_line)
     table_name = m.group(1)
 
     print("Creating flat file for table %s, hang on..." % (table_name))
 
-    f = codecs.open(output_path, "w", 'utf-8')
-    f.write("\t".join(all_possible_columns + ['FileType']))
-    f.write(LINE_TERMINATOR)
-    f.flush()
+    row_count = 0
 
-    # some files have rows with a value consisting of one or more ASCII NULs (value 0).
-    # bigquery chokes on these when loading, so we transform them to blank strings
-    to_file_value = lambda s: '' if s is None or s.strip().strip(chr(0)) == '' else s
+    with codecs.open(output_path, "w", "utf-8") as f:
+        f.write("\t".join(all_possible_columns + ["FileType"]))
+        f.write(LINE_TERMINATOR)
+        f.flush()
 
-    with subprocess.Popen(f"mdb-export {access_db_path} {table_name}", shell=True, stdout=subprocess.PIPE, text=True) as proc:
-        for row in csv.DictReader(proc.stdout):
-            # in 2001 file, Cert is uppercased
-            if 'Cert' in row:
-                row['cert'] = row['Cert']
-                del row['Cert']
+        # some files have rows with a value consisting of one or more ASCII NULs (value 0).
+        # bigquery chokes on these when loading, so we transform them to blank strings
+        to_file_value = lambda s: '' if s is None or s.strip().strip(chr(0)) == '' else s
 
-            values = [to_file_value(value) for value in transform_raw_row(row)]
-            f.write("\t".join(values + [file_type]))
-            f.write(LINE_TERMINATOR)
+        export_cmd = ["wsl", "mdb-export", mdb_path, table_name] if os.name == "nt" else ["mdb-export", mdb_path, table_name]
 
-    f.close()
+        with subprocess.Popen(export_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as proc:
+            reader = csv.DictReader(proc.stdout)
+            for row in reader:
+                if 'Cert' in row:
+                    row['cert'] = row['Cert']
+                    del row['Cert']
 
+                values = [to_file_value(value) for value in transform_raw_row(row)]
+                f.write("\t".join(values + [file_type]))
+                f.write(LINE_TERMINATOR)
+                row_count += 1
+
+            stderr = proc.stderr.read()
+            return_code = proc.wait()
+
+        if return_code != 0:
+            raise RuntimeError(
+                f"mdb-export failed for {access_db_path} (table {table_name}) after writing {row_count} rows.\n{stderr}"
+            )
+
+    print(f"Wrote {row_count} rows to {output_path}")
 
 # main entry point for extracting S275
 def extract():
