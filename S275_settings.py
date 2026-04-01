@@ -24,6 +24,9 @@ source_files = [
 	,(f"{input_dir}/2020-2021_Final_S-275_Personnel_Database.accdb", "FINAL")
 	,(f"{input_dir}/2021-2022_Final_S-275_Personnel_Database.accdb", "FINAL")
 	,(f"{input_dir}/2022-2023_Final_S-275_Personnel_Database.accdb", "FINAL")
+	,(f"{input_dir}/2023-2024_Final_S-275_Personnel_Database.accdb", "FINAL")
+	,(f"{input_dir}/2024-2025_Final_S-275_Personnel_Database.accdb", "FINAL")
+	,(f"{input_dir}/2025-2026_Preliminary_S-275_Personnel_Database.accdb", "PRELIMINARY")
 ]
 
 # export the view Exports.S275_Dim_School_Fields in the data warehouse to create this file
